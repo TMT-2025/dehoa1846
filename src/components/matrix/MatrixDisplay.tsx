@@ -1,7 +1,9 @@
+import React, { useState } from 'react';
 import { 
   FileSpreadsheet, Image as ImageIcon, Download, 
   Printer, Sparkles, Save, Check, ArrowRight, Edit3
 } from 'lucide-react';
+import { MatrixData } from '../../types/matrix';
 import { exportMatrixToExcel, exportMatrixToImage, exportMatrixToPDF } from '../../services/exportService';
 
 interface MatrixDisplayProps {
@@ -20,9 +22,7 @@ export const MatrixDisplay: React.FC<MatrixDisplayProps> = ({
   const [isExporting, setIsExporting] = useState(false);
 
   const getChapterRowSpan = (chapterName: string) => {
-    const chapterRows = data.rows.filter(r => r.content === chapterName);
-    const lessonCount = new Set(chapterRows.map(r => r.lessonName)).size;
-    return chapterRows.length + lessonCount;
+    return data.rows.filter(r => r.content === chapterName).length;
   };
 
   const handleExportImage = async () => {

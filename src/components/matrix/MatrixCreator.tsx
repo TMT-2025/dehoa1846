@@ -314,7 +314,14 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
       setMatrixData(data);
       setIsGenerating(false);
       setShowEditor(false);
-      window.scrollTo({ top: document.getElementById('matrix-result-anchor')?.offsetTop || 0, behavior: 'smooth' });
+      setTimeout(() => {
+        const anchor = document.getElementById('matrix-result-anchor');
+        if (anchor) {
+          anchor.scrollIntoView({ behavior: 'smooth' });
+        } else {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }, 50);
     }, 400);
   };
 
