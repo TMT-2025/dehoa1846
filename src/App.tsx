@@ -50,10 +50,14 @@ export const App: React.FC = () => {
         {activeTab === 'matrix' && (
           <div className="animate-fade-in">
             <MatrixCreator
+              key={loadedConfig ? `edit_${loadedConfig.id}` : 'new_matrix'}
               onTransferToExam={handleTransferToExam}
               initialMatrixData={initialMatrix}
               loadedConfig={loadedConfig}
-              onClearLoadedConfig={() => setLoadedConfig(null)}
+              onClearLoadedConfig={() => {
+                setLoadedConfig(null);
+                setInitialMatrix(null);
+              }}
             />
           </div>
         )}

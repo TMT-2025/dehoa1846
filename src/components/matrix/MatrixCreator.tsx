@@ -18,113 +18,189 @@ interface MatrixCreatorProps {
   onClearLoadedConfig?: () => void;
 }
 
+// Helper: Safely restore lessons and reconstruct missing part2Hosts from generatedMatrix if needed
+const restoreLessonsWithPart2Hosts = (lessons: Lesson[], matrix?: MatrixData | null): Lesson[] => {
+  if (!lessons || lessons.length === 0) return [];
+
+  let normalizedLessons: Lesson[] = lessons.map(l => ({
+    ...l,
+    subItems: l.subItems && l.subItems.length > 0 ? [...l.subItems] : ['Khái niệm cơ bản & tính chất', 'Ứng dụng & điều chế'],
+    part2Hosts: l.part2Hosts ? [...l.part2Hosts] : []
+  }));
+
+  const currentTotalHosts = normalizedLessons.reduce((acc, l) => acc + (l.part2Hosts?.length || 0), 0);
+  if (currentTotalHosts >= 4) {
+    return normalizedLessons;
+  }
+
+  // Restore 4 hosts from generatedMatrix if part2Hosts was cleared or lost
+  if (matrix && matrix.rows && matrix.rows.length > 0) {
+    const p2Rows = matrix.rows.filter(r => r.part2 && (r.part2.know > 0 || r.part2.understand > 0 || r.part2.apply > 0));
+    if (p2Rows.length > 0) {
+      normalizedLessons = normalizedLessons.map(lesson => {
+        const matchingDetailNames = p2Rows
+          .filter(r => r.lessonName === lesson.name)
+          .map(r => r.detailName);
+
+        if (matchingDetailNames.length === 0) return lesson;
+
+        const currentHosts = new Set(lesson.part2Hosts || []);
+        matchingDetailNames.forEach(detail => currentHosts.add(detail));
+
+        const currentSubItems = new Set(lesson.subItems || []);
+        matchingDetailNames.forEach(detail => currentSubItems.add(detail));
+
+        return {
+          ...lesson,
+          subItems: Array.from(currentSubItems),
+          part2Hosts: Array.from(currentHosts)
+        };
+      });
+    }
+  }
+
+  return normalizedLessons;
+};
+
+// Helper: Synchronize lessons when user toggles or changes chapters
+const syncLessonsWithChapters = (
+  currentLessons: Lesson[], 
+  chapters: Chapter[], 
+  isCustom: boolean
+): Lesson[] => {
+  if (isCustom) return currentLessons;
+  if (chapters.length === 0) {
+    return currentLessons.filter(l => l.id.startsWith('custom_'));
+  }
+
+  const validLessonIds = new Set<string>();
+  const lessonsToAdd: Lesson[] = [];
+
+  chapters.forEach(chapter => {
+    (chapter.lessons || []).forEach(cl => {
+      validLessonIds.add(cl.id);
+      const existing = currentLessons.find(l => l.id === cl.id);
+      if (!existing) {
+        lessonsToAdd.push({
+          ...cl,
+          subItems: cl.subItems && cl.subItems.length > 0 
+            ? cl.subItems 
+            : ['Khái niệm cơ bản & tính chất', 'Ứng dụng & điều chế'],
+          part2Hosts: []
+        });
+      }
+    });
+  });
+
+  const keptLessons = currentLessons.filter(l => l.id.startsWith('custom_') || validLessonIds.has(l.id));
+  return [...keptLessons, ...lessonsToAdd];
+};
+
 export const MatrixCreator: React.FC<MatrixCreatorProps> = ({ 
   onTransferToExam,
   initialMatrixData,
   loadedConfig,
   onClearLoadedConfig
 }) => {
-  const [activeGrade, setActiveGrade] = useState<Grade | null>(12);
-  const [selectedChapters, setSelectedChapters] = useState<Chapter[]>([]);
-  const [examType, setExamType] = useState<ExamType>(ExamType.REGULAR);
-  const [currentStep, setCurrentStep] = useState<1 | 2>(1);
-  const [editableLessons, setEditableLessons] = useState<Lesson[]>([]);
+  // Direct state initialization from loadedConfig (Zero Race Condition)
+  const [activeGrade, setActiveGrade] = useState<Grade | null>(() => {
+    if (loadedConfig?.grade !== undefined) return loadedConfig.grade;
+    return 12;
+  });
+
+  const [isCustomMode, setIsCustomMode] = useState<boolean>(() => {
+    return loadedConfig?.isCustomMode || false;
+  });
+
+  const [customChapterName, setCustomChapterName] = useState<string>(() => {
+    return loadedConfig?.customChapterName || 'Chủ đề tự do';
+  });
+
+  const [examType, setExamType] = useState<ExamType>(() => {
+    return loadedConfig?.examType || ExamType.REGULAR;
+  });
+
+  const [selectedChapters, setSelectedChapters] = useState<Chapter[]>(() => {
+    if (loadedConfig?.selectedChapters && loadedConfig.selectedChapters.length > 0) {
+      return loadedConfig.selectedChapters;
+    }
+    const grade = loadedConfig?.grade ?? 12;
+    if (grade !== 'Tự do' && CURRICULUM[grade as number]?.length > 0) {
+      return [CURRICULUM[grade as number][0]];
+    }
+    return [];
+  });
+
+  const [editableLessons, setEditableLessons] = useState<Lesson[]>(() => {
+    if (loadedConfig?.editableLessons && loadedConfig.editableLessons.length > 0) {
+      return restoreLessonsWithPart2Hosts(loadedConfig.editableLessons, loadedConfig.generatedMatrix);
+    }
+    const grade = loadedConfig?.grade ?? 12;
+    if (grade !== 'Tự do' && CURRICULUM[grade as number]?.length > 0) {
+      const defaultChapter = CURRICULUM[grade as number][0];
+      return defaultChapter.lessons.map(cl => ({
+        ...cl,
+        subItems: cl.subItems && cl.subItems.length > 0 ? [...cl.subItems] : ['Khái niệm cơ bản & tính chất', 'Ứng dụng & điều chế'],
+        part2Hosts: []
+      }));
+    }
+    return [];
+  });
+
   const [newLessonName, setNewLessonName] = useState('');
-  const [extraRequirements, setExtraRequirements] = useState('');
-  const [isCustomMode, setIsCustomMode] = useState(false);
-  const [customChapterName, setCustomChapterName] = useState('Chủ đề tự do');
-  const [matrixData, setMatrixData] = useState<MatrixData | null>(initialMatrixData || null);
+  const [extraRequirements, setExtraRequirements] = useState<string>(() => {
+    return loadedConfig?.extraRequirements || '';
+  });
+
+  const [matrixData, setMatrixData] = useState<MatrixData | null>(() => {
+    return loadedConfig?.generatedMatrix || initialMatrixData || null;
+  });
+
+  const [editingConfigId, setEditingConfigId] = useState<string | null>(() => {
+    return loadedConfig?.id || null;
+  });
+
+  const [editingConfigName, setEditingConfigName] = useState<string | null>(() => {
+    return loadedConfig?.name || null;
+  });
+
+  const [currentStep, setCurrentStep] = useState<1 | 2>(() => {
+    return loadedConfig ? 2 : 1;
+  });
+
   const [isGenerating, setIsGenerating] = useState(false);
-  const [expandedLessonId, setExpandedLessonId] = useState<string | null>(null);
-  const [expandAllLessons, setExpandAllLessons] = useState(false);
-  const [showEditor, setShowEditor] = useState(true);
-
-  // Track if we are editing an existing saved matrix
-  const [editingConfigId, setEditingConfigId] = useState<string | null>(null);
-  const [editingConfigName, setEditingConfigName] = useState<string | null>(null);
-
-  // Load configuration when user clicks "Mở chỉnh sửa" from Storage
-  useEffect(() => {
-    if (loadedConfig) {
-      setActiveGrade(loadedConfig.grade);
-      setExamType(loadedConfig.examType);
-      setSelectedChapters(loadedConfig.selectedChapters || []);
-      setEditableLessons(loadedConfig.editableLessons || []);
-      setExtraRequirements(loadedConfig.extraRequirements || '');
-      setIsCustomMode(loadedConfig.isCustomMode || false);
-      setCustomChapterName(loadedConfig.customChapterName || 'Chủ đề tự do');
-      setMatrixData(loadedConfig.generatedMatrix || null);
-      setEditingConfigId(loadedConfig.id);
-      setEditingConfigName(loadedConfig.name);
-      
-      // Directly jump into Step 2: Phân bổ & Chọn câu Phần II
-      setCurrentStep(2);
-      setShowEditor(true);
-      setExpandAllLessons(true);
-
-      const hostLesson = (loadedConfig.editableLessons || []).find(l => (l.part2Hosts?.length || 0) > 0);
-      if (hostLesson) {
-        setExpandedLessonId(hostLesson.id);
-      }
+  const [showEditor, setShowEditor] = useState<boolean>(true);
+  const [expandAllLessons, setExpandAllLessons] = useState<boolean>(() => Boolean(loadedConfig));
+  const [expandedLessonId, setExpandedLessonId] = useState<string | null>(() => {
+    if (loadedConfig?.editableLessons) {
+      const host = loadedConfig.editableLessons.find(l => (l.part2Hosts?.length || 0) > 0);
+      return host ? host.id : null;
     }
-  }, [loadedConfig]);
-
-  // Auto initialize default chapter selection for default grade (only on fresh start)
-  useEffect(() => {
-    if (!editingConfigId && activeGrade && activeGrade !== 'Tự do' && selectedChapters.length === 0) {
-      const defaultChapters = CURRICULUM[activeGrade as number] || [];
-      if (defaultChapters.length > 0) {
-        setSelectedChapters([defaultChapters[0]]);
-      }
-    }
-  }, [activeGrade, editingConfigId]);
-
-  // Synchronize lessons with selected chapters safely (preserving part2Hosts and custom edits)
-  useEffect(() => {
-    if (isCustomMode) return;
-    if (selectedChapters.length === 0) return;
-
-    setEditableLessons(prevLessons => {
-      const validLessonIds = new Set<string>();
-      const lessonsToAdd: Lesson[] = [];
-
-      selectedChapters.forEach(chapter => {
-        chapter.lessons.forEach(cl => {
-          validLessonIds.add(cl.id);
-          const existing = prevLessons.find(l => l.id === cl.id);
-          if (!existing) {
-            lessonsToAdd.push({
-              ...cl,
-              subItems: cl.subItems && cl.subItems.length > 0 
-                ? cl.subItems 
-                : [`Khái niệm cơ bản & tính chất`, `Ứng dụng & điều chế`],
-              part2Hosts: []
-            });
-          }
-        });
-      });
-
-      // Keep custom lessons plus lessons from selected chapters
-      const keptLessons = prevLessons.filter(l => l.id.startsWith('custom_') || validLessonIds.has(l.id));
-
-      if (lessonsToAdd.length === 0 && keptLessons.length === prevLessons.length) {
-        return prevLessons;
-      }
-
-      return [...keptLessons, ...lessonsToAdd];
-    });
-  }, [selectedChapters, isCustomMode]);
+    return null;
+  });
 
   const handleGradeSelect = (grade: Grade) => {
     setIsCustomMode(false);
     setActiveGrade(grade);
-    setSelectedChapters([]);
+    const defaultChaps = CURRICULUM[grade as number] || [];
+    const newSelected = defaultChaps.length > 0 ? [defaultChaps[0]] : [];
+    setSelectedChapters(newSelected);
+    
+    // Auto load lessons of the first chapter for the newly selected grade
+    const newLessons = newSelected.flatMap(ch => ch.lessons.map(l => ({
+      ...l,
+      subItems: l.subItems && l.subItems.length > 0 ? [...l.subItems] : ['Khái niệm cơ bản & tính chất', 'Ứng dụng & điều chế'],
+      part2Hosts: []
+    })));
+    setEditableLessons(newLessons);
+
     setExamType(ExamType.REGULAR);
     setMatrixData(null);
     setShowEditor(true);
     setCurrentStep(1);
     setEditingConfigId(null);
     setEditingConfigName(null);
+    if (onClearLoadedConfig) onClearLoadedConfig();
   };
 
   const handleCustomModeSelect = () => {
@@ -143,6 +219,7 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
     setCurrentStep(2);
     setEditingConfigId(null);
     setEditingConfigName(null);
+    if (onClearLoadedConfig) onClearLoadedConfig();
   };
 
   const toggleChapter = (chapter: Chapter) => {
@@ -153,27 +230,30 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
     ].includes(examType);
 
     setSelectedChapters(prev => {
+      let nextChapters: Chapter[];
       const exists = prev.find(c => c.id === chapter.id);
       if (exists) {
-        return prev.filter(c => c.id !== chapter.id);
+        nextChapters = prev.filter(c => c.id !== chapter.id);
       } else {
-        if (isMultiple) {
-          return [...prev, chapter];
-        } else {
-          return [chapter];
-        }
+        nextChapters = isMultiple ? [...prev, chapter] : [chapter];
       }
+      // Synchronize editableLessons directly and safely
+      setEditableLessons(prevLessons => syncLessonsWithChapters(prevLessons, nextChapters, isCustomMode));
+      return nextChapters;
     });
   };
 
   const handleSelectAllChapters = () => {
     if (activeGrade && activeGrade !== 'Tự do') {
-      setSelectedChapters(CURRICULUM[activeGrade as number] || []);
+      const allChapters = CURRICULUM[activeGrade as number] || [];
+      setSelectedChapters(allChapters);
+      setEditableLessons(prevLessons => syncLessonsWithChapters(prevLessons, allChapters, isCustomMode));
     }
   };
 
   const handleDeselectAllChapters = () => {
     setSelectedChapters([]);
+    setEditableLessons(prevLessons => syncLessonsWithChapters(prevLessons, [], isCustomMode));
   };
 
   const handleAddLesson = () => {
@@ -314,6 +394,25 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
       setMatrixData(data);
       setIsGenerating(false);
       setShowEditor(false);
+
+      // Auto sync update into saved storage if currently editing
+      if (editingConfigId) {
+        const updatedConfig: SavedConfig = {
+          id: editingConfigId,
+          name: editingConfigName || `Ma trận ${activeGrade} - ${examType}`,
+          timestamp: Date.now(),
+          grade: activeGrade,
+          selectedChapters,
+          examType,
+          editableLessons,
+          extraRequirements,
+          isCustomMode,
+          customChapterName,
+          generatedMatrix: data
+        };
+        saveMatrixConfig(updatedConfig);
+      }
+
       setTimeout(() => {
         const anchor = document.getElementById('matrix-result-anchor');
         if (anchor) {
@@ -329,7 +428,7 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
     if (!activeGrade) return;
 
     if (editingConfigId) {
-      const confirmUpdate = confirm(`Bạn đang chỉnh sửa ma trận "${editingConfigName}".\n\n• Nhấn [OK] để CẬP NHẬT ĐÈ lên mẫu ma trận này.\n• Nhấn [Cancel] để LƯU THÀNH BẢN SAO MỚI.`);
+      const confirmUpdate = confirm(`Bạn đang chỉnh sửa ma trận "${editingConfigName}".\n\n• Nhấn [OK] để CẬP NHẬT ĐÈ lên mẫu ma trận này trong Kho lưu trữ.\n• Nhấn [Cancel] để LƯU THÀNH BẢN SAO MỚI.`);
       if (confirmUpdate) {
         const updatedConfig: SavedConfig = {
           id: editingConfigId,
@@ -345,7 +444,7 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
           generatedMatrix: matrixData || undefined
         };
         saveMatrixConfig(updatedConfig);
-        alert(`Đã cập nhật thành công ma trận: "${updatedConfig.name}"!`);
+        alert(`Đã cập nhật thành công ma trận: "${updatedConfig.name}" vào Kho lưu trữ!`);
         return;
       }
     }
@@ -379,9 +478,9 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
   const handleCancelEditing = () => {
     setEditingConfigId(null);
     setEditingConfigName(null);
-    if (onClearLoadedConfig) onClearLoadedConfig();
-    setCurrentStep(1);
-    setMatrixData(null);
+    if (onClearLoadedConfig) {
+      onClearLoadedConfig();
+    }
   };
 
   return (

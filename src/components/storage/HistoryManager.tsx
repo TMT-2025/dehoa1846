@@ -7,7 +7,7 @@ import {
 } from '../../services/storageService';
 import { 
   FolderClock, LayoutGrid, FileText, Trash2, 
-  Download, ArrowRight, Eye, Calendar, Sparkles 
+  Download, ArrowRight, Eye, Calendar, Sparkles, Edit3 
 } from 'lucide-react';
 import { ExamRenderer } from '../exam/ExamRenderer';
 import { MatrixDisplay } from '../matrix/MatrixDisplay';
@@ -142,23 +142,37 @@ export const HistoryManager: React.FC<HistoryManagerProps> = ({
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-2 mt-4">
+                  <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 mt-4">
                     <button
                       onClick={() => onLoadMatrixToEditor(config)}
-                      className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold transition-colors cursor-pointer"
                     >
-                      Mở chỉnh sửa
+                      <Edit3 className="w-3.5 h-3.5 text-amber-700" />
+                      <span>Mở chỉnh sửa</span>
                     </button>
 
-                    {config.generatedMatrix && (
-                      <button
-                        onClick={() => onTransferMatrixToExam(config.generatedMatrix!)}
-                        className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-colors"
-                      >
-                        <Sparkles className="w-3.5 h-3.5" />
-                        <span>Sinh đề AI</span>
-                      </button>
-                    )}
+                    <div className="flex items-center gap-1.5">
+                      {config.generatedMatrix && (
+                        <button
+                          onClick={() => setPreviewMatrix(config.generatedMatrix!)}
+                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer"
+                          title="Xem trước bảng ma trận"
+                        >
+                          <Eye className="w-3.5 h-3.5 text-slate-600" />
+                          <span>Xem bảng</span>
+                        </button>
+                      )}
+
+                      {config.generatedMatrix && (
+                        <button
+                          onClick={() => onTransferMatrixToExam(config.generatedMatrix!)}
+                          className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-colors shadow-xs cursor-pointer"
+                        >
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span>Sinh đề AI</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
