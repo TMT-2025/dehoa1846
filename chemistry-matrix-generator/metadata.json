@@ -1,0 +1,5 @@
+{
+  "name": "Chemistry Matrix Generator - GS2018",
+  "description": "An automated assessment matrix generator for high school Chemistry (Grades 10-12) based on the 2018 Vietnamese curriculum and major textbooks (KNTT, CD, CTST).",
+  "requestFramePermissions": []
+}

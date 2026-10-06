@@ -1,0 +1,1366 @@
+[
+  {
+    "id": "config_1791291203094",
+    "name": "Ma trận 11 - Thường xuyên - 6/10/2026",
+    "timestamp": 1791291203094,
+    "grade": 11,
+    "selectedChapters": [
+      {
+        "id": "11_c1",
+        "name": "Chương 1: Cân bằng hóa học",
+        "lessons": [
+          {
+            "id": "11_c1_l1",
+            "name": "Khái niệm về cân bằng hóa học"
+          },
+          {
+            "id": "11_c1_l2",
+            "name": "Cân bằng trong dung dịch nước"
+          }
+        ]
+      }
+    ],
+    "examType": "Thường xuyên",
+    "editableLessons": [
+      {
+        "id": "11_c1_l1",
+        "name": "Khái niệm về cân bằng hóa học",
+        "subItems": [
+          "Phản ứng 1 chiều và phản ứng thuận nghịch",
+          "Trạng thái cân bằng hóa học",
+          "Hằng số cân bằng",
+          "Các yếu tố ảnh hưởng đến sự chuyển dịch cân bằng hóa học",
+          "Tác động các yếu tố để cân bằng chuyển dời theo chiều thuận"
+        ],
+        "part2Hosts": [
+          "Phản ứng 1 chiều và phản ứng thuận nghịch",
+          "Trạng thái cân bằng hóa học",
+          "Hằng số cân bằng",
+          "Các yếu tố ảnh hưởng đến sự chuyển dịch cân bằng hóa học"
+        ]
+      },
+      {
+        "id": "11_c1_l2",
+        "name": "Cân bằng trong dung dịch nước",
+        "subItems": [
+          "Chất điện li và chất không điện li",
+          "Chất điện li mạnh và chất điện li yếu",
+          "Thuyết acid-base của bronsted-Lowry",
+          "Tính pH của các dung dịch",
+          "Sự thủy phân của các ion",
+          "Chuẩn độ acid-base"
+        ],
+        "part2Hosts": []
+      }
+    ],
+    "extraRequirements": "",
+    "isCustomMode": false,
+    "customChapterName": "Chủ đề tự do",
+    "generatedMatrix": {
+      "grade": 11,
+      "examType": "Thường xuyên",
+      "chapters": [
+        {
+          "id": "11_c1",
+          "name": "Chương 1: Cân bằng hóa học",
+          "lessons": [
+            {
+              "id": "11_c1_l1",
+              "name": "Khái niệm về cân bằng hóa học",
+              "subItems": [
+                "Phản ứng 1 chiều và phản ứng thuận nghịch",
+                "Trạng thái cân bằng hóa học",
+                "Hằng số cân bằng",
+                "Các yếu tố ảnh hưởng đến sự chuyển dịch cân bằng hóa học",
+                "Tác động các yếu tố để cân bằng chuyển dời theo chiều thuận"
+              ],
+              "part2Hosts": []
+            },
+            {
+              "id": "11_c1_l2",
+              "name": "Cân bằng trong dung dịch nước",
+              "subItems": [
+                "Chất điện li và chất không điện li",
+                "Chất điện li mạnh và chất điện li yếu",
+                "Thuyết acid-base của bronsted-Lowry",
+                "Tính pH của các dung dịch",
+                "Sự thủy phân của các ion",
+                "Chuẩn độ acid-base"
+              ],
+              "part2Hosts": []
+            }
+          ]
+        }
+      ],
+      "extraRequirements": "",
+      "rows": [
+        {
+          "content": "Chương 1: Cân bằng hóa học",
+          "lessonName": "Khái niệm về cân bằng hóa học",
+          "detailName": "Phản ứng 1 chiều và phản ứng thuận nghịch",
+          "isFirstInLesson": true,
+          "isLastInLesson": false,
+          "lessonRowCount": 5,
+          "part1": {
+            "know": 2,
+            "understand": 1,
+            "apply": 1
+          },
+          "part2": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 1
+          },
+          "total": 5
+        },
+        {
+          "content": "Chương 1: Cân bằng hóa học",
+          "lessonName": "Khái niệm về cân bằng hóa học",
+          "detailName": "Trạng thái cân bằng hóa học",
+          "isFirstInLesson": false,
+          "isLastInLesson": false,
+          "lessonRowCount": 5,
+          "part1": {
+            "know": 1,
+            "understand": 1,
+            "apply": 1
+          },
+          "part2": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 1
+          },
+          "total": 4
+        },
+        {
+          "content": "Chương 1: Cân bằng hóa học",
+          "lessonName": "Khái niệm về cân bằng hóa học",
+          "detailName": "Hằng số cân bằng",
+          "isFirstInLesson": false,
+          "isLastInLesson": false,
+          "lessonRowCount": 5,
+          "part1": {
+            "know": 1,
+            "understand": 1,
+            "apply": 0
+          },
+          "part2": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 1
+          },
+          "total": 3
+        },
+        {
+          "content": "Chương 1: Cân bằng hóa học",
+          "lessonName": "Khái niệm về cân bằng hóa học",
+          "detailName": "Các yếu tố ảnh hưởng đến sự chuyển dịch cân bằng hóa học",
+          "isFirstInLesson": false,
+          "isLastInLesson": false,
+          "lessonRowCount": 5,
+          "part1": {
+            "know": 1,
+            "understand": 1,
+            "apply": 0
+          },
+          "part2": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 1
+          },
+          "total": 3
+        },
+        {
+          "content": "Chương 1: Cân bằng hóa học",
+          "lessonName": "Khái niệm về cân bằng hóa học",
+          "detailName": "Tác động các yếu tố để cân bằng chuyển dời theo chiều thuận",
+          "isFirstInLesson": false,
+          "isLastInLesson": true,
+          "lessonRowCount": 5,
+          "part1": {
+            "know": 1,
+            "understand": 0,
+            "apply": 0
+          },
+          "part2": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 1
+          },
+          "total": 2
+        },
+        {
+          "content": "Chương 1: Cân bằng hóa học",
+          "lessonName": "Cân bằng trong dung dịch nước",
+          "detailName": "Chất điện li và chất không điện li",
+          "isFirstInLesson": true,
+          "isLastInLesson": false,
+          "lessonRowCount": 6,
+          "part1": {
+            "know": 1,
+            "understand": 0,
+            "apply": 0
+          },
+          "part2": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 1
+          },
+          "total": 2
+        },
+        {
+          "content": "Chương 1: Cân bằng hóa học",
+          "lessonName": "Cân bằng trong dung dịch nước",
+          "detailName": "Chất điện li mạnh và chất điện li yếu",
+          "isFirstInLesson": false,
+          "isLastInLesson": false,
+          "lessonRowCount": 6,
+          "part1": {
+            "know": 1,
+            "understand": 0,
+            "apply": 0
+          },
+          "part2": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "total": 1
+        },
+        {
+          "content": "Chương 1: Cân bằng hóa học",
+          "lessonName": "Cân bằng trong dung dịch nước",
+          "detailName": "Thuyết acid-base của bronsted-Lowry",
+          "isFirstInLesson": false,
+          "isLastInLesson": false,
+          "lessonRowCount": 6,
+          "part1": {
+            "know": 1,
+            "understand": 0,
+            "apply": 0
+          },
+          "part2": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "total": 1
+        },
+        {
+          "content": "Chương 1: Cân bằng hóa học",
+          "lessonName": "Cân bằng trong dung dịch nước",
+          "detailName": "Tính pH của các dung dịch",
+          "isFirstInLesson": false,
+          "isLastInLesson": false,
+          "lessonRowCount": 6,
+          "part1": {
+            "know": 1,
+            "understand": 0,
+            "apply": 0
+          },
+          "part2": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "total": 1
+        },
+        {
+          "content": "Chương 1: Cân bằng hóa học",
+          "lessonName": "Cân bằng trong dung dịch nước",
+          "detailName": "Sự thủy phân của các ion",
+          "isFirstInLesson": false,
+          "isLastInLesson": false,
+          "lessonRowCount": 6,
+          "part1": {
+            "know": 1,
+            "understand": 0,
+            "apply": 0
+          },
+          "part2": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "total": 1
+        },
+        {
+          "content": "Chương 1: Cân bằng hóa học",
+          "lessonName": "Cân bằng trong dung dịch nước",
+          "detailName": "Chuẩn độ acid-base",
+          "isFirstInLesson": false,
+          "isLastInLesson": true,
+          "lessonRowCount": 6,
+          "part1": {
+            "know": 1,
+            "understand": 0,
+            "apply": 0
+          },
+          "part2": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "total": 1
+        }
+      ],
+      "totals": {
+        "part1": {
+          "know": 12,
+          "understand": 4,
+          "apply": 2
+        },
+        "part2": {
+          "know": 4,
+          "understand": 8,
+          "apply": 4
+        },
+        "part3": {
+          "know": 0,
+          "understand": 0,
+          "apply": 6
+        },
+        "grandTotal": 40,
+        "ratio": {
+          "know": 16,
+          "understand": 12,
+          "apply": 12
+        }
+      }
+    }
+  },
+  {
+    "id": "config_1791286292242",
+    "name": "Ma trận 12 - Thường xuyên - 6/10/2026",
+    "timestamp": 1791286292242,
+    "grade": 12,
+    "selectedChapters": [
+      {
+        "id": "12_c1",
+        "name": "Chương 1: Ester – Lipid",
+        "lessons": [
+          {
+            "id": "12_c1_l1",
+            "name": "Ester - Lipid"
+          },
+          {
+            "id": "12_c1_l2",
+            "name": "Xà phòng & chất giặt rửa"
+          }
+        ]
+      }
+    ],
+    "examType": "Thường xuyên",
+    "editableLessons": [
+      {
+        "id": "12_c1_l1",
+        "name": "Ester - Lipid",
+        "subItems": [
+          "Khái niệm cơ bản & tính chất",
+          "Ứng dụng & điều chế"
+        ],
+        "part2Hosts": []
+      },
+      {
+        "id": "12_c1_l2",
+        "name": "Xà phòng & chất giặt rửa",
+        "subItems": [
+          "Khái niệm cơ bản & tính chất",
+          "Ứng dụng & điều chế"
+        ],
+        "part2Hosts": []
+      }
+    ],
+    "extraRequirements": "",
+    "isCustomMode": false,
+    "customChapterName": "Chủ đề tự do",
+    "generatedMatrix": {
+      "grade": 12,
+      "examType": "Thường xuyên",
+      "chapters": [
+        {
+          "id": "12_c1",
+          "name": "Chương 1: Ester – Lipid",
+          "lessons": [
+            {
+              "id": "12_c1_l1",
+              "name": "Ester - Lipid",
+              "subItems": [
+                "Cấu tạo ester và lipid",
+                "Tính chất vật lí ester và lipid",
+                "Ứng dụng của ester",
+                "Tính chất hóa học ester và lipid"
+              ],
+              "part2Hosts": [
+                "Tính chất hóa học ester và lipid",
+                "Cấu tạo ester và lipid"
+              ]
+            },
+            {
+              "id": "12_c1_l2",
+              "name": "Xà phòng & chất giặt rửa",
+              "subItems": [
+                "Định nghĩa xà phòng và chất giặt rửa",
+                "Ưu điểm nhược điểm của xà phòng và chất giặt rửa",
+                "Cơ chế làm sạch của xà phòng và chất giặt rửa"
+              ],
+              "part2Hosts": [
+                "Ưu điểm nhược điểm của xà phòng và chất giặt rửa",
+                "Cơ chế làm sạch của xà phòng và chất giặt rửa"
+              ]
+            }
+          ]
+        }
+      ],
+      "extraRequirements": "",
+      "rows": [
+        {
+          "content": "Chương 1: Ester – Lipid",
+          "lessonName": "Ester - Lipid",
+          "detailName": "Cấu tạo ester và lipid",
+          "isFirstInLesson": true,
+          "isLastInLesson": false,
+          "lessonRowCount": 4,
+          "part1": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part2": {
+            "know": 1,
+            "understand": 2,
+            "apply": 1
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "total": 4
+        },
+        {
+          "content": "Chương 1: Ester – Lipid",
+          "lessonName": "Ester - Lipid",
+          "detailName": "Tính chất vật lí ester và lipid",
+          "isFirstInLesson": false,
+          "isLastInLesson": false,
+          "lessonRowCount": 4,
+          "part1": {
+            "know": 4,
+            "understand": 2,
+            "apply": 1
+          },
+          "part2": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 2
+          },
+          "total": 9
+        },
+        {
+          "content": "Chương 1: Ester – Lipid",
+          "lessonName": "Ester - Lipid",
+          "detailName": "Ứng dụng của ester",
+          "isFirstInLesson": false,
+          "isLastInLesson": false,
+          "lessonRowCount": 4,
+          "part1": {
+            "know": 4,
+            "understand": 1,
+            "apply": 1
+          },
+          "part2": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 2
+          },
+          "total": 8
+        },
+        {
+          "content": "Chương 1: Ester – Lipid",
+          "lessonName": "Ester - Lipid",
+          "detailName": "Tính chất hóa học ester và lipid",
+          "isFirstInLesson": false,
+          "isLastInLesson": true,
+          "lessonRowCount": 4,
+          "part1": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part2": {
+            "know": 1,
+            "understand": 2,
+            "apply": 1
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "total": 4
+        },
+        {
+          "content": "Chương 1: Ester – Lipid",
+          "lessonName": "Xà phòng & chất giặt rửa",
+          "detailName": "Định nghĩa xà phòng và chất giặt rửa",
+          "isFirstInLesson": true,
+          "isLastInLesson": false,
+          "lessonRowCount": 3,
+          "part1": {
+            "know": 4,
+            "understand": 1,
+            "apply": 0
+          },
+          "part2": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 2
+          },
+          "total": 7
+        },
+        {
+          "content": "Chương 1: Ester – Lipid",
+          "lessonName": "Xà phòng & chất giặt rửa",
+          "detailName": "Ưu điểm nhược điểm của xà phòng và chất giặt rửa",
+          "isFirstInLesson": false,
+          "isLastInLesson": false,
+          "lessonRowCount": 3,
+          "part1": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part2": {
+            "know": 1,
+            "understand": 2,
+            "apply": 1
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "total": 4
+        },
+        {
+          "content": "Chương 1: Ester – Lipid",
+          "lessonName": "Xà phòng & chất giặt rửa",
+          "detailName": "Cơ chế làm sạch của xà phòng và chất giặt rửa",
+          "isFirstInLesson": false,
+          "isLastInLesson": true,
+          "lessonRowCount": 3,
+          "part1": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part2": {
+            "know": 1,
+            "understand": 2,
+            "apply": 1
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "total": 4
+        }
+      ],
+      "totals": {
+        "part1": {
+          "know": 12,
+          "understand": 4,
+          "apply": 2
+        },
+        "part2": {
+          "know": 4,
+          "understand": 8,
+          "apply": 4
+        },
+        "part3": {
+          "know": 0,
+          "understand": 0,
+          "apply": 6
+        },
+        "grandTotal": 40,
+        "ratio": {
+          "know": 16,
+          "understand": 12,
+          "apply": 12
+        }
+      }
+    }
+  },
+  {
+    "id": "config_1791212367124",
+    "name": "Ma trận 10 - Thường xuyên - 5/10/2026",
+    "timestamp": 1791212367124,
+    "grade": 10,
+    "selectedChapters": [
+      {
+        "id": "10_c1",
+        "name": "Chương 1: Cấu tạo nguyên tử",
+        "lessons": [
+          {
+            "id": "10_c1_l1",
+            "name": "Thành phần của nguyên tử"
+          },
+          {
+            "id": "10_c1_l2",
+            "name": "Nguyên tố hoá học"
+          },
+          {
+            "id": "10_c1_l3",
+            "name": "Cấu trúc lớp vỏ electron của nguyên tử"
+          }
+        ]
+      }
+    ],
+    "examType": "Thường xuyên",
+    "editableLessons": [
+      {
+        "id": "10_c1_l1",
+        "name": "Thành phần của nguyên tử",
+        "subItems": [
+          "Thành phần cấu tạo nguyên tử",
+          "Đặc điểm các hạt trong nguyên tử"
+        ],
+        "part2Hosts": [
+          "Đặc điểm các hạt trong nguyên tử"
+        ]
+      },
+      {
+        "id": "10_c1_l2",
+        "name": "Nguyên tố hoá học",
+        "subItems": [
+          "Định nghĩa nguyên tố hóa học",
+          "Định nghĩa đồng vị",
+          "Tính khối lượng nguyên tử trung bình các đồng vị",
+          "Tính % trong tự nhiên của các đồng vị"
+        ],
+        "part2Hosts": [
+          "Tính % trong tự nhiên của các đồng vị"
+        ]
+      },
+      {
+        "id": "10_c1_l3",
+        "name": "Cấu trúc lớp vỏ electron của nguyên tử",
+        "subItems": [
+          "Nguyên tắc sáp xếp các electron trong nguyên tử",
+          "Cấu hình electron",
+          "Đặc điểm electron lớp ngoài cùng",
+          "Tìm số electron độc thân",
+          "Khái niệm và hình dạng các loại orbital"
+        ],
+        "part2Hosts": [
+          "Cấu hình electron",
+          "Đặc điểm electron lớp ngoài cùng"
+        ]
+      }
+    ],
+    "extraRequirements": "",
+    "isCustomMode": false,
+    "customChapterName": "Chủ đề tự do",
+    "generatedMatrix": {
+      "grade": 10,
+      "examType": "Thường xuyên",
+      "chapters": [
+        {
+          "id": "10_c1",
+          "name": "Chương 1: Cấu tạo nguyên tử",
+          "lessons": [
+            {
+              "id": "10_c1_l1",
+              "name": "Thành phần của nguyên tử",
+              "subItems": [
+                "Thành phần cấu tạo nguyên tử",
+                "Đặc điểm các hạt trong nguyên tử"
+              ],
+              "part2Hosts": [
+                "Đặc điểm các hạt trong nguyên tử"
+              ]
+            },
+            {
+              "id": "10_c1_l2",
+              "name": "Nguyên tố hoá học",
+              "subItems": [
+                "Định nghĩa nguyên tố hóa học",
+                "Định nghĩa đồng vị",
+                "Tính khối lượng nguyên tử trung bình các đồng vị",
+                "Tính % trong tự nhiên của các đồng vị"
+              ],
+              "part2Hosts": [
+                "Tính % trong tự nhiên của các đồng vị"
+              ]
+            },
+            {
+              "id": "10_c1_l3",
+              "name": "Cấu trúc lớp vỏ electron của nguyên tử",
+              "subItems": [
+                "Nguyên tắc sáp xếp các electron trong nguyên tử",
+                "Cấu hình electron",
+                "Đặc điểm electron lớp ngoài cùng",
+                "Tìm số electron độc thân",
+                "Khái niệm và hình dạng các loại orbital"
+              ],
+              "part2Hosts": [
+                "Cấu hình electron",
+                "Đặc điểm electron lớp ngoài cùng"
+              ]
+            }
+          ]
+        }
+      ],
+      "extraRequirements": "",
+      "rows": [
+        {
+          "content": "Chương 1: Cấu tạo nguyên tử",
+          "lessonName": "Thành phần của nguyên tử",
+          "detailName": "Thành phần cấu tạo nguyên tử",
+          "isFirstInLesson": true,
+          "isLastInLesson": false,
+          "lessonRowCount": 2,
+          "part1": {
+            "know": 2,
+            "understand": 1,
+            "apply": 1
+          },
+          "part2": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 1
+          },
+          "total": 5
+        },
+        {
+          "content": "Chương 1: Cấu tạo nguyên tử",
+          "lessonName": "Thành phần của nguyên tử",
+          "detailName": "Đặc điểm các hạt trong nguyên tử",
+          "isFirstInLesson": false,
+          "isLastInLesson": true,
+          "lessonRowCount": 2,
+          "part1": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part2": {
+            "know": 1,
+            "understand": 2,
+            "apply": 1
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "total": 4
+        },
+        {
+          "content": "Chương 1: Cấu tạo nguyên tử",
+          "lessonName": "Nguyên tố hoá học",
+          "detailName": "Định nghĩa nguyên tố hóa học",
+          "isFirstInLesson": true,
+          "isLastInLesson": false,
+          "lessonRowCount": 4,
+          "part1": {
+            "know": 2,
+            "understand": 1,
+            "apply": 1
+          },
+          "part2": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 1
+          },
+          "total": 5
+        },
+        {
+          "content": "Chương 1: Cấu tạo nguyên tử",
+          "lessonName": "Nguyên tố hoá học",
+          "detailName": "Định nghĩa đồng vị",
+          "isFirstInLesson": false,
+          "isLastInLesson": false,
+          "lessonRowCount": 4,
+          "part1": {
+            "know": 2,
+            "understand": 1,
+            "apply": 0
+          },
+          "part2": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 1
+          },
+          "total": 4
+        },
+        {
+          "content": "Chương 1: Cấu tạo nguyên tử",
+          "lessonName": "Nguyên tố hoá học",
+          "detailName": "Tính khối lượng nguyên tử trung bình các đồng vị",
+          "isFirstInLesson": false,
+          "isLastInLesson": false,
+          "lessonRowCount": 4,
+          "part1": {
+            "know": 2,
+            "understand": 1,
+            "apply": 0
+          },
+          "part2": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 1
+          },
+          "total": 4
+        },
+        {
+          "content": "Chương 1: Cấu tạo nguyên tử",
+          "lessonName": "Nguyên tố hoá học",
+          "detailName": "Tính % trong tự nhiên của các đồng vị",
+          "isFirstInLesson": false,
+          "isLastInLesson": true,
+          "lessonRowCount": 4,
+          "part1": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part2": {
+            "know": 1,
+            "understand": 2,
+            "apply": 1
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "total": 4
+        },
+        {
+          "content": "Chương 1: Cấu tạo nguyên tử",
+          "lessonName": "Cấu trúc lớp vỏ electron của nguyên tử",
+          "detailName": "Nguyên tắc sáp xếp các electron trong nguyên tử",
+          "isFirstInLesson": true,
+          "isLastInLesson": false,
+          "lessonRowCount": 5,
+          "part1": {
+            "know": 2,
+            "understand": 0,
+            "apply": 0
+          },
+          "part2": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 1
+          },
+          "total": 3
+        },
+        {
+          "content": "Chương 1: Cấu tạo nguyên tử",
+          "lessonName": "Cấu trúc lớp vỏ electron của nguyên tử",
+          "detailName": "Cấu hình electron",
+          "isFirstInLesson": false,
+          "isLastInLesson": false,
+          "lessonRowCount": 5,
+          "part1": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part2": {
+            "know": 1,
+            "understand": 2,
+            "apply": 1
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "total": 4
+        },
+        {
+          "content": "Chương 1: Cấu tạo nguyên tử",
+          "lessonName": "Cấu trúc lớp vỏ electron của nguyên tử",
+          "detailName": "Đặc điểm electron lớp ngoài cùng",
+          "isFirstInLesson": false,
+          "isLastInLesson": false,
+          "lessonRowCount": 5,
+          "part1": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part2": {
+            "know": 1,
+            "understand": 2,
+            "apply": 1
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "total": 4
+        },
+        {
+          "content": "Chương 1: Cấu tạo nguyên tử",
+          "lessonName": "Cấu trúc lớp vỏ electron của nguyên tử",
+          "detailName": "Tìm số electron độc thân",
+          "isFirstInLesson": false,
+          "isLastInLesson": false,
+          "lessonRowCount": 5,
+          "part1": {
+            "know": 1,
+            "understand": 0,
+            "apply": 0
+          },
+          "part2": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 1
+          },
+          "total": 2
+        },
+        {
+          "content": "Chương 1: Cấu tạo nguyên tử",
+          "lessonName": "Cấu trúc lớp vỏ electron của nguyên tử",
+          "detailName": "Khái niệm và hình dạng các loại orbital",
+          "isFirstInLesson": false,
+          "isLastInLesson": true,
+          "lessonRowCount": 5,
+          "part1": {
+            "know": 1,
+            "understand": 0,
+            "apply": 0
+          },
+          "part2": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "total": 1
+        }
+      ],
+      "totals": {
+        "part1": {
+          "know": 12,
+          "understand": 4,
+          "apply": 2
+        },
+        "part2": {
+          "know": 4,
+          "understand": 8,
+          "apply": 4
+        },
+        "part3": {
+          "know": 0,
+          "understand": 0,
+          "apply": 6
+        },
+        "grandTotal": 40,
+        "ratio": {
+          "know": 16,
+          "understand": 12,
+          "apply": 12
+        }
+      }
+    }
+  },
+  {
+    "id": "config_1791206504787",
+    "name": "Ma trận 12 - Thường xuyên - 5/10/2026",
+    "timestamp": 1791206504787,
+    "grade": 12,
+    "selectedChapters": [
+      {
+        "id": "12_c1",
+        "name": "Chương 1: Ester – Lipid",
+        "lessons": [
+          {
+            "id": "12_c1_l1",
+            "name": "Ester - Lipid"
+          },
+          {
+            "id": "12_c1_l2",
+            "name": "Xà phòng & chất giặt rửa"
+          }
+        ]
+      }
+    ],
+    "examType": "Thường xuyên",
+    "editableLessons": [
+      {
+        "id": "12_c1_l1",
+        "name": "Ester - Lipid",
+        "subItems": [
+          "Cấu tạo ester và lipid",
+          "Tính chất vật lí ester và lipid",
+          "Ứng dụng của ester",
+          "Tính chất hóa học ester và lipid"
+        ],
+        "part2Hosts": [
+          "Tính chất hóa học ester và lipid",
+          "Cấu tạo ester và lipid"
+        ]
+      },
+      {
+        "id": "12_c1_l2",
+        "name": "Xà phòng & chất giặt rửa",
+        "subItems": [
+          "Định nghĩa xà phòng và chất giặt rửa",
+          "Ưu điểm nhược điểm của xà phòng và chất giặt rửa",
+          "Cơ chế làm sạch của xà phòng và chất giặt rửa"
+        ],
+        "part2Hosts": [
+          "Ưu điểm nhược điểm của xà phòng và chất giặt rửa",
+          "Cơ chế làm sạch của xà phòng và chất giặt rửa"
+        ]
+      }
+    ],
+    "extraRequirements": "",
+    "isCustomMode": false,
+    "customChapterName": "Chủ đề tự do",
+    "generatedMatrix": {
+      "grade": 12,
+      "examType": "Thường xuyên",
+      "chapters": [
+        {
+          "id": "12_c1",
+          "name": "Chương 1: Ester – Lipid",
+          "lessons": [
+            {
+              "id": "12_c1_l1",
+              "name": "Ester - Lipid",
+              "subItems": [
+                "Cấu tạo ester và lipid",
+                "Tính chất vật lí ester và lipid",
+                "Ứng dụng của ester",
+                "Tính chất hóa học ester và lipid"
+              ],
+              "part2Hosts": [
+                "Tính chất hóa học ester và lipid",
+                "Cấu tạo ester và lipid"
+              ]
+            },
+            {
+              "id": "12_c1_l2",
+              "name": "Xà phòng & chất giặt rửa",
+              "subItems": [
+                "Định nghĩa xà phòng và chất giặt rửa",
+                "Ưu điểm nhược điểm của xà phòng và chất giặt rửa",
+                "Cơ chế làm sạch của xà phòng và chất giặt rửa"
+              ],
+              "part2Hosts": [
+                "Ưu điểm nhược điểm của xà phòng và chất giặt rửa",
+                "Cơ chế làm sạch của xà phòng và chất giặt rửa"
+              ]
+            }
+          ]
+        }
+      ],
+      "extraRequirements": "",
+      "rows": [
+        {
+          "content": "Chương 1: Ester – Lipid",
+          "lessonName": "Ester - Lipid",
+          "detailName": "Cấu tạo ester và lipid",
+          "isFirstInLesson": true,
+          "isLastInLesson": false,
+          "lessonRowCount": 4,
+          "part1": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part2": {
+            "know": 1,
+            "understand": 2,
+            "apply": 1
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "total": 4
+        },
+        {
+          "content": "Chương 1: Ester – Lipid",
+          "lessonName": "Ester - Lipid",
+          "detailName": "Tính chất vật lí ester và lipid",
+          "isFirstInLesson": false,
+          "isLastInLesson": false,
+          "lessonRowCount": 4,
+          "part1": {
+            "know": 4,
+            "understand": 2,
+            "apply": 1
+          },
+          "part2": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 2
+          },
+          "total": 9
+        },
+        {
+          "content": "Chương 1: Ester – Lipid",
+          "lessonName": "Ester - Lipid",
+          "detailName": "Ứng dụng của ester",
+          "isFirstInLesson": false,
+          "isLastInLesson": false,
+          "lessonRowCount": 4,
+          "part1": {
+            "know": 4,
+            "understand": 1,
+            "apply": 1
+          },
+          "part2": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 2
+          },
+          "total": 8
+        },
+        {
+          "content": "Chương 1: Ester – Lipid",
+          "lessonName": "Ester - Lipid",
+          "detailName": "Tính chất hóa học ester và lipid",
+          "isFirstInLesson": false,
+          "isLastInLesson": true,
+          "lessonRowCount": 4,
+          "part1": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part2": {
+            "know": 1,
+            "understand": 2,
+            "apply": 1
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "total": 4
+        },
+        {
+          "content": "Chương 1: Ester – Lipid",
+          "lessonName": "Xà phòng & chất giặt rửa",
+          "detailName": "Định nghĩa xà phòng và chất giặt rửa",
+          "isFirstInLesson": true,
+          "isLastInLesson": false,
+          "lessonRowCount": 3,
+          "part1": {
+            "know": 4,
+            "understand": 1,
+            "apply": 0
+          },
+          "part2": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 2
+          },
+          "total": 7
+        },
+        {
+          "content": "Chương 1: Ester – Lipid",
+          "lessonName": "Xà phòng & chất giặt rửa",
+          "detailName": "Ưu điểm nhược điểm của xà phòng và chất giặt rửa",
+          "isFirstInLesson": false,
+          "isLastInLesson": false,
+          "lessonRowCount": 3,
+          "part1": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part2": {
+            "know": 1,
+            "understand": 2,
+            "apply": 1
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "total": 4
+        },
+        {
+          "content": "Chương 1: Ester – Lipid",
+          "lessonName": "Xà phòng & chất giặt rửa",
+          "detailName": "Cơ chế làm sạch của xà phòng và chất giặt rửa",
+          "isFirstInLesson": false,
+          "isLastInLesson": true,
+          "lessonRowCount": 3,
+          "part1": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "part2": {
+            "know": 1,
+            "understand": 2,
+            "apply": 1
+          },
+          "part3": {
+            "know": 0,
+            "understand": 0,
+            "apply": 0
+          },
+          "total": 4
+        }
+      ],
+      "totals": {
+        "part1": {
+          "know": 12,
+          "understand": 4,
+          "apply": 2
+        },
+        "part2": {
+          "know": 4,
+          "understand": 8,
+          "apply": 4
+        },
+        "part3": {
+          "know": 0,
+          "understand": 0,
+          "apply": 6
+        },
+        "grandTotal": 40,
+        "ratio": {
+          "know": 16,
+          "understand": 12,
+          "apply": 12
+        }
+      }
+    }
+  }
+]
