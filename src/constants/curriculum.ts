@@ -47,16 +47,6 @@ export const CURRICULUM: Record<number, Chapter[]> = {
           "III. CẤU HÌNH ELECTRON CỦA NGUYÊN TỬ - 2. Biểu diễn cấu hình electron theo ô orbital (phân bố electron độc thân và ghép đôi)",
           "III. CẤU HÌNH ELECTRON CỦA NGUYÊN TỬ - 3. Đặc điểm của lớp electron ngoài cùng (xác định tính chất kim loại: 1, 2, 3 e; phi kim: 5, 6, 7 e; khí hiếm: 8 e hoặc 2 e với He)"
         ]
-      },
-      {
-        "id": "10_c1_l4",
-        "name": "Bài 4: Ôn tập chương 1",
-        "subItems": [
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Sơ đồ cấu tạo nguyên tử (hạt nhân và vỏ nguyên tử)",
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Mối quan hệ giữa số hạt p, n, e, số khối A và số hiệu nguyên tử Z",
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Cấu trúc vỏ electron: orbital nguyên tử, lớp và phân lớp, cấu hình electron",
-          "II. LUYỆN TẬP - Hệ thống câu hỏi trắc nghiệm và bài tập tự luận củng cố kiến thức chương 1"
-        ]
       }
     ]
   },
@@ -107,17 +97,6 @@ export const CURRICULUM: Record<number, Chapter[]> = {
           "II. Ý NGHĨA CỦA BẢNG TUẦN HOÀN - Mối liên hệ giữa vị trí nguyên tố và cấu tạo nguyên tử của nó (vị trí <-> cấu hình electron)",
           "II. Ý NGHĨA CỦA BẢNG TUẦN HOÀN - Mối liên hệ giữa vị trí nguyên tố và tính chất hoá học (kim loại, phi kim, hoá trị cao nhất, tính chất oxide/hydroxide)",
           "II. Ý NGHĨA CỦA BẢNG TUẦN HOÀN - So sánh tính chất của một nguyên tố với các nguyên tố lân cận"
-        ]
-      },
-      {
-        "id": "10_c2_l9",
-        "name": "Bài 9: Ôn tập chương 2",
-        "subItems": [
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - 1. Cấu tạo bảng tuần hoàn (ô, chu kì, nhóm)",
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - 2. Xu hướng biến đổi trong bảng tuần hoàn (bán kính, độ âm điện, tính kim loại/phi kim, tính acid/base)",
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - 3. Bảng tuần hoàn và cấu tạo nguyên tử",
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - 4. Định luật tuần hoàn",
-          "II. LUYỆN TẬP - Hệ thống bài tập vận dụng quy luật tuần hoàn và giải thích tính chất các chất"
         ]
       }
     ]
@@ -177,14 +156,6 @@ export const CURRICULUM: Record<number, Chapter[]> = {
           "III. TƯƠNG TÁC VAN DER WAALS - 1. Khái niệm tương tác van der Waals (lực tương tác tĩnh điện yếu giữa các lưỡng cực cảm ứng hoặc vĩnh viễn)",
           "III. TƯƠNG TÁC VAN DER WAALS - 2. Ảnh hưởng của tương tác van der Waals đến nhiệt độ nóng chảy, nhiệt độ sôi (tăng theo kích thước phân tử và số electron)"
         ]
-      },
-      {
-        "id": "10_c3_l14",
-        "name": "Bài 14: Ôn tập chương 3",
-        "subItems": [
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Bảng so sánh bản chất và đặc điểm: Quy tắc octet, Liên kết ion, Liên kết cộng hoá trị, Liên kết hydrogen, Tương tác van der Waals",
-          "II. LUYỆN TẬP - Các dạng bài tập dự đoán loại liên kết, viết công thức Lewis, giải thích nhiệt độ sôi và tính chất vật lí"
-        ]
       }
     ]
   },
@@ -210,15 +181,6 @@ export const CURRICULUM: Record<number, Chapter[]> = {
           "IV. PHẢN ỨNG OXI HOÁ – KHỬ TRONG THỰC TIỄN - 4. Chuyển hoá các chất trong tự nhiên (quang hợp ở thực vật, hô hấp ở sinh vật)",
           "IV. PHẢN ỨNG OXI HOÁ – KHỬ TRONG THỰC TIỄN - 5. Xác định nồng độ một chất bằng phản ứng oxi hoá – khử (chuẩn độ permanganate)"
         ]
-      },
-      {
-        "id": "10_c4_l16",
-        "name": "Bài 16: Ôn tập chương 4",
-        "subItems": [
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Sơ đồ tư duy về phản ứng oxi hoá – khử, chất oxi hoá, chất khử, quá trình oxi hoá, quá trình khử",
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Các quy tắc thăng bằng electron",
-          "II. LUYỆN TẬP - Bài tập cân bằng phản ứng oxi hoá – khử dạng phân tử, ion và các phản ứng tự oxi hoá - khử, phản ứng phức tạp"
-        ]
       }
     ]
   },
@@ -239,15 +201,6 @@ export const CURRICULUM: Record<number, Chapter[]> = {
           "III. TÍNH BIẾN THIÊN ENTHALPY CỦA PHẢN ỨNG THEO NHIỆT TẠO THÀNH - 2. Công thức tính: ΔrH°₂₉₈ = Σ ΔfH°₂₉₈ (sản phẩm) - Σ ΔfH°₂₉₈ (chất đầu)",
           "IV. TÍNH BIẾN THIÊN ENTHALPY CỦA PHẢN ỨNG THEO NĂNG LƯỢNG LIÊN KẾT - Áp dụng cho các phản ứng mà chất đầu và sản phẩm đều ở thể khí",
           "IV. TÍNH BIẾN THIÊN ENTHALPY CỦA PHẢN ỨNG THEO NĂNG LƯỢNG LIÊN KẾT - Công thức tính: ΔrH°₂₉₈ = Σ Eb (chất đầu) - Σ Eb (sản phẩm)"
-        ]
-      },
-      {
-        "id": "10_c5_l18",
-        "name": "Bài 18: Ôn tập chương 5",
-        "subItems": [
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Sơ đồ năng lượng phản ứng hoá học: phản ứng toả nhiệt và phản ứng thu nhiệt",
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Phương pháp tính biến thiên enthalpy chuẩn theo hai cách (nhiệt tạo thành và năng lượng liên kết)",
-          "II. LUYỆN TẬP - Các bài tập tính toán biến thiên enthalpy và giải thích ý nghĩa nhiệt động học của phản ứng"
         ]
       }
     ]
@@ -270,15 +223,6 @@ export const CURRICULUM: Record<number, Chapter[]> = {
           "II. CÁC YẾU TỐ ẢNH HƯỞNG ĐẾN TỐC ĐỘ PHẢN ỨNG - 5. Ảnh hưởng của chất xúc tác đến tốc độ phản ứng (làm giảm năng lượng hoạt hoá, tăng tốc độ phản ứng mà không bị tiêu hao sau phản ứng)",
           "III. MỘT SỐ ỨNG DỤNG CỦA VIỆC THAY ĐỔI TỐC ĐỘ PHẢN ỨNG - Ứng dụng làm tăng tốc độ phản ứng có lợi: sục khí oxy vào hồ nuôi tôm, dùng than tổ ong có lỗ thông gió, tăng nhiệt độ khi hầm xương, dùng chất xúc tác trong tổng hợp NH₃",
           "III. MỘT SỐ ỨNG DỤNG CỦA VIỆC THAY ĐỔI TỐC ĐỘ PHẢN ỨNG - Ứng dụng làm chậm tốc độ phản ứng có hại: bảo quản thực phẩm trong tủ lạnh, hút chân không, quét sơn chống gỉ kim loại"
-        ]
-      },
-      {
-        "id": "10_c6_l20",
-        "name": "Bài 20: Ôn tập chương 6",
-        "subItems": [
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Sơ đồ tổng kết: Khái niệm tốc độ phản ứng, công thức tính tốc độ trung bình, định luật tác dụng khối lượng",
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - 5 yếu tố ảnh hưởng: Nồng độ, Áp suất, Nhiệt độ, Diện tích tiếp xúc bề mặt, Chất xúc tác",
-          "II. LUYỆN TẬP - Bài toán tính tốc độ trung bình, tính hằng số tốc độ k, bài tập áp dụng hệ số nhiệt độ Van 't Hoff"
         ]
       }
     ]
@@ -323,17 +267,6 @@ export const CURRICULUM: Record<number, Chapter[]> = {
           "III. MUỐI HALIDE - 3. Muối ăn (NaCl): a) Vai trò của muối ăn trong sinh lí học và đời sống",
           "III. MUỐI HALIDE - 3. Muối ăn (NaCl): b) Tinh chế muối ăn từ nước biển"
         ]
-      },
-      {
-        "id": "10_c7_l23",
-        "name": "Bài 23: Ôn tập chương 7",
-        "subItems": [
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - 1. Nguyên tử halogen (cấu hình electron, độ âm điện, số oxi hoá)",
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - 2. Đơn chất halogen (tính chất vật lí, tính oxi hoá giảm dần)",
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - 3. Hydrogen halide và hydrohalic acid (liên kết hydrogen của HF, tính acid tăng dần)",
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - 4. Muối halide (thuốc thử AgNO₃ nhận biết, tính khử của ion halide)",
-          "II. LUYỆN TẬP - Hệ thống câu hỏi trắc nghiệm và bài tập tự luận tổng hợp chương halogen"
-        ]
       }
     ]
   }
@@ -374,15 +307,6 @@ export const CURRICULUM: Record<number, Chapter[]> = {
           "IV. SỰ THUỶ PHÂN CỦA CÁC ION TRONG DUNG DỊCH MUỐI - 1. Môi trường của một số dung dịch muối (muối tạo bởi cation kim loại mạnh và gốc acid mạnh có pH ≈ 7; muối tạo bởi cation base yếu có tính acid pH < 7; muối tạo bởi anion acid yếu có tính base pH > 7)",
           "V. CHUẨN ĐỘ ACID – BASE - 1. Nguyên tắc chuẩn độ acid - base (phản ứng trung hoà giữa acid và base với thể tích và nồng độ xác định)",
           "V. CHUẨN ĐỘ ACID – BASE - 2. Thực hành chuẩn độ acid - base (sử dụng buret, bình tam giác, chất chỉ thị phenolphthalein để xác định nồng độ dung dịch HCl bằng dung dịch chuẩn NaOH)"
-        ]
-      },
-      {
-        "id": "11_c1_l3",
-        "name": "Bài 3: Ôn tập chương 1",
-        "subItems": [
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - 1. Cân bằng hoá học (phản ứng thuận nghịch, hằng số Kc, nguyên lí Le Chatelier)",
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - 2. Cân bằng trong dung dịch nước (sự điện li, thuyết Brønsted - Lowry, thang pH, chuẩn độ acid - base)",
-          "II. LUYỆN TẬP - Hệ thống bài tập tự luận và trắc nghiệm củng cố kiến thức chương 1"
         ]
       }
     ]
@@ -467,15 +391,6 @@ export const CURRICULUM: Record<number, Chapter[]> = {
           "II. MUỐI SULFATE - 1. Ứng dụng của một số muối sulfate (thạch cao sống CaSO₄.2H₂O, thạch cao nung CaSO₄.0,5H₂O bó bột gãy xương, đúc tượng; phèn chua KAl(SO₄)₂.12H₂O làm trong nước; muối Epsom MgSO₄.7H₂O; barium sulfate BaSO₄ cản quang trong chụp X-quang)",
           "II. MUỐI SULFATE - 2. Nhận biết ion sulfate (dùng thuốc thử chứa ion Ba²⁺ như BaCl₂, Ba(OH)₂ tạo kết tủa trắng BaSO₄ không tan trong acid mạnh)"
         ]
-      },
-      {
-        "id": "11_c2_l9",
-        "name": "Bài 9: Ôn tập chương 2",
-        "subItems": [
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Sơ đồ chuyển hoá các hợp chất của nitrogen (N₂ -> NH₃ -> NO -> NO₂ -> HNO₃ -> Muối nitrate)",
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Sơ đồ chuyển hoá các hợp chất của sulfur (S -> SO₂ -> SO₃ -> H₂SO₄ -> Muối sulfate)",
-          "II. LUYỆN TẬP - Hệ thống bài tập định tính và định lượng tổng hợp kiến thức chương nitrogen và sulfur"
-        ]
       }
     ]
   },
@@ -535,16 +450,6 @@ export const CURRICULUM: Record<number, Chapter[]> = {
           "III. ĐỒNG ĐẲNG VÀ ĐỒNG PHÂN - 1. Đồng đẳng (các hợp chất có thành phần phân tử hơn kém nhau một hay nhiều nhóm –CH₂– nhưng có tính chất hoá học tương tự nhau lập thành dãy đồng đẳng)",
           "III. ĐỒNG ĐẲNG VÀ ĐỒNG PHÂN - 2. Đồng phân (các chất có cùng công thức phân tử nhưng cấu tạo hoá học khác nhau nên tính chất khác nhau; đồng phân cấu tạo gồm: đồng phân mạch carbon, đồng phân vị trí nhóm chức/liên kết bội; đồng phân hình học cis-trans)"
         ]
-      },
-      {
-        "id": "11_c3_l14",
-        "name": "Bài 14: Ôn tập chương 3",
-        "subItems": [
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Khái niệm hợp chất hữu cơ, nhóm chức, phổ IR, MS",
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Các phương pháp tách biệt và tinh chế: chưng cất, chiết, kết tinh, sắc kí cột",
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Thuyết cấu tạo hoá học, cách viết công thức cấu tạo, hiện tượng đồng đẳng và đồng phân",
-          "II. LUYỆN TẬP - Bài tập xác định công thức phân tử, viết đồng phân cấu tạo và gọi tên"
-        ]
       }
     ]
   },
@@ -603,15 +508,6 @@ export const CURRICULUM: Record<number, Chapter[]> = {
           "V. ĐIỀU CHẾ VÀ ỨNG DỤNG - 1. Điều chế trong công nghiệp (từ phản ứng reforming phân đoạn dầu mỏ)",
           "V. ĐIỀU CHẾ VÀ ỨNG DỤNG - 2. Ứng dụng (dung môi hoà tan, sản xuất polymer, tơ sợi dệt, phẩm nhuộm, dược phẩm; chú ý độc tính của benzene)"
         ]
-      },
-      {
-        "id": "11_c4_l18",
-        "name": "Bài 18: Ôn tập chương 4",
-        "subItems": [
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Bảng so sánh cấu tạo và tính chất: Alkane, Alkene, Alkyne, Arene",
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Mối quan hệ giữa cấu trúc mạch carbon và các phản ứng đặc trưng (thế, cộng, trùng hợp, oxi hoá)",
-          "II. LUYỆN TẬP - Hệ thống bài tập chuỗi phản ứng, nhận biết hydrocarbon và tính toán hiệu suất"
-        ]
       }
     ]
   },
@@ -669,15 +565,6 @@ export const CURRICULUM: Record<number, Chapter[]> = {
           "IV. TÍNH CHẤT HOÁ HỌC - 2. Phản ứng thế ở vòng thơm: Sản xuất keo dán phenol-formaldehyde, phẩm nhuộm, dược phẩm (aspirin, paracetamol), thuốc nổ picric acid",
           "IV. TÍNH CHẤT HOÁ HỌC - 2. Phản ứng thế ở vòng thơm: Sản xuất từ cumene trong công nghiệp hoá dầu; tách từ nhựa than đá"
         ]
-      },
-      {
-        "id": "11_c5_l22",
-        "name": "Bài 22: Ôn tập chương 5",
-        "subItems": [
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Bảng tổng kết so sánh cấu tạo và tính chất của Dẫn xuất halogen, Alcohol, Phenol",
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Mối liên hệ giữa hiệu ứng cấu trúc và tính phản ứng (tính acid của phenol so với alcohol)",
-          "II. LUYỆN TẬP - Bài tập nhận biết, viết phương trình hoá học và bài toán chuyển hoá hợp chất chứa nhóm chức"
-        ]
       }
     ]
   },
@@ -722,15 +609,6 @@ export const CURRICULUM: Record<number, Chapter[]> = {
           "VI. ĐIỀU CHẾ - 1. Phương pháp lên men giấm (lên men dung dịch ethanol loãng nhờ vi khuẩn men giấm)",
           "VI. ĐIỀU CHẾ - 2. Phương pháp oxi hoá alkane (oxi hoá butane trong công nghiệp tạo acetic acid)"
         ]
-      },
-      {
-        "id": "11_c6_l25",
-        "name": "Bài 25: Ôn tập chương 6",
-        "subItems": [
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Sơ đồ so sánh cấu trúc và phản ứng đặc trưng của Hợp chất carbonyl (Aldehyde, Ketone) và Carboxylic acid",
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Mối liên hệ chuyển hoá qua lại giữa hydrocarbon, alcohol, aldehyde/ketone và carboxylic acid/ester",
-          "II. LUYỆN TẬP - Hệ thống bài tập tổng hợp phân biệt nhóm chức, phản ứng tráng bạc, phản ứng ester hoá và bài toán thực tế"
-        ]
       }
     ]
   }
@@ -770,15 +648,6 @@ export const CURRICULUM: Record<number, Chapter[]> = {
           "III. CƠ CHẾ GIẶT RỬA VÀ SỬ DỤNG HIỆU QUẢ, AN TOÀN - Cấu tạo phân tử chất giặt rửa gồm đầu ưa nước và đuôi kị nước (ưa dầu mỡ)",
           "III. CƠ CHẾ GIẶT RỬA VÀ SỬ DỤNG HIỆU QUẢ, AN TOÀN - Cơ chế tẩy rửa vết bẩn dầu mỡ bằng sự phân tán micelle",
           "III. CƠ CHẾ GIẶT RỬA VÀ SỬ DỤNG HIỆU QUẢ, AN TOÀN - Ưu và nhược điểm của xà phòng (mất tác dụng trong nước cứng) và chất giặt rửa tổng hợp (dùng được trong nước cứng nhưng khó phân huỷ sinh học gây ô nhiễm môi trường)"
-        ]
-      },
-      {
-        "id": "12_c1_l3",
-        "name": "Bài 3: Ôn tập chương 1",
-        "subItems": [
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Sơ đồ cấu trúc: Ester, Lipid, Chất béo (no và không no)",
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Bảng so sánh xà phòng và chất giặt rửa tổng hợp (nguồn gốc, thành phần, cơ chế, ưu nhược điểm)",
-          "II. LUYỆN TẬP - Hệ thống bài tập trắc nghiệm và tự luận về phản ứng xà phòng hoá, chỉ số xà phòng hoá và bài toán thực tế"
         ]
       }
     ]
@@ -828,15 +697,6 @@ export const CURRICULUM: Record<number, Chapter[]> = {
           "II. TÍNH CHẤT HOÁ HỌC - 2. Tính chất của cellulose: Hoà tan trong nước Schweizer [Cu(NH₃)₄](OH)₂ để sản xuất tơ visco, tơ đồng - amoniac",
           "III. TRẠNG THÁI TỰ NHIÊN, ỨNG DỤNG VÀ CHUYỂN HOÁ - 1. Tinh bột (lương thực chính cho con người: gạo, ngô, khoai, sắn; sản xuất bánh kẹo, cồn công nghiệp)",
           "III. TRẠNG THÁI TỰ NHIÊN, ỨNG DỤNG VÀ CHUYỂN HOÁ - 2. Cellulose (thành phần chính tạo nên màng tế bào thực vật: bông nõn 98%, gỗ 50%; sản xuất giấy, tơ sợi dệt, vật liệu xây dựng, thuốc súng không khói)"
-        ]
-      },
-      {
-        "id": "12_c2_l7",
-        "name": "Bài 7: Ôn tập chương 2",
-        "subItems": [
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - 1. Cấu tạo phân tử của các carbohydrate (Glucose, Fructose, Saccharose, Maltose, Tinh bột, Cellulose)",
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - 2. Tính chất hoá học cơ bản và thuốc thử phân biệt từng loại carbohydrate",
-          "II. LUYỆN TẬP - Hệ thống bài tập nhận biết, chuỗi phản ứng chuyển hoá và bài toán thuỷ phân, lên men carbohydrate"
         ]
       }
     ]
@@ -891,15 +751,6 @@ export const CURRICULUM: Record<number, Chapter[]> = {
           "II. ENZYME - 1. Vai trò của enzyme trong phản ứng sinh hoá (chất xúc tác sinh học có tính chọn lọc và hiệu lực xúc tác cực cao)",
           "II. ENZYME - 2. Ứng dụng của enzyme trong công nghệ sinh học và đời sống (sản xuất bánh mì, bia rượu, nước giải khát, chất tẩy rửa sinh học, chẩn đoán y học)"
         ]
-      },
-      {
-        "id": "12_c3_l11",
-        "name": "Bài 11: Ôn tập chương 3",
-        "subItems": [
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Sơ đồ liên kết kiến thức: Amine, Amino acid, Peptide, Protein và Enzyme",
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Bảng so sánh phản ứng đặc trưng: tính base, tính lưỡng tính, phản ứng biuret, phản ứng màu với HNO₃",
-          "II. LUYỆN TẬP - Hệ thống bài tập tự luận và trắc nghiệm tổng hợp chương hợp chất chứa nitrogen"
-        ]
       }
     ]
   },
@@ -941,15 +792,6 @@ export const CURRICULUM: Record<number, Chapter[]> = {
           "V. KEO DÁN TỔNG HỢP - 1. Khái niệm (vật liệu có khả năng gắn kết hai bề mặt vật liệu bền vững)",
           "V. KEO DÁN TỔNG HỢP - 2. Một số loại keo dán thông dụng (nhựa vá săm, keo dán epoxy, keo dán poly(urea-formaldehyde))"
         ]
-      },
-      {
-        "id": "12_c4_l14",
-        "name": "Bài 14: Ôn tập chương 4",
-        "subItems": [
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Bảng so sánh 4 loại vật liệu polymer: Chất dẻo, Tơ sợi, Cao su, Keo dán",
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Phương pháp trùng hợp và trùng ngưng các polymer quan trọng",
-          "II. LUYỆN TẬP - Bài tập viết phản ứng điều chế, tính mắt xích polymer và giải quyết vấn đề rác thải nhựa"
-        ]
       }
     ]
   },
@@ -980,15 +822,6 @@ export const CURRICULUM: Record<number, Chapter[]> = {
           "III. ỨNG DỤNG CỦA ĐIỆN PHÂN - 1. Sản xuất kim loại trong công nghiệp (sản xuất nhôm Al từ bauxite, sản xuất Na, Mg, Cl₂, NaOH)",
           "III. ỨNG DỤNG CỦA ĐIỆN PHÂN - 2. Tinh luyện kim loại (tinh luyện đồng Cu bằng phương pháp điện phân anode tan)",
           "III. ỨNG DỤNG CỦA ĐIỆN PHÂN - 3. Mạ điện (mạ niken, mạ vàng, mạ crom chống ăn mòn và trang trí)"
-        ]
-      },
-      {
-        "id": "12_c5_l17",
-        "name": "Bài 17: Ôn tập chương 5",
-        "subItems": [
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Sơ đồ so sánh hai quá trình biến đổi năng lượng ngược nhau: Pin điện hoá (hoá năng -> điện năng) và Bình điện phân (điện năng -> hoá năng)",
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Bảng thế điện cực chuẩn và quy tắc xác định chiều phản ứng",
-          "II. LUYỆN TẬP - Hệ thống bài tập tính sức điện động pin, viết bán phản ứng điện phân và tính toán lượng chất giải phóng"
         ]
       }
     ]
@@ -1051,14 +884,6 @@ export const CURRICULUM: Record<number, Chapter[]> = {
           "III. CÁC PHƯƠNG PHÁP CHỐNG ĂN MÒN KIM LOẠI - 1. Phương pháp bảo vệ bề mặt (sơn, mạ, bôi dầu mỡ, tráng men)",
           "III. CÁC PHƯƠNG PHÁP CHỐNG ĂN MÒN KIM LOẠI - 2. Phương pháp điện hoá (gắn kim loại hi sinh có tính khử mạnh hơn, ví dụ gắn kẽm Zn bảo vệ vỏ tàu biển bằng thép, ống dẫn dầu ngầm)"
         ]
-      },
-      {
-        "id": "12_c6_l23",
-        "name": "Bài 23: Ôn tập chương 6",
-        "subItems": [
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Sơ đồ tư duy tổng hợp: Cấu tạo kim loại, Tính chất vật lí & hoá học, Phương pháp điều chế, Hợp kim và Sự ăn mòn kim loại",
-          "II. LUYỆN TẬP - Hệ thống bài tập tự luận và trắc nghiệm về phản ứng của kim loại, bài toán nhiệt luyện, thuỷ luyện và chống ăn mòn"
-        ]
       }
     ]
   },
@@ -1094,15 +919,6 @@ export const CURRICULUM: Record<number, Chapter[]> = {
           "III. NƯỚC CỨNG VÀ LÀM MỀM NƯỚC CỨNG - 2. Tác hại của nước cứng (đóng cặn nồi hơi, tốn xà phòng, làm hỏng vải sợi, tắc ống dẫn nước)",
           "III. NƯỚC CỨNG VÀ LÀM MỀM NƯỚC CỨNG - 3. Các phương pháp làm mềm nước cứng (phương pháp kết tủa bằng đun sôi hoặc dùng Na₂CO₃, Na₃PO₄; phương pháp trao đổi ion)"
         ]
-      },
-      {
-        "id": "12_c7_l26",
-        "name": "Bài 26: Ôn tập chương 7",
-        "subItems": [
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Bảng so sánh tính chất đơn chất và hợp chất của nhóm IA và nhóm IIA",
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Các phương pháp làm mềm nước cứng",
-          "II. LUYỆN TẬP - Hệ thống bài tập phân biệt ion, bài toán nhiệt phân muối carbonate và bài tập làm mềm nước cứng"
-        ]
       }
     ]
   },
@@ -1137,15 +953,6 @@ export const CURRICULUM: Record<number, Chapter[]> = {
           "II. PHẢN ỨNG THAY THẾ PHỐI TỬ - Sự thay thế phân tử nước trong phức aqua bởi các phối tử khác (NH₃, Cl⁻, OH⁻, EDTA...); dấu hiệu nhận biết phản ứng tạo phức: đổi màu dung dịch, hoà tan kết tủa",
           "III. VAI TRÒ VÀ ỨNG DỤNG CỦA PHỨC CHẤT - Vai trò sinh học của phức chất tự nhiên: Chlorophyll (diệp lục tố chứa Mg), Heme B trong Hemoglobin (chứa Fe vận chuyển oxy), Vitamin B12 (chứa Co)",
           "III. VAI TRÒ VÀ ỨNG DỤNG CỦA PHỨC CHẤT - Ứng dụng trong y học (thuốc chống ung thư cisplatin), hoá học phân tích (chuẩn độ tạo phức bằng Trilon B / EDTA) và công nghiệp mạ điện"
-        ]
-      },
-      {
-        "id": "12_c8_l30",
-        "name": "Bài 30: Ôn tập chương 8",
-        "subItems": [
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Sơ đồ cấu trúc kim loại chuyển tiếp dãy thứ nhất và các khái niệm cơ bản về phức chất",
-          "I. HỆ THỐNG HOÁ KIẾN THỨC - Dạng hình học, phản ứng tạo phức và các ứng dụng điển hình",
-          "II. LUYỆN TẬP - Hệ thống bài tập xác định số oxi hoá, viết công thức phối trí và giải thích hiện tượng chuyển màu phức chất"
         ]
       }
     ]

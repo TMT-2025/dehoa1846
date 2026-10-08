@@ -1,4 +1,4 @@
-import { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel } from "docx";
+import { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle } from "docx";
 import saveAs from "file-saver";
 import { ExamData } from "../types/exam";
 
@@ -43,11 +43,68 @@ export const downloadExamDoc = async (data: ExamData, isAnswerKey: boolean) => {
   const children: any[] = [];
   const spacing = isAnswerKey ? { before: 100, after: 0 } : { before: 300, after: 80 };
 
+  const noBorder = {
+    top: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+    bottom: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+    left: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+    right: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+  };
+
+  // Header Table (Matching official school template)
+  children.push(new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    borders: noBorder,
+    rows: [
+      new TableRow({
+        children: [
+          new TableCell({
+            width: { size: 50, type: WidthType.PERCENTAGE },
+            borders: noBorder,
+            children: [
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                children: [new TextRun({ text: "SỞ GIÁO DỤC VÀ ĐÀO TẠO VĨNH LONG", bold: true, size: 21 })]
+              }),
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                children: [
+                  new TextRun({ text: "TRƯỜNG THCS-THPT PHAN VĂN TRỊ", bold: true, underline: {}, size: 22 })
+                ]
+              })
+            ]
+          }),
+          new TableCell({
+            width: { size: 50, type: WidthType.PERCENTAGE },
+            borders: noBorder,
+            children: [
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                children: [new TextRun({ text: "ĐỀ KIỂM TRA ..........", bold: true, size: 22 })]
+              }),
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                children: [new TextRun({ text: "Môn : Hóa Học", bold: true, size: 21 })]
+              }),
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                children: [new TextRun({ text: "NĂM HỌC 2026 – 2027", size: 21 })]
+              }),
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                children: [new TextRun({ text: "Thời gian làm bài: 45 phút", bold: true, italics: true, size: 20 })]
+              })
+            ]
+          })
+        ]
+      })
+    ]
+  }));
+
   children.push(new Paragraph({
     text: data.title.toUpperCase() + (isAnswerKey ? " - ĐÁP ÁN & HƯỚNG DẪN CHẤM" : ""),
     heading: HeadingLevel.HEADING_1,
     alignment: AlignmentType.CENTER,
-    spacing: { after: 300 },
+    spacing: { before: 240, after: 300 },
   }));
 
   // PART 1

@@ -141,19 +141,32 @@ export const ExamRenderer: React.FC<ExamRendererProps> = ({ data, onSaveExam }) 
         
         {/* Header */}
         <div className="text-center mb-8 pb-4 border-b border-slate-200">
-          <div className="flex justify-between items-start text-xs font-semibold text-slate-600 mb-4 uppercase">
+          <div className="flex justify-between items-start text-xs text-slate-900 mb-4 leading-relaxed">
             <div className="text-left">
-              <p className="font-bold text-slate-800">SỞ GD&ĐT TỈNH / THÀNH PHỐ</p>
-              <p>TRƯỜNG THPT ..................................</p>
+              <p className="font-semibold text-slate-800 uppercase tracking-wide">
+                SỞ GIÁO DỤC VÀ ĐÀO TẠO VĨNH LONG
+              </p>
+              <p className="font-extrabold text-slate-950 uppercase tracking-wide mt-0.5">
+                TRƯỜNG <span className="underline decoration-slate-900 underline-offset-2">THCS-THPT PHAN VĂN TRỊ</span>
+              </p>
             </div>
-            <div className="text-right">
-              <p className="font-bold text-slate-800">ĐỀ KIỂM TRA ĐỊNH KỲ HÓA HỌC</p>
-              <p>NĂM HỌC 2024 - 2025</p>
-              <p className="italic lowercase">Thời gian làm bài: 50 phút</p>
+            <div className="text-center sm:text-right">
+              <p className="font-black text-slate-950 uppercase tracking-wide">
+                ĐỀ KIỂM TRA ..........
+              </p>
+              <p className="font-bold text-slate-900 mt-0.5">
+                Môn : Hóa Học
+              </p>
+              <p className="font-semibold text-slate-800">
+                NĂM HỌC 2026 – 2027
+              </p>
+              <p className="font-bold text-slate-950">
+                Thời gian làm bài: 45 phút
+              </p>
             </div>
           </div>
 
-          <h1 className="text-lg md:text-xl font-extrabold uppercase tracking-tight text-slate-900">
+          <h1 className="text-lg md:text-xl font-extrabold uppercase tracking-tight text-slate-900 mt-2">
             {data.title}
           </h1>
           {showAnswers && (

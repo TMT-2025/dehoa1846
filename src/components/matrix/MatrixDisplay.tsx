@@ -51,6 +51,37 @@ export const MatrixDisplay: React.FC<MatrixDisplayProps> = ({
     window.print();
   };
 
+  const chapterSummaries = React.useMemo(() => {
+    const map = new Map<string, {
+      p1: { know: number; understand: number; apply: number };
+      p2: { know: number; understand: number; apply: number };
+      p3: { know: number; understand: number; apply: number };
+      total: number;
+    }>();
+
+    data.rows.forEach(r => {
+      const cur = map.get(r.content) || {
+        p1: { know: 0, understand: 0, apply: 0 },
+        p2: { know: 0, understand: 0, apply: 0 },
+        p3: { know: 0, understand: 0, apply: 0 },
+        total: 0
+      };
+      cur.p1.know += r.part1.know;
+      cur.p1.understand += r.part1.understand;
+      cur.p1.apply += r.part1.apply;
+      cur.p2.know += r.part2.know;
+      cur.p2.understand += r.part2.understand;
+      cur.p2.apply += r.part2.apply;
+      cur.p3.know += r.part3.know;
+      cur.p3.understand += r.part3.understand;
+      cur.p3.apply += r.part3.apply;
+      cur.total += r.total;
+      map.set(r.content, cur);
+    });
+
+    return map;
+  }, [data.rows]);
+
   return (
     <div className="space-y-6">
       
@@ -196,56 +227,88 @@ export const MatrixDisplay: React.FC<MatrixDisplayProps> = ({
             {data.rows.map((row, idx) => {
               const isP2Host = (row.part2.know + row.part2.understand + row.part2.apply) > 0;
               const isFirstInChapter = idx === 0 || data.rows[idx - 1].content !== row.content;
+              const isLastInChapter = idx === data.rows.length - 1 || data.rows[idx + 1].content !== row.content;
+              const chapSum = chapterSummaries.get(row.content);
 
               return (
-                <tr key={`row-${idx}`} className={idx % 2 === 0 ? 'bg-white' : 'bg-[#f8fafc]'}>
-                  <td className="border border-black p-1 text-[10px] text-slate-500 font-bold">{idx + 1}</td>
-                  {isFirstInChapter ? (
-                    <td 
-                      rowSpan={getChapterRowSpan(row.content)} 
-                      className="border border-black p-3 font-black text-[10px] uppercase text-[#1e3a8a] bg-white leading-tight align-top"
-                    >
-                      {row.content}
+                <React.Fragment key={`row-frag-${idx}`}>
+                  <tr className={idx % 2 === 0 ? 'bg-white' : 'bg-[#f8fafc]'}>
+                    <td className="border border-black p-1 text-[10px] text-slate-500 font-bold">{idx + 1}</td>
+                    {isFirstInChapter ? (
+                      <td 
+                        rowSpan={getChapterRowSpan(row.content)} 
+                        className="border border-black p-3 font-black text-[10px] uppercase text-[#1e3a8a] bg-white leading-tight align-top"
+                      >
+                        {row.content}
+                      </td>
+                    ) : null}
+                    {row.isFirstInLesson ? (
+                      <td 
+                        rowSpan={row.lessonRowCount} 
+                        className="border border-black p-2.5 font-bold text-left align-top bg-white leading-snug text-[11px] text-[#1e293b]"
+                      >
+                        {row.lessonName}
+                      </td>
+                    ) : null}
+                    <td className={`border border-black p-2 text-left italic font-medium ${isP2Host ? 'text-[#15803d] bg-[#f0fdf4] font-bold' : 'text-[#475569]'}`}>
+                      {row.detailName} 
+                      {isP2Host && (
+                        <span className="not-italic text-[8px] bg-[#16a34a] text-white px-1.5 py-0.5 rounded ml-1.5 uppercase font-black">
+                          Bối cảnh P.II (1-2-1)
+                        </span>
+                      )}
                     </td>
-                  ) : null}
-                  {row.isFirstInLesson ? (
-                    <td 
-                      rowSpan={row.lessonRowCount} 
-                      className="border border-black p-2.5 font-bold text-left align-top bg-white leading-snug text-[11px] text-[#1e293b]"
-                    >
-                      {row.lessonName}
+                    
+                    {/* Part 1 */}
+                    <td className="border border-black p-1">{row.part1.know || ''}</td>
+                    <td className="border border-black p-1">{row.part1.understand || ''}</td>
+                    <td className="border border-black p-1">{row.part1.apply || ''}</td>
+
+                    {/* Part 2 */}
+                    <td className="border border-black p-1 font-semibold">{row.part2.know || ''}</td>
+                    <td className="border border-black p-1 font-semibold">{row.part2.understand || ''}</td>
+                    <td className="border border-black p-1 font-semibold">{row.part2.apply || ''}</td>
+
+                    {/* Part 3 */}
+                    <td className="border border-black p-1">{row.part3.know || ''}</td>
+                    <td className="border border-black p-1">{row.part3.understand || ''}</td>
+                    <td className="border border-black p-1 font-bold text-indigo-700">{row.part3.apply || ''}</td>
+
+                    {/* Row Total */}
+                    <td className="border border-black p-1 font-bold bg-[#f8fafc] text-slate-800">{row.total || ''}</td>
+                    <td className="border border-black p-1 font-bold bg-[#f8fafc] text-slate-600">
+                      {row.total ? `${((row.total / 40) * 100).toFixed(1)}%` : ''}
                     </td>
-                  ) : null}
-                  <td className={`border border-black p-2 text-left italic font-medium ${isP2Host ? 'text-[#15803d] bg-[#f0fdf4] font-bold' : 'text-[#475569]'}`}>
-                    {row.detailName} 
-                    {isP2Host && (
-                      <span className="not-italic text-[8px] bg-[#16a34a] text-white px-1.5 py-0.5 rounded ml-1.5 uppercase font-black">
-                        Bối cảnh P.II (1-2-1)
-                      </span>
-                    )}
-                  </td>
-                  
-                  {/* Part 1 */}
-                  <td className="border border-black p-1">{row.part1.know || ''}</td>
-                  <td className="border border-black p-1">{row.part1.understand || ''}</td>
-                  <td className="border border-black p-1">{row.part1.apply || ''}</td>
+                  </tr>
 
-                  {/* Part 2 */}
-                  <td className="border border-black p-1 font-semibold">{row.part2.know || ''}</td>
-                  <td className="border border-black p-1 font-semibold">{row.part2.understand || ''}</td>
-                  <td className="border border-black p-1 font-semibold">{row.part2.apply || ''}</td>
-
-                  {/* Part 3 */}
-                  <td className="border border-black p-1">{row.part3.know || ''}</td>
-                  <td className="border border-black p-1">{row.part3.understand || ''}</td>
-                  <td className="border border-black p-1 font-bold text-indigo-700">{row.part3.apply || ''}</td>
-
-                  {/* Row Total */}
-                  <td className="border border-black p-1 font-bold bg-[#f8fafc] text-slate-800">{row.total || ''}</td>
-                  <td className="border border-black p-1 font-bold bg-[#f8fafc] text-slate-600">
-                    {row.total ? `${((row.total / 40) * 100).toFixed(1)}%` : ''}
-                  </td>
-                </tr>
+                  {/* Summary Row After Each Chapter */}
+                  {isLastInChapter && chapSum && (
+                    <tr className="bg-indigo-50/90 font-bold text-slate-900 border-b-2 border-indigo-400">
+                      <td colSpan={4} className="border border-black p-2 text-right font-black uppercase tracking-wider text-[10px] bg-indigo-100/80 text-indigo-950">
+                        Tổng cộng {row.content}
+                      </td>
+                      {/* P1 */}
+                      <td className="border border-black p-1 bg-amber-100/40 text-slate-900 font-bold">{chapSum.p1.know || ''}</td>
+                      <td className="border border-black p-1 bg-amber-100/40 text-slate-900 font-bold">{chapSum.p1.understand || ''}</td>
+                      <td className="border border-black p-1 bg-amber-100/40 text-slate-900 font-bold">{chapSum.p1.apply || ''}</td>
+                      {/* P2 */}
+                      <td className="border border-black p-1 bg-emerald-100/40 text-slate-900 font-bold">{chapSum.p2.know || ''}</td>
+                      <td className="border border-black p-1 bg-emerald-100/40 text-slate-900 font-bold">{chapSum.p2.understand || ''}</td>
+                      <td className="border border-black p-1 bg-emerald-100/40 text-slate-900 font-bold">{chapSum.p2.apply || ''}</td>
+                      {/* P3 */}
+                      <td className="border border-black p-1 bg-indigo-100/40 text-slate-900 font-bold">{chapSum.p3.know || ''}</td>
+                      <td className="border border-black p-1 bg-indigo-100/40 text-slate-900 font-bold">{chapSum.p3.understand || ''}</td>
+                      <td className="border border-black p-1 bg-indigo-100/40 text-indigo-900 font-black">{chapSum.p3.apply || ''}</td>
+                      {/* Chapter Totals */}
+                      <td className="border border-black p-1 text-xs font-black bg-indigo-200 text-indigo-950">
+                        {chapSum.total} lệnh
+                      </td>
+                      <td className="border border-black p-1 text-xs font-black bg-indigo-200 text-indigo-950">
+                        {((chapSum.total / 40) * 100).toFixed(1)}%
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
               );
             })}
           </tbody>
