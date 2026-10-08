@@ -192,6 +192,7 @@ export const HistoryManager: React.FC<HistoryManagerProps> = ({
           </button>
           <MatrixDisplay
             data={previewMatrix}
+            onUpdateMatrixData={setPreviewMatrix}
             onTransferToExam={onTransferMatrixToExam}
             onSaveConfig={() => {}}
           />

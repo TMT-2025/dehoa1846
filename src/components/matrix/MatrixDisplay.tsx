@@ -1,34 +1,159 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   FileSpreadsheet, Image as ImageIcon, Download, 
-  Printer, Sparkles, Save, Check, ArrowRight, Edit3
+  Printer, Sparkles, Save, Check, ArrowRight, Edit3,
+  ChevronUp, ChevronDown, SlidersHorizontal
 } from 'lucide-react';
 import { MatrixData } from '../../types/matrix';
 import { exportMatrixToExcel, exportMatrixToImage, exportMatrixToPDF } from '../../services/exportService';
+
+interface SpinCellProps {
+  value: number;
+  onIncrement: () => void;
+  onDecrement: () => void;
+  textClassName?: string;
+  bgHighlight?: string;
+}
+
+const SpinCell: React.FC<SpinCellProps> = ({ 
+  value, 
+  onIncrement, 
+  onDecrement, 
+  textClassName = '', 
+  bgHighlight = '' 
+}) => {
+  return (
+    <td className={`border border-black p-0 text-center relative group/spin hover:bg-amber-50/70 transition-colors ${bgHighlight}`}>
+      <div className="flex items-center justify-center min-h-[26px] h-full px-0.5 gap-0.5">
+        <span className={`inline-block min-w-[12px] text-center font-bold text-[11px] leading-none select-none ${
+          value > 0 ? (textClassName || 'text-slate-900') : 'text-slate-300'
+        }`}>
+          {value > 0 ? value : <span className="no-print">0</span>}
+        </span>
+        <div className="flex flex-col no-print -space-y-0.5 opacity-30 group-hover/spin:opacity-100 transition-opacity">
+          <button
+            type="button"
+            title="Tăng 1 câu (+1)"
+            onClick={(e) => {
+              e.stopPropagation();
+              onIncrement();
+            }}
+            className="w-3.5 h-2.5 flex items-center justify-center text-slate-500 hover:text-indigo-700 hover:bg-indigo-100 rounded-xs cursor-pointer transition-colors"
+          >
+            <ChevronUp className="w-2.5 h-2.5 stroke-[3]" />
+          </button>
+          <button
+            type="button"
+            title="Giảm 1 câu (-1)"
+            disabled={value <= 0}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDecrement();
+            }}
+            className="w-3.5 h-2.5 flex items-center justify-center text-slate-500 hover:text-rose-700 hover:bg-rose-100 disabled:opacity-20 disabled:hover:bg-transparent rounded-xs cursor-pointer transition-colors"
+          >
+            <ChevronDown className="w-2.5 h-2.5 stroke-[3]" />
+          </button>
+        </div>
+      </div>
+    </td>
+  );
+};
 
 interface MatrixDisplayProps {
   data: MatrixData;
   onTransferToExam: (matrixData: MatrixData) => void;
   onSaveConfig: () => void;
   onEditMatrix?: () => void;
+  onUpdateMatrixData?: (updated: MatrixData) => void;
 }
 
 export const MatrixDisplay: React.FC<MatrixDisplayProps> = ({ 
   data, 
   onTransferToExam,
   onSaveConfig,
-  onEditMatrix 
+  onEditMatrix,
+  onUpdateMatrixData
 }) => {
+  const [currentData, setCurrentData] = useState<MatrixData>(data);
   const [isExporting, setIsExporting] = useState(false);
 
+  useEffect(() => {
+    setCurrentData(data);
+  }, [data]);
+
+  const handleCellChange = (
+    rowIndex: number, 
+    part: 'part1' | 'part2' | 'part3', 
+    level: 'know' | 'understand' | 'apply', 
+    delta: number
+  ) => {
+    const currentRow = currentData.rows[rowIndex];
+    if (!currentRow) return;
+
+    const currentVal = currentRow[part][level];
+    const newVal = Math.max(0, currentVal + delta);
+    if (newVal === currentVal) return;
+
+    const updatedRows = currentData.rows.map((row, idx) => {
+      if (idx !== rowIndex) return row;
+      const updatedPart = { ...row[part], [level]: newVal };
+      const updatedRow = { ...row, [part]: updatedPart };
+      const rowTotal = 
+        updatedRow.part1.know + updatedRow.part1.understand + updatedRow.part1.apply +
+        updatedRow.part2.know + updatedRow.part2.understand + updatedRow.part2.apply +
+        updatedRow.part3.know + updatedRow.part3.understand + updatedRow.part3.apply;
+      return { ...updatedRow, total: rowTotal };
+    });
+
+    const p1 = {
+      know: updatedRows.reduce((s, r) => s + r.part1.know, 0),
+      understand: updatedRows.reduce((s, r) => s + r.part1.understand, 0),
+      apply: updatedRows.reduce((s, r) => s + r.part1.apply, 0),
+    };
+    const p2 = {
+      know: updatedRows.reduce((s, r) => s + r.part2.know, 0),
+      understand: updatedRows.reduce((s, r) => s + r.part2.understand, 0),
+      apply: updatedRows.reduce((s, r) => s + r.part2.apply, 0),
+    };
+    const p3 = {
+      know: updatedRows.reduce((s, r) => s + r.part3.know, 0),
+      understand: updatedRows.reduce((s, r) => s + r.part3.understand, 0),
+      apply: updatedRows.reduce((s, r) => s + r.part3.apply, 0),
+    };
+    const grandTotal = updatedRows.reduce((s, r) => s + r.total, 0);
+    const ratio = {
+      know: p1.know + p2.know + p3.know,
+      understand: p1.understand + p2.understand + p3.understand,
+      apply: p1.apply + p2.apply + p3.apply,
+    };
+
+    const updatedData: MatrixData = {
+      ...currentData,
+      rows: updatedRows,
+      totals: {
+        part1: p1,
+        part2: p2,
+        part3: p3,
+        grandTotal,
+        ratio,
+      }
+    };
+
+    setCurrentData(updatedData);
+    if (onUpdateMatrixData) {
+      onUpdateMatrixData(updatedData);
+    }
+  };
+
   const getChapterRowSpan = (chapterName: string) => {
-    return data.rows.filter(r => r.content === chapterName).length;
+    return currentData.rows.filter(r => r.content === chapterName).length;
   };
 
   const handleExportImage = async () => {
     try {
       setIsExporting(true);
-      await exportMatrixToImage('matrix-table-container', `MaTran_HoaHoc_Lop${data.grade}_${data.examType}`);
+      await exportMatrixToImage('matrix-table-container', `MaTran_HoaHoc_Lop${currentData.grade}_${currentData.examType}`);
     } catch (err: any) {
       alert(err.message || 'Lỗi khi xuất ảnh');
     } finally {
@@ -39,7 +164,7 @@ export const MatrixDisplay: React.FC<MatrixDisplayProps> = ({
   const handleExportPDF = async () => {
     try {
       setIsExporting(true);
-      await exportMatrixToPDF('matrix-table-container', `MaTran_HoaHoc_Lop${data.grade}_${data.examType}`);
+      await exportMatrixToPDF('matrix-table-container', `MaTran_HoaHoc_Lop${currentData.grade}_${currentData.examType}`);
     } catch (err: any) {
       alert(err.message || 'Lỗi khi xuất PDF. Bạn có thể chọn In và lưu dưới dạng PDF.');
     } finally {
@@ -59,7 +184,7 @@ export const MatrixDisplay: React.FC<MatrixDisplayProps> = ({
       total: number;
     }>();
 
-    data.rows.forEach(r => {
+    currentData.rows.forEach(r => {
       const cur = map.get(r.content) || {
         p1: { know: 0, understand: 0, apply: 0 },
         p2: { know: 0, understand: 0, apply: 0 },
@@ -80,7 +205,9 @@ export const MatrixDisplay: React.FC<MatrixDisplayProps> = ({
     });
 
     return map;
-  }, [data.rows]);
+  }, [currentData.rows]);
+
+  const isStandardTotal = currentData.totals.grandTotal === 40;
 
   return (
     <div className="space-y-6">
@@ -89,28 +216,44 @@ export const MatrixDisplay: React.FC<MatrixDisplayProps> = ({
       <div className="bg-gradient-to-r from-indigo-900 via-blue-900 to-indigo-950 p-5 rounded-2xl shadow-xl text-white flex flex-col md:flex-row items-center justify-between gap-4 no-print border border-indigo-700/50">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
-              Đã tạo thành công ma trận 40 lệnh hỏi
-            </span>
+            {isStandardTotal ? (
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                ✓ Đã đạt chuẩn 40 lệnh hỏi (10 điểm)
+              </span>
+            ) : (
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/30 text-amber-200 border border-amber-400/40">
+                ⚠ Hiện có {currentData.totals.grandTotal} / 40 lệnh hỏi ({currentData.totals.grandTotal > 40 ? `Dư ${currentData.totals.grandTotal - 40} lệnh` : `Thiếu ${40 - currentData.totals.grandTotal} lệnh`})
+              </span>
+            )}
           </div>
           <h2 className="text-xl font-extrabold mt-1 tracking-tight">
-            Ma trận Đề kiểm tra: {data.grade === 'Tự do' ? 'Chủ đề tự do' : `Khối lớp ${data.grade}`} - {data.examType}
+            Ma trận Đề kiểm tra: {currentData.grade === 'Tự do' ? 'Chủ đề tự do' : `Khối lớp ${currentData.grade}`} - {currentData.examType}
           </h2>
           <p className="text-xs text-indigo-200 mt-0.5">
-            Tỉ lệ chuẩn 40% Nhận biết - 30% Thông hiểu - 30% Vận dụng & Vận dụng cao (16 : 12 : 12).
+            Tỉ lệ hiện tại: {currentData.totals.ratio.know} Biết - {currentData.totals.ratio.understand} Hiểu - {currentData.totals.ratio.apply} Vận dụng ({Math.round((currentData.totals.ratio.know / (currentData.totals.grandTotal || 1)) * 100)}% : {Math.round((currentData.totals.ratio.understand / (currentData.totals.grandTotal || 1)) * 100)}% : {Math.round((currentData.totals.ratio.apply / (currentData.totals.grandTotal || 1)) * 100)}%).
           </p>
         </div>
 
         {/* The Hero Button: Transfer to Exam Generator */}
         <div className="flex flex-wrap items-center gap-2.5">
           <button
-            onClick={() => onTransferToExam(data)}
+            onClick={() => onTransferToExam(currentData)}
             className="group relative inline-flex items-center gap-2.5 px-6 py-3 rounded-xl font-extrabold text-sm text-slate-900 bg-gradient-to-r from-amber-300 via-amber-400 to-amber-300 hover:from-amber-200 hover:to-amber-400 shadow-lg hover:shadow-amber-400/30 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
           >
             <Sparkles className="w-5 h-5 text-indigo-900 group-hover:rotate-12 transition-transform" />
             <span>Sinh Đề Thi Từ Ma Trận Này</span>
             <ArrowRight className="w-4 h-4 text-indigo-900 group-hover:translate-x-1 transition-transform" />
           </button>
+        </div>
+      </div>
+
+      {/* Spin Button Instruction Banner */}
+      <div className="bg-indigo-50/80 border border-indigo-200 rounded-xl px-4 py-2.5 flex items-center justify-between text-xs text-indigo-950 no-print">
+        <div className="flex items-center gap-2">
+          <SlidersHorizontal className="w-4 h-4 text-indigo-600 shrink-0" />
+          <span>
+            <strong>Nút xoay điều chỉnh số liệu (Spin Button):</strong> Bạn có thể bấm nút <span className="font-bold text-indigo-700 bg-indigo-100 px-1 py-0.5 rounded">▲ (Tăng)</span> hoặc <span className="font-bold text-rose-700 bg-rose-100 px-1 py-0.5 rounded">▼ (Giảm)</span> trong từng ô để linh hoạt tăng giảm số câu hỏi của bài học theo yêu cầu.
+          </span>
         </div>
       </div>
 
@@ -123,7 +266,7 @@ export const MatrixDisplay: React.FC<MatrixDisplayProps> = ({
 
         <div className="flex flex-wrap items-center gap-2">
           <button
-            onClick={() => exportMatrixToExcel(data)}
+            onClick={() => exportMatrixToExcel(currentData)}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-lg text-xs font-bold transition-colors"
           >
             <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
@@ -186,17 +329,21 @@ export const MatrixDisplay: React.FC<MatrixDisplayProps> = ({
             MA TRẬN ĐỀ KIỂM TRA ĐỊNH KỲ HÓA HỌC
           </h2>
           <p className="text-base md:text-lg font-bold mt-2 text-slate-800 uppercase">
-            {data.grade === 'Tự do' ? 'CHỦ ĐỀ TỰ DO' : `KHỐI LỚP ${data.grade}`} - {data.examType}
+            {currentData.grade === 'Tự do' ? 'CHỦ ĐỀ TỰ DO' : `KHỐI LỚP ${currentData.grade}`} - {currentData.examType}
           </p>
           <p className="text-xs font-bold text-slate-500 mt-1 uppercase">
-            Phạm vi kiến thức: {data.chapters.map(c => c.name).join(', ')}
+            Phạm vi kiến thức: {currentData.chapters.map(c => c.name).join(', ')}
           </p>
           <div className="flex flex-wrap justify-center gap-3 mt-3 text-[11px] font-black uppercase tracking-widest text-slate-500">
-            <span className="bg-slate-100 px-3.5 py-1 rounded-full border border-slate-300 shadow-sm">
-              Tổng số: 40 Lệnh hỏi (10 điểm)
+            <span className={`px-3.5 py-1 rounded-full border shadow-sm font-bold ${
+              currentData.totals.grandTotal === 40 
+                ? 'bg-slate-100 border-slate-300 text-slate-700' 
+                : 'bg-amber-100 border-amber-400 text-amber-900 font-black'
+            }`}>
+              Tổng số: {currentData.totals.grandTotal} Lệnh hỏi ({((currentData.totals.grandTotal / 40) * 10).toFixed(1)} điểm)
             </span>
-            <span className="bg-indigo-700 px-3.5 py-1 rounded-full text-white shadow-sm">
-              Tỉ lệ chuẩn 4:3:3 (Biết: 16, Hiểu: 12, Vận dụng: 12)
+            <span className="bg-indigo-700 px-3.5 py-1 rounded-full text-white shadow-sm font-bold">
+              Tỉ lệ: Biết {currentData.totals.ratio.know} - Hiểu {currentData.totals.ratio.understand} - Vận dụng {currentData.totals.ratio.apply} ({Math.round((currentData.totals.ratio.know / (currentData.totals.grandTotal || 1)) * 100)}% : {Math.round((currentData.totals.ratio.understand / (currentData.totals.grandTotal || 1)) * 100)}% : {Math.round((currentData.totals.ratio.apply / (currentData.totals.grandTotal || 1)) * 100)}%)
             </span>
           </div>
         </div>
@@ -218,16 +365,16 @@ export const MatrixDisplay: React.FC<MatrixDisplayProps> = ({
               <th colSpan={3} className="border border-black p-1.5 bg-[#eef2ff] text-indigo-950">Phần III (SA)</th>
             </tr>
             <tr className="bg-[#f8fafc] text-[9px] uppercase font-black text-slate-700">
-              <th className="border border-black p-1 w-8">B</th><th className="border border-black p-1 w-8">H</th><th className="border border-black p-1 w-8">V</th>
-              <th className="border border-black p-1 w-8">B</th><th className="border border-black p-1 w-8">H</th><th className="border border-black p-1 w-8">V</th>
-              <th className="border border-black p-1 w-8">B</th><th className="border border-black p-1 w-8">H</th><th className="border border-black p-1 w-8">V</th>
+              <th className="border border-black p-1 w-9 text-center">B</th><th className="border border-black p-1 w-9 text-center">H</th><th className="border border-black p-1 w-9 text-center">V</th>
+              <th className="border border-black p-1 w-9 text-center">B</th><th className="border border-black p-1 w-9 text-center">H</th><th className="border border-black p-1 w-9 text-center">V</th>
+              <th className="border border-black p-1 w-9 text-center">B</th><th className="border border-black p-1 w-9 text-center">H</th><th className="border border-black p-1 w-9 text-center">V</th>
             </tr>
           </thead>
           <tbody>
-            {data.rows.map((row, idx) => {
+            {currentData.rows.map((row, idx) => {
               const isP2Host = (row.part2.know + row.part2.understand + row.part2.apply) > 0;
-              const isFirstInChapter = idx === 0 || data.rows[idx - 1].content !== row.content;
-              const isLastInChapter = idx === data.rows.length - 1 || data.rows[idx + 1].content !== row.content;
+              const isFirstInChapter = idx === 0 || currentData.rows[idx - 1].content !== row.content;
+              const isLastInChapter = idx === currentData.rows.length - 1 || currentData.rows[idx + 1].content !== row.content;
               const chapSum = chapterSummaries.get(row.content);
 
               return (
@@ -259,25 +406,70 @@ export const MatrixDisplay: React.FC<MatrixDisplayProps> = ({
                       )}
                     </td>
                     
-                    {/* Part 1 */}
-                    <td className="border border-black p-1">{row.part1.know || ''}</td>
-                    <td className="border border-black p-1">{row.part1.understand || ''}</td>
-                    <td className="border border-black p-1">{row.part1.apply || ''}</td>
+                    {/* Part 1 (MCQ) Spin Cells */}
+                    <SpinCell 
+                      value={row.part1.know} 
+                      onIncrement={() => handleCellChange(idx, 'part1', 'know', 1)}
+                      onDecrement={() => handleCellChange(idx, 'part1', 'know', -1)}
+                    />
+                    <SpinCell 
+                      value={row.part1.understand} 
+                      onIncrement={() => handleCellChange(idx, 'part1', 'understand', 1)}
+                      onDecrement={() => handleCellChange(idx, 'part1', 'understand', -1)}
+                    />
+                    <SpinCell 
+                      value={row.part1.apply} 
+                      onIncrement={() => handleCellChange(idx, 'part1', 'apply', 1)}
+                      onDecrement={() => handleCellChange(idx, 'part1', 'apply', -1)}
+                    />
 
-                    {/* Part 2 */}
-                    <td className="border border-black p-1 font-semibold">{row.part2.know || ''}</td>
-                    <td className="border border-black p-1 font-semibold">{row.part2.understand || ''}</td>
-                    <td className="border border-black p-1 font-semibold">{row.part2.apply || ''}</td>
+                    {/* Part 2 (Đ/S) Spin Cells */}
+                    <SpinCell 
+                      value={row.part2.know} 
+                      textClassName="font-semibold text-emerald-950"
+                      bgHighlight={isP2Host ? 'bg-emerald-50/30' : ''}
+                      onIncrement={() => handleCellChange(idx, 'part2', 'know', 1)}
+                      onDecrement={() => handleCellChange(idx, 'part2', 'know', -1)}
+                    />
+                    <SpinCell 
+                      value={row.part2.understand} 
+                      textClassName="font-semibold text-emerald-950"
+                      bgHighlight={isP2Host ? 'bg-emerald-50/30' : ''}
+                      onIncrement={() => handleCellChange(idx, 'part2', 'understand', 1)}
+                      onDecrement={() => handleCellChange(idx, 'part2', 'understand', -1)}
+                    />
+                    <SpinCell 
+                      value={row.part2.apply} 
+                      textClassName="font-semibold text-emerald-950"
+                      bgHighlight={isP2Host ? 'bg-emerald-50/30' : ''}
+                      onIncrement={() => handleCellChange(idx, 'part2', 'apply', 1)}
+                      onDecrement={() => handleCellChange(idx, 'part2', 'apply', -1)}
+                    />
 
-                    {/* Part 3 */}
-                    <td className="border border-black p-1">{row.part3.know || ''}</td>
-                    <td className="border border-black p-1">{row.part3.understand || ''}</td>
-                    <td className="border border-black p-1 font-bold text-indigo-700">{row.part3.apply || ''}</td>
+                    {/* Part 3 (SA) Spin Cells */}
+                    <SpinCell 
+                      value={row.part3.know} 
+                      onIncrement={() => handleCellChange(idx, 'part3', 'know', 1)}
+                      onDecrement={() => handleCellChange(idx, 'part3', 'know', -1)}
+                    />
+                    <SpinCell 
+                      value={row.part3.understand} 
+                      onIncrement={() => handleCellChange(idx, 'part3', 'understand', 1)}
+                      onDecrement={() => handleCellChange(idx, 'part3', 'understand', -1)}
+                    />
+                    <SpinCell 
+                      value={row.part3.apply} 
+                      textClassName="font-bold text-indigo-700"
+                      onIncrement={() => handleCellChange(idx, 'part3', 'apply', 1)}
+                      onDecrement={() => handleCellChange(idx, 'part3', 'apply', -1)}
+                    />
 
                     {/* Row Total */}
-                    <td className="border border-black p-1 font-bold bg-[#f8fafc] text-slate-800">{row.total || ''}</td>
+                    <td className="border border-black p-1 font-bold bg-[#f8fafc] text-slate-800">
+                      {row.total || ''}
+                    </td>
                     <td className="border border-black p-1 font-bold bg-[#f8fafc] text-slate-600">
-                      {row.total ? `${((row.total / 40) * 100).toFixed(1)}%` : ''}
+                      {row.total ? `${((row.total / (currentData.totals.grandTotal || 40)) * 100).toFixed(1)}%` : ''}
                     </td>
                   </tr>
 
@@ -304,7 +496,7 @@ export const MatrixDisplay: React.FC<MatrixDisplayProps> = ({
                         {chapSum.total} lệnh
                       </td>
                       <td className="border border-black p-1 text-xs font-black bg-indigo-200 text-indigo-950">
-                        {((chapSum.total / 40) * 100).toFixed(1)}%
+                        {((chapSum.total / (currentData.totals.grandTotal || 40)) * 100).toFixed(1)}%
                       </td>
                     </tr>
                   )}
@@ -319,19 +511,19 @@ export const MatrixDisplay: React.FC<MatrixDisplayProps> = ({
               <td colSpan={4} className="border border-black p-2 text-center uppercase tracking-wider">
                 Tổng cộng số lệnh hỏi
               </td>
-              <td className="border border-black p-1">{data.totals.part1.know}</td>
-              <td className="border border-black p-1">{data.totals.part1.understand}</td>
-              <td className="border border-black p-1">{data.totals.part1.apply}</td>
+              <td className="border border-black p-1">{currentData.totals.part1.know}</td>
+              <td className="border border-black p-1">{currentData.totals.part1.understand}</td>
+              <td className="border border-black p-1">{currentData.totals.part1.apply}</td>
 
-              <td className="border border-black p-1">{data.totals.part2.know}</td>
-              <td className="border border-black p-1">{data.totals.part2.understand}</td>
-              <td className="border border-black p-1">{data.totals.part2.apply}</td>
+              <td className="border border-black p-1">{currentData.totals.part2.know}</td>
+              <td className="border border-black p-1">{currentData.totals.part2.understand}</td>
+              <td className="border border-black p-1">{currentData.totals.part2.apply}</td>
 
-              <td className="border border-black p-1">{data.totals.part3.know}</td>
-              <td className="border border-black p-1">{data.totals.part3.understand}</td>
-              <td className="border border-black p-1">{data.totals.part3.apply}</td>
+              <td className="border border-black p-1">{currentData.totals.part3.know}</td>
+              <td className="border border-black p-1">{currentData.totals.part3.understand}</td>
+              <td className="border border-black p-1">{currentData.totals.part3.apply}</td>
 
-              <td className="border border-black p-1 text-sm text-indigo-900">{data.totals.grandTotal}</td>
+              <td className="border border-black p-1 text-sm text-indigo-900">{currentData.totals.grandTotal}</td>
               <td className="border border-black p-1 text-sm text-indigo-900">100%</td>
             </tr>
 
@@ -341,13 +533,13 @@ export const MatrixDisplay: React.FC<MatrixDisplayProps> = ({
                 Tổng hợp theo mức độ nhận thức
               </td>
               <td colSpan={3} className="border border-black p-1 bg-[#fefce8]">
-                Nhận biết: <span className="font-black text-slate-900">{data.totals.ratio.know}</span> (40%)
+                Nhận biết: <span className="font-black text-slate-900">{currentData.totals.ratio.know}</span> ({Math.round((currentData.totals.ratio.know / (currentData.totals.grandTotal || 1)) * 100)}%)
               </td>
               <td colSpan={3} className="border border-black p-1 bg-[#f0fdf4]">
-                Thông hiểu: <span className="font-black text-slate-900">{data.totals.ratio.understand}</span> (30%)
+                Thông hiểu: <span className="font-black text-slate-900">{currentData.totals.ratio.understand}</span> ({Math.round((currentData.totals.ratio.understand / (currentData.totals.grandTotal || 1)) * 100)}%)
               </td>
               <td colSpan={3} className="border border-black p-1 bg-[#eef2ff]">
-                Vận dụng: <span className="font-black text-slate-900">{data.totals.ratio.apply}</span> (30%)
+                Vận dụng: <span className="font-black text-slate-900">{currentData.totals.ratio.apply}</span> ({Math.round((currentData.totals.ratio.apply / (currentData.totals.grandTotal || 1)) * 100)}%)
               </td>
               <td colSpan={2} className="border border-black p-1 bg-indigo-50 font-black text-indigo-900">
                 10 Điểm
@@ -356,9 +548,9 @@ export const MatrixDisplay: React.FC<MatrixDisplayProps> = ({
           </tfoot>
         </table>
 
-        {data.extraRequirements && (
+        {currentData.extraRequirements && (
           <div className="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-700">
-            <span className="font-bold">Ghi chú yêu cầu bổ sung:</span> {data.extraRequirements}
+            <span className="font-bold">Ghi chú yêu cầu bổ sung:</span> {currentData.extraRequirements}
           </div>
         )}
       </div>

@@ -1009,6 +1009,7 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
         <div id="matrix-result-anchor">
           <MatrixDisplay
             data={matrixData}
+            onUpdateMatrixData={(updated) => setMatrixData(updated)}
             onTransferToExam={onTransferToExam}
             onSaveConfig={handleSaveConfig}
             onEditMatrix={() => {
