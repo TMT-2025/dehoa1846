@@ -2,10 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Shuffle, FileText, Upload, Sparkles, CheckCircle2, 
   AlertCircle, Download, FileSpreadsheet, RefreshCw, 
-  Settings2, ChevronDown, ChevronUp, Beaker, ShieldCheck, ArrowRight
+  Settings2, ChevronDown, ChevronUp, Beaker, ShieldCheck, ArrowRight,
+  FolderClock, Calendar, Check, Database
 } from 'lucide-react';
 import saveAs from 'file-saver';
 import { ExamData } from '../../types/exam.js';
+import { getSavedExams } from '../../services/storageService.js';
 import { 
   analyzeExamSource, executeMixerPipeline, 
   ExamAnalysisResult, MixerExecutionResult, MixerConfig 
@@ -22,7 +24,9 @@ export const ExamMixer: React.FC<ExamMixerProps> = ({
   onClearInitialExam,
   onSwitchToCreateTab
 }) => {
-  const [sourceMode, setSourceMode] = useState<'ai' | 'file' | 'sample'>('ai');
+  const [sourceMode, setSourceMode] = useState<'storage' | 'file' | 'sample'>('storage');
+  const [savedExams, setSavedExams] = useState<ExamData[]>([]);
+  const [showExamList, setShowExamList] = useState(false);
   const [currentExamData, setCurrentExamData] = useState<ExamData | null>(initialExamData || null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
@@ -49,12 +53,20 @@ export const ExamMixer: React.FC<ExamMixerProps> = ({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // If initialExamData is received, analyze it automatically
+  // Load storage exams on mount or when initialExamData arrives
   useEffect(() => {
+    const list = getSavedExams();
+    setSavedExams(list);
+
     if (initialExamData) {
       setCurrentExamData(initialExamData);
-      setSourceMode('ai');
-      triggerAnalysis(initialExamData);
+      setSourceMode('storage');
+      triggerAnalysis(initialExamData, initialExamData.title);
+    } else if (list.length > 0 && !currentExamData && !uploadedFile) {
+      // Auto-select latest exam in storage
+      setCurrentExamData(list[0]);
+      setSourceMode('storage');
+      triggerAnalysis(list[0], list[0].title);
     }
   }, [initialExamData]);
 
@@ -95,6 +107,32 @@ export const ExamMixer: React.FC<ExamMixerProps> = ({
     } finally {
       setIsAnalyzing(false);
     }
+  };
+
+  const handleSelectExamFromStorage = (exam: ExamData) => {
+    setCurrentExamData(exam);
+    setUploadedFile(null);
+    setSourceMode('storage');
+    setShowExamList(false);
+    triggerAnalysis(exam, exam.title);
+  };
+
+  const handleSwitchToStorage = () => {
+    const list = getSavedExams();
+    setSavedExams(list);
+    setSourceMode('storage');
+    if (!currentExamData && list.length > 0) {
+      handleSelectExamFromStorage(list[0]);
+    }
+  };
+
+  const handleSwitchToFile = () => {
+    setSourceMode('file');
+  };
+
+  const handleSwitchToSample = () => {
+    setSourceMode('sample');
+    handleLoadSample();
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -236,48 +274,199 @@ export const ExamMixer: React.FC<ExamMixerProps> = ({
                 <span>Nguồn Đề Thi Gốc</span>
               </h2>
 
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={handleLoadSample}
-                  className="px-2.5 py-1 text-[11px] font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
-                >
-                  <Sparkles className="w-3 h-3 text-indigo-600" />
-                  <span>Dùng Đề Mẫu</span>
-                </button>
-              </div>
+              <span className="text-[11px] text-slate-500 font-medium hidden sm:inline">
+                {sourceMode === 'storage' ? 'Đề từ kho lưu trữ / AI' : sourceMode === 'file' ? 'Tệp Word tải lên' : 'Đề mẫu có sẵn'}
+              </span>
             </div>
 
-            {/* If currentExamData from ChemSuite is present */}
-            {currentExamData && sourceMode === 'ai' && (
-              <div className="p-3.5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl space-y-2">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="space-y-0.5">
-                    <span className="px-2 py-0.5 rounded-md bg-blue-600 text-white text-[10px] font-bold uppercase">
-                      Đề tạo từ ChemSuite AI
-                    </span>
-                    <h3 className="font-extrabold text-xs text-blue-950 mt-1">
-                      {currentExamData.title}
-                    </h3>
-                    <p className="text-[11px] text-blue-700 font-medium">
-                      Lớp {currentExamData.grade} • 28 câu hỏi GDPT 2018
+            {/* Source Mode Selector Pills */}
+            <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-100/90 rounded-xl text-xs font-bold">
+              <button
+                type="button"
+                onClick={handleSwitchToStorage}
+                className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg transition-all cursor-pointer ${
+                  sourceMode === 'storage'
+                    ? 'bg-white text-indigo-900 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                }`}
+              >
+                <FolderClock className="w-3.5 h-3.5 text-indigo-600" />
+                <span>Kho đề ({savedExams.length})</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSwitchToFile}
+                className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg transition-all cursor-pointer ${
+                  sourceMode === 'file'
+                    ? 'bg-white text-indigo-900 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                }`}
+              >
+                <Upload className="w-3.5 h-3.5 text-blue-600" />
+                <span>Tải tệp Word</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSwitchToSample}
+                className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg transition-all cursor-pointer ${
+                  sourceMode === 'sample'
+                    ? 'bg-white text-indigo-900 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                <span>Đề mẫu</span>
+              </button>
+            </div>
+
+            {/* STORAGE MODE CONTENT */}
+            {sourceMode === 'storage' && (
+              <div className="space-y-3">
+                {savedExams.length === 0 ? (
+                  <div className="p-5 border-2 border-dashed border-slate-200 rounded-xl text-center space-y-2 bg-slate-50/50">
+                    <FolderClock className="w-8 h-8 text-slate-400 mx-auto" />
+                    <p className="text-xs font-bold text-slate-700">Chưa có đề thi nào trong kho lưu trữ</p>
+                    <p className="text-[11px] text-slate-500">
+                      Hãy tạo đề mới ở <strong>"2. Ra Đề Thi (AI)"</strong> hoặc chuyển sang tab <strong>"Tải tệp Word"</strong> để nạp đề.
                     </p>
+                    {onSwitchToCreateTab && (
+                      <button
+                        type="button"
+                        onClick={onSwitchToCreateTab}
+                        className="mt-2 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-bold shadow hover:bg-indigo-700 transition-colors cursor-pointer"
+                      >
+                        <Sparkles className="w-3 h-3" />
+                        <span>Đến màn hình Ra Đề Thi AI</span>
+                      </button>
+                    )}
                   </div>
-                  <button
-                    onClick={() => {
-                      setCurrentExamData(null);
-                      setAnalysis(null);
-                    }}
-                    className="text-[10px] text-slate-400 hover:text-rose-600 underline cursor-pointer"
-                  >
-                    Bỏ chọn
-                  </button>
-                </div>
+                ) : (
+                  <>
+                    {/* Currently selected exam card */}
+                    {currentExamData && !showExamList && (
+                      <div className="p-3.5 bg-gradient-to-br from-indigo-50/90 via-blue-50/50 to-white border border-indigo-200 rounded-xl space-y-2.5 shadow-sm">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="space-y-1 overflow-hidden">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="px-2 py-0.5 rounded-md bg-indigo-600 text-white text-[10px] font-black uppercase tracking-wide">
+                                Đề đang chọn
+                              </span>
+                              {savedExams[0]?.id === currentExamData.id && (
+                                <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 border border-amber-300 text-[10px] font-bold">
+                                  ✨ Mới tạo
+                                </span>
+                              )}
+                              <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-semibold">
+                                Khối {currentExamData.grade}
+                              </span>
+                            </div>
+
+                            <h3 className="font-extrabold text-xs text-indigo-950 mt-1 leading-snug">
+                              {currentExamData.title}
+                            </h3>
+
+                            <p className="text-[11px] text-indigo-700 font-medium">
+                              {currentExamData.part1?.length || 0} câu MCQ • {currentExamData.part2?.length || 0} câu Đúng/Sai • {currentExamData.part3?.length || 0} câu Trả lời ngắn
+                            </p>
+                            {currentExamData.createdAt && (
+                              <p className="text-[10px] text-slate-400 flex items-center gap-1">
+                                <Calendar className="w-3 h-3" />
+                                <span>Tạo lúc: {new Date(currentExamData.createdAt).toLocaleString('vi-VN')}</span>
+                              </p>
+                            )}
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => setShowExamList(true)}
+                            className="px-2.5 py-1 text-[11px] font-bold text-indigo-700 bg-white hover:bg-indigo-50 border border-indigo-200 rounded-lg shadow-sm transition-all cursor-pointer whitespace-nowrap shrink-0"
+                          >
+                            Đổi đề khác ({savedExams.length})
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Or List/Picker of all saved exams */}
+                    {(showExamList || !currentExamData) && (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="font-bold text-slate-700">Chọn đề thi từ kho lưu trữ:</span>
+                          {currentExamData && (
+                            <button
+                              type="button"
+                              onClick={() => setShowExamList(false)}
+                              className="text-slate-500 hover:text-slate-800 underline cursor-pointer"
+                            >
+                              Đóng danh sách
+                            </button>
+                          )}
+                        </div>
+
+                        <div className="max-h-56 overflow-y-auto space-y-1.5 pr-1 divide-y divide-slate-100 border border-slate-200 rounded-xl p-2 bg-slate-50/50">
+                          {savedExams.map((ex, idx) => {
+                            const isSelected = currentExamData?.id === ex.id;
+                            const isNewest = idx === 0;
+                            return (
+                              <div
+                                key={ex.id || idx}
+                                onClick={() => handleSelectExamFromStorage(ex)}
+                                className={`p-2.5 rounded-lg cursor-pointer transition-all flex items-center justify-between gap-2 ${
+                                  isSelected
+                                    ? 'bg-indigo-100/80 border border-indigo-300 text-indigo-950 font-bold'
+                                    : 'bg-white hover:bg-indigo-50/60 border border-slate-200/80 hover:border-indigo-200'
+                                }`}
+                              >
+                                <div className="space-y-0.5 overflow-hidden">
+                                  <div className="flex items-center gap-1.5">
+                                    {isNewest && (
+                                      <span className="px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 text-[9px] font-black uppercase">
+                                        Mới nhất
+                                      </span>
+                                    )}
+                                    <span className="text-[10px] font-bold text-indigo-700">
+                                      Lớp {ex.grade}
+                                    </span>
+                                    {ex.createdAt && (
+                                      <span className="text-[10px] text-slate-400">
+                                        • {new Date(ex.createdAt).toLocaleDateString('vi-VN')}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-xs font-semibold text-slate-900 truncate">
+                                    {ex.title}
+                                  </p>
+                                </div>
+
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSelectExamFromStorage(ex);
+                                  }}
+                                  className={`px-2.5 py-1 rounded-md text-[11px] font-bold shrink-0 transition-colors cursor-pointer ${
+                                    isSelected
+                                      ? 'bg-indigo-600 text-white'
+                                      : 'bg-slate-100 text-slate-700 hover:bg-indigo-600 hover:text-white'
+                                  }`}
+                                >
+                                  {isSelected ? 'Đang chọn' : 'Chọn đề'}
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             )}
 
-            {/* Or File Upload / Dropzone */}
-            {(!currentExamData || sourceMode !== 'ai') && (
+            {/* FILE UPLOAD MODE */}
+            {sourceMode === 'file' && (
               <div 
                 onClick={() => fileInputRef.current?.click()}
                 className="border-2 border-dashed border-indigo-200 hover:border-indigo-400 bg-slate-50/60 hover:bg-indigo-50/30 p-5 rounded-xl text-center cursor-pointer transition-all space-y-2"
@@ -298,6 +487,32 @@ export const ExamMixer: React.FC<ExamMixerProps> = ({
                   accept=".docx" 
                   className="hidden" 
                 />
+              </div>
+            )}
+
+            {/* SAMPLE MODE */}
+            {sourceMode === 'sample' && (
+              <div className="p-4 bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-xl space-y-2">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="space-y-1">
+                    <span className="px-2 py-0.5 rounded-md bg-purple-600 text-white text-[10px] font-bold uppercase">
+                      Đề mẫu chuẩn THPT GDPT 2018
+                    </span>
+                    <h3 className="font-extrabold text-xs text-purple-950">
+                      Đề Gốc Hóa Học - Chương Ester & Lipid (28 câu)
+                    </h3>
+                    <p className="text-[11px] text-purple-700">
+                      Bao gồm 18 câu TNKQ, 4 câu Đúng/Sai bối cảnh thực tiễn và 6 câu trả lời ngắn.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleLoadSample}
+                    className="px-2.5 py-1 text-[11px] font-bold text-purple-700 bg-white hover:bg-purple-100 border border-purple-200 rounded-lg transition-colors cursor-pointer shrink-0"
+                  >
+                    Nạp lại
+                  </button>
+                </div>
               </div>
             )}
           </div>
