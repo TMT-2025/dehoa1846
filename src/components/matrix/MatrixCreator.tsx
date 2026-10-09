@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CURRICULUM, sortChaptersByCurriculum, sortLessonsByNumber } from '../../constants/curriculum';
 import { Grade, Chapter, MatrixData, Lesson, ExamType, SavedConfig } from '../../types/matrix';
-import { generateMatrix } from '../../services/matrixService';
+import { generateMatrix, distribute } from '../../services/matrixService';
 import { MatrixDisplay } from './MatrixDisplay';
 import { 
   Layout, Plus, CheckCircle, Trash2, Save, 
@@ -465,23 +465,87 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
     }))
   );
 
-  // Auto select 4 hosts if user hasn't selected yet
-  const handleAutoSelectHosts = () => {
-    let count = 0;
-    const sorted = sortLessonsByNumber(editableLessons);
-    const newLessons = sorted.map(l => ({ ...l, part2Hosts: [] as string[] }));
-    
-    for (let l of newLessons) {
-      if (!l.subItems) continue;
-      for (let s of l.subItems) {
-        if (count < 4) {
-          l.part2Hosts.push(s);
-          count++;
+  // Tự động phân bổ đều 4 bối cảnh P.II cho các chương
+  const autoDistributeHostsAcrossChapters = (
+    currentLessons: Lesson[], 
+    chapters: Chapter[], 
+    grade: Grade | null
+  ): Lesson[] => {
+    const sortedChaps = sortChaptersByCurriculum(chapters, grade);
+    const numChaps = sortedChaps.length;
+    if (numChaps === 0) return currentLessons;
+
+    const p2TargetPerChap = distribute(4, numChaps);
+    let lessonsCopy: Lesson[] = currentLessons.map(l => ({
+      ...l,
+      part2Hosts: [] as string[]
+    }));
+
+    let totalAllocated = 0;
+
+    // Phân bổ bối cảnh vào từng chương
+    sortedChaps.forEach((chap, cIdx) => {
+      const targetForChap = p2TargetPerChap[cIdx];
+      let chapAllocated = 0;
+      const chapLessons = lessonsCopy.filter(l => 
+        (chap.lessons || []).some(cl => cl.id === l.id) || l.id.startsWith('custom_')
+      );
+
+      // Ưu tiên chọn từ các bài học khác nhau trong chương
+      for (const lesson of chapLessons) {
+        if (chapAllocated >= targetForChap || totalAllocated >= 4) break;
+        if (!lesson.subItems || lesson.subItems.length === 0) continue;
+
+        for (const sub of lesson.subItems) {
+          if (!lesson.part2Hosts.includes(sub)) {
+            lesson.part2Hosts.push(sub);
+            chapAllocated++;
+            totalAllocated++;
+            break; // Mỗi bài trong chương lấy 1 mục trước
+          }
         }
       }
-      if (count >= 4) break;
+
+      // Nếu vẫn chưa đủ chỉ tiêu của chương và còn bài/mục
+      if (chapAllocated < targetForChap && totalAllocated < 4) {
+        for (const lesson of chapLessons) {
+          if (chapAllocated >= targetForChap || totalAllocated >= 4) break;
+          if (!lesson.subItems) continue;
+          for (const sub of lesson.subItems) {
+            if (chapAllocated >= targetForChap || totalAllocated >= 4) break;
+            if (!lesson.part2Hosts.includes(sub)) {
+              lesson.part2Hosts.push(sub);
+              chapAllocated++;
+              totalAllocated++;
+            }
+          }
+        }
+      }
+    });
+
+    // Nếu vẫn chưa đủ 4 (do chương nào đó ít bài), bù từ các bài còn lại
+    if (totalAllocated < 4) {
+      for (const lesson of lessonsCopy) {
+        if (totalAllocated >= 4) break;
+        if (!lesson.subItems) continue;
+        for (const sub of lesson.subItems) {
+          if (totalAllocated >= 4) break;
+          if (!lesson.part2Hosts.includes(sub)) {
+            lesson.part2Hosts.push(sub);
+            totalAllocated++;
+          }
+        }
+      }
     }
+
+    return lessonsCopy;
+  };
+
+  // Auto select 4 hosts if user hasn't selected yet or requests auto balance
+  const handleAutoSelectHosts = () => {
+    const newLessons = autoDistributeHostsAcrossChapters(editableLessons, selectedChapters, activeGrade);
     setEditableLessons(newLessons);
+    return newLessons;
   };
 
   const handleGenerate = () => {
@@ -490,10 +554,11 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
       return;
     }
     
+    let lessonsToUse = editableLessons;
     if (totalPart2Selected < 4) {
-      const confirmAuto = confirm(`Bạn mới chọn ${totalPart2Selected}/4 bối cảnh cho Phần II. Bạn có muốn hệ thống tự động chọn bù đủ 4 bối cảnh không?`);
+      const confirmAuto = confirm(`Bạn mới chọn ${totalPart2Selected}/4 bối cảnh cho Phần II. Bạn có muốn hệ thống tự động phân bổ đều 4 bối cảnh cho các chương không?`);
       if (confirmAuto) {
-        handleAutoSelectHosts();
+        lessonsToUse = handleAutoSelectHosts();
       } else {
         return;
       }
@@ -506,11 +571,11 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
       ? [{
           id: 'custom_main',
           name: customChapterName,
-          lessons: sortLessonsByNumber(editableLessons)
+          lessons: sortLessonsByNumber(lessonsToUse)
         }]
       : sortedChapters.map(chapter => ({
           ...chapter,
-          lessons: sortLessonsByNumber(editableLessons.filter(el => 
+          lessons: sortLessonsByNumber(lessonsToUse.filter(el => 
             chapter.lessons.some(cl => cl.id === el.id) || el.id.startsWith('custom_')
           ))
         }));
@@ -530,7 +595,7 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
           grade: activeGrade,
           selectedChapters,
           examType,
-          editableLessons,
+          editableLessons: lessonsToUse,
           extraRequirements,
           isCustomMode,
           customChapterName,
@@ -892,15 +957,14 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
                     </div>
 
                     <div className="flex items-center gap-2">
-                      {totalPart2Selected < 4 && (
-                        <button
-                          type="button"
-                          onClick={handleAutoSelectHosts}
-                          className="text-xs font-bold text-emerald-700 hover:text-emerald-900 bg-emerald-100 hover:bg-emerald-200 px-2.5 py-1 rounded-lg transition-colors"
-                        >
-                          ⚡ Tự động bù đủ 4 bối cảnh
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        onClick={handleAutoSelectHosts}
+                        className="text-xs font-bold text-emerald-800 hover:text-emerald-950 bg-emerald-100 hover:bg-emerald-200 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 cursor-pointer shadow-2xs"
+                        title="Tự động phân bổ đều 4 câu Phần II cho các chương đã chọn"
+                      >
+                        ⚡ Phân bổ đều P.II các chương
+                      </button>
                     </div>
                   </div>
 
