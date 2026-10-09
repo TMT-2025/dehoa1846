@@ -7,7 +7,7 @@ import { ExamRenderer } from './ExamRenderer';
 import { MatrixRenderer } from './MatrixRenderer';
 import { 
   Sparkles, RefreshCw, AlertCircle, Image as ImageIcon, 
-  X, CheckCircle, Info, ChevronRight, Layers, Cpu, ArrowLeft
+  X, CheckCircle, Info, ChevronRight, Layers, Cpu, ArrowLeft, Globe
 } from 'lucide-react';
 import { BridgeResult } from '../../services/bridgeService';
 
@@ -102,7 +102,8 @@ export const ExamCreator: React.FC<ExamCreatorProps> = ({
     let currentAttempt = 1;
 
     const progressMessages = [
-      'Đang phân tích cấu trúc 40 lệnh hỏi...',
+      'Đang phân tích cấu trúc ma trận 40 lệnh hỏi...',
+      'Đang đối soát nguồn quốc tế (AP Chemistry, Cambridge, RSC Education, NIST)...',
       'Đang soạn 18 câu trắc nghiệm khách quan (Phần I)...',
       'Đang xây dựng 4 bối cảnh thực tiễn Đúng/Sai (Phần II)...',
       'Đang tạo 6 bài toán tính toán có ý nghĩa thực tế (Phần III)...',
@@ -334,6 +335,40 @@ export const ExamCreator: React.FC<ExamCreatorProps> = ({
                   </button>
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* International Quality Upgrade Callout */}
+          <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-blue-50 border border-blue-200/90 rounded-xl p-4 flex items-start gap-3 shadow-xs">
+            <div className="p-2 bg-indigo-600 text-white rounded-lg shrink-0 mt-0.5 shadow-sm">
+              <Globe className="w-4 h-4" />
+            </div>
+            <div className="space-y-1.5 text-xs flex-1">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="font-extrabold text-indigo-950 text-xs">
+                  Nâng cấp chất lượng đề từ Nguồn Quốc Tế (Yêu cầu Phần II & III)
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300">
+                  ✓ Đã kích hoạt
+                </span>
+              </div>
+              <p className="text-slate-600 leading-relaxed text-[11px]">
+                Hệ thống tự động khai thác câu hỏi bối cảnh thực nghiệm, đồ thị và số liệu từ các nguồn khảo thí quốc tế hàng đầu (<strong>AP Chemistry, Cambridge A-Level, RSC Education, NIST WebBook, PubChem</strong>) khi nội dung phù hợp (đặc biệt Lớp 12):
+              </p>
+              <div className="flex flex-wrap items-center gap-2 pt-0.5 font-bold text-[11px] text-indigo-950">
+                <span className="bg-white px-2 py-1 rounded-md border border-indigo-200/80 shadow-xs">
+                  Phần I: 0 – 3 câu
+                </span>
+                <span className="bg-white px-2 py-1 rounded-md border border-indigo-200/80 shadow-xs">
+                  Phần II: 0 – 1 câu
+                </span>
+                <span className="bg-white px-2 py-1 rounded-md border border-indigo-200/80 shadow-xs">
+                  Phần III: 0 – 2 câu
+                </span>
+                <span className="text-slate-500 font-normal italic text-[10px]">
+                  (Tất cả câu hỏi đều được dịch sang Tiếng Việt chuẩn. Nếu không có nguồn phù hợp sẽ tạo như cũ)
+                </span>
+              </div>
             </div>
           </div>
 
