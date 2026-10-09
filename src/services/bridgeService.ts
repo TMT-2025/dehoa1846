@@ -69,7 +69,11 @@ export const convertMatrixToExamInput = (matrixData: MatrixData): BridgeResult =
 
   const intlSourceInfo = `\n- Nâng cấp chất lượng đề từ nguồn quốc tế (AP Chemistry, Cambridge, RSC Education, NIST, PubChem): Phần I có từ 0 đến 03 câu; Phần II có từ 0 đến 01 câu; Phần III có từ 0 đến 02 câu khi có nội dung thực nghiệm/đồ thị/tính toán phù hợp (nhất là Lớp 12). Dịch toàn bộ sang Tiếng Việt chuẩn. Nếu không có nguồn quốc tế phù hợp thì tạo như cũ.`;
 
-  const extraDetailsPrompt = `Đề thi phải bám sát tuyệt đối ma trận ${matrixData.examType} (Tổng 40 lệnh hỏi, tỉ lệ 4:3:3 chuẩn GDPT 2018).${p2ContextInfo}${p3TopicInfo}${intlSourceInfo}${matrixData.extraRequirements ? `\nYêu cầu giáo viên: ${matrixData.extraRequirements}` : ''}`;
+  const g12StyleInfo = gradeStr === '12'
+    ? `\n- Phong cách chuẩn Đề thi Tốt nghiệp THPT 2025 - 2026 của Bộ GD&ĐT (cho cả kiểm tra thường xuyên và định kì): Phần I ngắn gọn 10-35 từ có câu điền khuyết và đánh giá đề xuất; Phần II 4 bối cảnh sâu sắc 100-250 từ phân hóa 4 bậc tư duy a-Nhận biết, b-Thông hiểu, c-Vận dụng, d-Vận dụng cao/đánh giá giả thuyết; Phần III bài toán thực tiễn có hướng dẫn làm tròn rõ ràng, đáp án là số duy nhất.`
+    : '';
+
+  const extraDetailsPrompt = `Đề thi phải bám sát tuyệt đối ma trận ${matrixData.examType} (Tổng 40 lệnh hỏi, tỉ lệ 4:3:3 chuẩn GDPT 2018).${p2ContextInfo}${p3TopicInfo}${intlSourceInfo}${g12StyleInfo}${matrixData.extraRequirements ? `\nYêu cầu giáo viên: ${matrixData.extraRequirements}` : ''}`;
 
   const summaryText = `Ma trận ${matrixData.examType} - Khối ${matrixData.grade} (${topicNames.length} chương, 40 lệnh hỏi)`;
 
