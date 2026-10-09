@@ -1,4 +1,4 @@
-import { Chapter } from '../types/matrix';
+import { Chapter, Grade, Lesson } from '../types/matrix';
 
 export const CURRICULUM: Record<number, Chapter[]> = {
   10: [
@@ -965,3 +965,35 @@ export const GRADE_TOPICS: Record<string, string[]> = {
   '11': CURRICULUM[11].map(c => c.name),
   '12': CURRICULUM[12].map(c => c.name)
 };
+
+export const extractLessonNumber = (name: string): number => {
+  const match = name.match(/b[àa]i\s*(\d+)/i);
+  return match ? parseInt(match[1], 10) : 99999;
+};
+
+export const sortLessonsByNumber = <T extends { name: string }>(lessons: T[]): T[] => {
+  return [...lessons].sort((a, b) => {
+    const numA = extractLessonNumber(a.name);
+    const numB = extractLessonNumber(b.name);
+    if (numA !== numB) {
+      return numA - numB;
+    }
+    return a.name.localeCompare(b.name, 'vi', { numeric: true });
+  });
+};
+
+export const sortChaptersByCurriculum = (chapters: Chapter[], grade: Grade | null): Chapter[] => {
+  if (!grade || grade === 'Tự do') return chapters;
+  const gradeCurriculum = CURRICULUM[grade as number] || [];
+  return [...chapters].sort((a, b) => {
+    const idxA = gradeCurriculum.findIndex(c => c.id === a.id);
+    const idxB = gradeCurriculum.findIndex(c => c.id === b.id);
+    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+    if (idxA !== -1) return -1;
+    if (idxB !== -1) return 1;
+    const numA = parseInt(a.name.match(/\d+/)?.[0] || '9999', 10);
+    const numB = parseInt(b.name.match(/\d+/)?.[0] || '9999', 10);
+    return numA - numB;
+  });
+};
+

@@ -1,4 +1,5 @@
 import { Grade, Chapter, MatrixData, MatrixRow, CognitiveLevel, ExamType } from '../types/matrix';
+import { sortChaptersByCurriculum, sortLessonsByNumber } from '../constants/curriculum';
 
 export const generateMatrix = (
   grade: Grade, 
@@ -12,6 +13,9 @@ export const generateMatrix = (
   // Total for 4 questions (16 commands): 4 Know, 8 Understand, 4 Apply
   const p2PerQuestion: CognitiveLevel = { know: 1, understand: 2, apply: 1 };
 
+  // Ensure chapters and lessons within each chapter are strictly sorted in curriculum order
+  const sortedChapters = sortChaptersByCurriculum(chapters, grade);
+
   // 2. Identify all items and Part II hosts
   const allSubItems: { 
     chapterId: string;
@@ -22,8 +26,9 @@ export const generateMatrix = (
     isP2Host: boolean;
   }[] = [];
 
-  chapters.forEach(c => {
-    c.lessons.forEach(l => {
+  sortedChapters.forEach(c => {
+    const sortedLessons = sortLessonsByNumber(c.lessons);
+    sortedLessons.forEach(l => {
       const subs = l.subItems && l.subItems.length > 0 ? l.subItems : ['(Nội dung chung)'];
       subs.forEach(s => {
         const isP2Host = l.part2Hosts?.includes(s) || false;
@@ -98,7 +103,7 @@ export const generateMatrix = (
   return {
     grade,
     examType,
-    chapters,
+    chapters: sortedChapters,
     extraRequirements: extraReq,
     rows,
     totals: {

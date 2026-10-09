@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CURRICULUM } from '../../constants/curriculum';
+import { CURRICULUM, sortChaptersByCurriculum, sortLessonsByNumber } from '../../constants/curriculum';
 import { Grade, Chapter, MatrixData, Lesson, ExamType, SavedConfig } from '../../types/matrix';
 import { generateMatrix } from '../../services/matrixService';
 import { MatrixDisplay } from './MatrixDisplay';
@@ -30,7 +30,7 @@ const restoreLessonsWithPart2Hosts = (lessons: Lesson[], matrix?: MatrixData | n
 
   const currentTotalHosts = normalizedLessons.reduce((acc, l) => acc + (l.part2Hosts?.length || 0), 0);
   if (currentTotalHosts >= 4) {
-    return normalizedLessons;
+    return sortLessonsByNumber(normalizedLessons);
   }
 
   // Restore 4 hosts from generatedMatrix if part2Hosts was cleared or lost
@@ -59,29 +59,31 @@ const restoreLessonsWithPart2Hosts = (lessons: Lesson[], matrix?: MatrixData | n
     }
   }
 
-  return normalizedLessons;
+  return sortLessonsByNumber(normalizedLessons);
 };
 
 // Helper: Synchronize lessons when user toggles or changes chapters
 const syncLessonsWithChapters = (
   currentLessons: Lesson[], 
   chapters: Chapter[], 
-  isCustom: boolean
+  isCustom: boolean,
+  grade: Grade | null
 ): Lesson[] => {
-  if (isCustom) return currentLessons;
+  if (isCustom) return sortLessonsByNumber(currentLessons);
   if (chapters.length === 0) {
-    return currentLessons.filter(l => l.id.startsWith('custom_'));
+    return sortLessonsByNumber(currentLessons.filter(l => l.id.startsWith('custom_')));
   }
 
-  const validLessonIds = new Set<string>();
-  const lessonsToAdd: Lesson[] = [];
+  const sortedChapters = sortChaptersByCurriculum(chapters, grade);
+  const result: Lesson[] = [];
 
-  chapters.forEach(chapter => {
+  sortedChapters.forEach(chapter => {
     (chapter.lessons || []).forEach(cl => {
-      validLessonIds.add(cl.id);
       const existing = currentLessons.find(l => l.id === cl.id);
-      if (!existing) {
-        lessonsToAdd.push({
+      if (existing) {
+        result.push(existing);
+      } else {
+        result.push({
           ...cl,
           subItems: cl.subItems && cl.subItems.length > 0 
             ? cl.subItems 
@@ -92,8 +94,10 @@ const syncLessonsWithChapters = (
     });
   });
 
-  const keptLessons = currentLessons.filter(l => l.id.startsWith('custom_') || validLessonIds.has(l.id));
-  return [...keptLessons, ...lessonsToAdd];
+  const customLessons = currentLessons.filter(l => l.id.startsWith('custom_'));
+  result.push(...customLessons);
+
+  return sortLessonsByNumber(result);
 };
 
 export const MatrixCreator: React.FC<MatrixCreatorProps> = ({ 
@@ -122,7 +126,7 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
 
   const [selectedChapters, setSelectedChapters] = useState<Chapter[]>(() => {
     if (loadedConfig?.selectedChapters && loadedConfig.selectedChapters.length > 0) {
-      return loadedConfig.selectedChapters;
+      return sortChaptersByCurriculum(loadedConfig.selectedChapters, loadedConfig.grade);
     }
     const grade = loadedConfig?.grade ?? 12;
     if (grade !== 'Tự do' && CURRICULUM[grade as number]?.length > 0) {
@@ -133,16 +137,16 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
 
   const [editableLessons, setEditableLessons] = useState<Lesson[]>(() => {
     if (loadedConfig?.editableLessons && loadedConfig.editableLessons.length > 0) {
-      return restoreLessonsWithPart2Hosts(loadedConfig.editableLessons, loadedConfig.generatedMatrix);
+      return sortLessonsByNumber(restoreLessonsWithPart2Hosts(loadedConfig.editableLessons, loadedConfig.generatedMatrix));
     }
     const grade = loadedConfig?.grade ?? 12;
     if (grade !== 'Tự do' && CURRICULUM[grade as number]?.length > 0) {
       const defaultChapter = CURRICULUM[grade as number][0];
-      return defaultChapter.lessons.map(cl => ({
+      return sortLessonsByNumber(defaultChapter.lessons.map(cl => ({
         ...cl,
         subItems: cl.subItems && cl.subItems.length > 0 ? [...cl.subItems] : ['Khái niệm cơ bản & tính chất', 'Ứng dụng & điều chế'],
         part2Hosts: []
-      }));
+      })));
     }
     return [];
   });
@@ -192,7 +196,7 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
       subItems: l.subItems && l.subItems.length > 0 ? [...l.subItems] : ['Khái niệm cơ bản & tính chất', 'Ứng dụng & điều chế'],
       part2Hosts: []
     })));
-    setEditableLessons(newLessons);
+    setEditableLessons(sortLessonsByNumber(newLessons));
 
     setExamType(ExamType.REGULAR);
     setMatrixData(null);
@@ -237,8 +241,12 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
       } else {
         nextChapters = isMultiple ? [...prev, chapter] : [chapter];
       }
-      // Synchronize editableLessons directly and safely
-      setEditableLessons(prevLessons => syncLessonsWithChapters(prevLessons, nextChapters, isCustomMode));
+      // Strictly sort chapters in curriculum order
+      if (!isCustomMode && activeGrade && activeGrade !== 'Tự do') {
+        nextChapters = sortChaptersByCurriculum(nextChapters, activeGrade);
+      }
+      // Synchronize editableLessons directly and safely in sorted order
+      setEditableLessons(prevLessons => syncLessonsWithChapters(prevLessons, nextChapters, isCustomMode, activeGrade));
       return nextChapters;
     });
   };
@@ -247,13 +255,13 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
     if (activeGrade && activeGrade !== 'Tự do') {
       const allChapters = CURRICULUM[activeGrade as number] || [];
       setSelectedChapters(allChapters);
-      setEditableLessons(prevLessons => syncLessonsWithChapters(prevLessons, allChapters, isCustomMode));
+      setEditableLessons(prevLessons => syncLessonsWithChapters(prevLessons, allChapters, isCustomMode, activeGrade));
     }
   };
 
   const handleDeselectAllChapters = () => {
     setSelectedChapters([]);
-    setEditableLessons(prevLessons => syncLessonsWithChapters(prevLessons, [], isCustomMode));
+    setEditableLessons(prevLessons => syncLessonsWithChapters(prevLessons, [], isCustomMode, activeGrade));
   };
 
   const handleAddLesson = () => {
@@ -264,7 +272,7 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
       subItems: ['Khái niệm cơ bản', 'Bài tập vận dụng'],
       part2Hosts: []
     };
-    setEditableLessons([...editableLessons, newLesson]);
+    setEditableLessons(sortLessonsByNumber([...editableLessons, newLesson]));
     setNewLessonName('');
     setExpandedLessonId(newLesson.id);
   };
@@ -333,7 +341,7 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
   const totalPart2Selected = editableLessons.reduce((acc, l) => acc + (l.part2Hosts?.length || 0), 0);
 
   // Extract all selected Part II items for the summary panel
-  const selectedPart2Items = editableLessons.flatMap(l => 
+  const selectedPart2Items = sortLessonsByNumber(editableLessons).flatMap(l => 
     (l.part2Hosts || []).map(item => ({
       lessonId: l.id,
       lessonName: l.name,
@@ -344,7 +352,8 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
   // Auto select 4 hosts if user hasn't selected yet
   const handleAutoSelectHosts = () => {
     let count = 0;
-    const newLessons = editableLessons.map(l => ({ ...l, part2Hosts: [] as string[] }));
+    const sorted = sortLessonsByNumber(editableLessons);
+    const newLessons = sorted.map(l => ({ ...l, part2Hosts: [] as string[] }));
     
     for (let l of newLessons) {
       if (!l.subItems) continue;
@@ -376,17 +385,18 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
 
     setIsGenerating(true);
 
+    const sortedChapters = sortChaptersByCurriculum(selectedChapters, activeGrade);
     const customChapters = isCustomMode 
       ? [{
           id: 'custom_main',
           name: customChapterName,
-          lessons: editableLessons
+          lessons: sortLessonsByNumber(editableLessons)
         }]
-      : selectedChapters.map(chapter => ({
+      : sortedChapters.map(chapter => ({
           ...chapter,
-          lessons: editableLessons.filter(el => 
+          lessons: sortLessonsByNumber(editableLessons.filter(el => 
             chapter.lessons.some(cl => cl.id === el.id) || el.id.startsWith('custom_')
-          )
+          ))
         }));
 
     setTimeout(() => {
@@ -626,6 +636,17 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
                         onClick={() => {
                           setExamType(type);
                           setMatrixData(null);
+                          const isMultiple = [
+                            ExamType.MID_TERM_1, ExamType.END_TERM_1, 
+                            ExamType.MID_TERM_2, ExamType.END_TERM_2, 
+                            ExamType.CUSTOM
+                          ].includes(type);
+                          if (!isMultiple && selectedChapters.length > 1) {
+                            const sorted = sortChaptersByCurriculum(selectedChapters, activeGrade);
+                            const single = [sorted[0]];
+                            setSelectedChapters(single);
+                            setEditableLessons(prev => syncLessonsWithChapters(prev, single, isCustomMode, activeGrade));
+                          }
                         }}
                         className={`px-3 py-2.5 rounded-xl border text-xs font-bold transition-all text-center ${
                           examType === type
@@ -826,7 +847,7 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
                   </div>
 
                   <div className="space-y-3 max-h-[550px] overflow-y-auto pr-1">
-                    {editableLessons.map((lesson) => {
+                    {sortLessonsByNumber(editableLessons).map((lesson) => {
                       const isExpanded = expandAllLessons || expandedLessonId === lesson.id;
                       const hostCount = lesson.part2Hosts?.length || 0;
 
