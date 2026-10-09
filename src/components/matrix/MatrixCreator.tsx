@@ -7,7 +7,7 @@ import {
   Layout, Plus, CheckCircle, Trash2, Save, 
   ChevronDown, ChevronUp, AlertTriangle, Settings2, RefreshCw, 
   Check, FileText, ChevronRight, Sparkles, Layers, ListFilter,
-  Edit3, X, CheckCircle2
+  Edit3, X, CheckCircle2, RotateCcw
 } from 'lucide-react';
 import { saveMatrixConfig } from '../../services/storageService';
 
@@ -100,6 +100,20 @@ const syncLessonsWithChapters = (
   return sortLessonsByNumber(result);
 };
 
+// Helper: Lấy danh sách đề mục chuẩn theo SGK từ CURRICULUM
+const getDefaultSubItemsForLesson = (lessonId: string): string[] | null => {
+  for (const grade of [10, 11, 12]) {
+    const chapters = CURRICULUM[grade] || [];
+    for (const chap of chapters) {
+      const found = (chap.lessons || []).find(l => l.id === lessonId);
+      if (found && found.subItems && found.subItems.length > 0) {
+        return found.subItems;
+      }
+    }
+  }
+  return null;
+};
+
 export const MatrixCreator: React.FC<MatrixCreatorProps> = ({ 
   onTransferToExam,
   initialMatrixData,
@@ -182,6 +196,9 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
     }
     return null;
   });
+
+  // Lưu lịch sử các mục kiến thức đã bị xóa theo từng bài học để phục hồi
+  const [deletedSubItemsHistory, setDeletedSubItemsHistory] = useState<Record<string, { item: string; index: number; wasHost?: boolean }[]>>({});
 
   const handleGradeSelect = (grade: Grade) => {
     setIsCustomMode(false);
@@ -303,16 +320,115 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
   const handleRemoveSubItem = (lessonId: string, index: number) => {
     setEditableLessons(prev => prev.map(l => {
       if (l.id === lessonId) {
-        const itemName = (l.subItems || [])[index];
+        const currentItems = l.subItems || [];
+        const itemName = currentItems[index];
+        if (!itemName) return l;
+
+        const wasHost = (l.part2Hosts || []).includes(itemName);
         const newHosts = (l.part2Hosts || []).filter(h => h !== itemName);
+
+        // Lưu vào lịch sử đã xóa để có thể phục hồi
+        setDeletedSubItemsHistory(history => {
+          const prevList = history[lessonId] || [];
+          return {
+            ...history,
+            [lessonId]: [...prevList, { item: itemName, index, wasHost }]
+          };
+        });
+
         return { 
           ...l, 
-          subItems: (l.subItems || []).filter((_, i) => i !== index),
+          subItems: currentItems.filter((_, i) => i !== index),
           part2Hosts: newHosts
         };
       }
       return l;
     }));
+  };
+
+  // Phục hồi mục bị xóa gần nhất của bài học này
+  const handleRestoreLastDeletedSubItem = (lessonId: string) => {
+    const history = deletedSubItemsHistory[lessonId];
+    if (!history || history.length === 0) {
+      // Nếu không có trong lịch sử xóa phiên này, kiểm tra khôi phục từ SGK
+      const defaultItems = getDefaultSubItemsForLesson(lessonId);
+      if (defaultItems) {
+        handleRestoreDefaultSubItems(lessonId);
+      }
+      return;
+    }
+
+    const lastDeleted = history[history.length - 1];
+    const newHistory = history.slice(0, -1);
+
+    setDeletedSubItemsHistory(prev => ({
+      ...prev,
+      [lessonId]: newHistory
+    }));
+
+    setEditableLessons(prev => prev.map(l => {
+      if (l.id === lessonId) {
+        const currentItems = [...(l.subItems || [])];
+        const insertAt = Math.min(Math.max(lastDeleted.index, 0), currentItems.length);
+        currentItems.splice(insertAt, 0, lastDeleted.item);
+
+        return {
+          ...l,
+          subItems: currentItems
+        };
+      }
+      return l;
+    }));
+  };
+
+  // Phục hồi một mục cụ thể theo chỉ số trong lịch sử xóa
+  const handleRestoreSpecificDeletedItem = (lessonId: string, historyIndex: number) => {
+    const history = deletedSubItemsHistory[lessonId];
+    if (!history || !history[historyIndex]) return;
+
+    const target = history[historyIndex];
+    const newHistory = history.filter((_, i) => i !== historyIndex);
+
+    setDeletedSubItemsHistory(prev => ({
+      ...prev,
+      [lessonId]: newHistory
+    }));
+
+    setEditableLessons(prev => prev.map(l => {
+      if (l.id === lessonId) {
+        const currentItems = [...(l.subItems || [])];
+        const insertAt = Math.min(Math.max(target.index, 0), currentItems.length);
+        currentItems.splice(insertAt, 0, target.item);
+
+        return {
+          ...l,
+          subItems: currentItems
+        };
+      }
+      return l;
+    }));
+  };
+
+  // Khôi phục toàn bộ danh sách đề mục gốc của bài học theo SGK
+  const handleRestoreDefaultSubItems = (lessonId: string) => {
+    const defaultItems = getDefaultSubItemsForLesson(lessonId);
+    if (!defaultItems) return;
+
+    setEditableLessons(prev => prev.map(l => {
+      if (l.id === lessonId) {
+        return {
+          ...l,
+          subItems: [...defaultItems]
+        };
+      }
+      return l;
+    }));
+
+    setDeletedSubItemsHistory(prev => {
+      const copy = { ...prev };
+      delete copy[lessonId];
+      return copy;
+    });
   };
 
   // Toggle Part II context on/off
@@ -850,6 +966,9 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
                     {sortLessonsByNumber(editableLessons).map((lesson) => {
                       const isExpanded = expandAllLessons || expandedLessonId === lesson.id;
                       const hostCount = lesson.part2Hosts?.length || 0;
+                      const lessonDeletedHistory = deletedSubItemsHistory[lesson.id] || [];
+                      const hasDeletedItems = lessonDeletedHistory.length > 0;
+                      const defaultSubItems = getDefaultSubItemsForLesson(lesson.id);
 
                       return (
                         <div key={lesson.id} className="border border-slate-200 rounded-xl bg-slate-50/50 overflow-hidden shadow-xs">
@@ -865,6 +984,12 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
                               <span className="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full font-semibold">
                                 {lesson.subItems?.length || 0} mục
                               </span>
+                              {hasDeletedItems && (
+                                <span className="text-[10px] px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full font-bold flex items-center gap-1">
+                                  <RotateCcw className="w-2.5 h-2.5 text-amber-600" />
+                                  <span>{lessonDeletedHistory.length} mục đã xóa</span>
+                                </span>
+                              )}
                               {hostCount > 0 && (
                                 <span className="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full font-bold flex items-center gap-1">
                                   <CheckCircle2 className="w-3 h-3" />
@@ -908,7 +1033,7 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
                                       }`}
                                     >
                                       <span>• {item}</span>
-                                      <div className="flex items-center gap-2">
+                                      <div className="flex items-center gap-1.5">
                                         <button
                                           type="button"
                                           onClick={() => togglePart2Host(lesson.id, item)}
@@ -921,10 +1046,32 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
                                         >
                                           {isHost ? '✓ Bối cảnh P.II' : '+ Đặt làm P.II'}
                                         </button>
+
+                                        {/* Nút phục hồi bên cạnh nút xóa */}
+                                        <button
+                                          type="button"
+                                          onClick={() => handleRestoreLastDeletedSubItem(lesson.id)}
+                                          disabled={!hasDeletedItems && !defaultSubItems}
+                                          className={`p-1.5 rounded transition-all flex items-center justify-center ${
+                                            hasDeletedItems 
+                                              ? 'text-amber-600 hover:text-amber-800 hover:bg-amber-100 cursor-pointer shadow-2xs' 
+                                              : 'text-slate-300 cursor-not-allowed opacity-40'
+                                          }`}
+                                          title={
+                                            hasDeletedItems 
+                                              ? `Phục hồi nội dung vừa xóa nhầm (${lessonDeletedHistory.length} mục có thể phục hồi)`
+                                              : "Phục hồi: Chưa có mục nào bị xóa trong bài này"
+                                          }
+                                        >
+                                          <RotateCcw className="w-3.5 h-3.5" />
+                                        </button>
+
+                                        {/* Nút xóa */}
                                         <button
                                           type="button"
                                           onClick={() => handleRemoveSubItem(lesson.id, idx)}
-                                          className="text-slate-400 hover:text-rose-500 p-1"
+                                          className="text-slate-400 hover:text-rose-500 hover:bg-rose-50 p-1.5 rounded transition-colors cursor-pointer"
+                                          title="Xóa mục kiến thức này"
                                         >
                                           <Trash2 className="w-3.5 h-3.5" />
                                         </button>
@@ -933,6 +1080,71 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
                                   );
                                 })}
                               </div>
+
+                              {/* Thanh phục hồi các mục đã xóa nhầm */}
+                              {hasDeletedItems && (
+                                <div className="p-2.5 rounded-lg bg-amber-50/80 border border-amber-200/90 text-xs flex flex-wrap items-center justify-between gap-2">
+                                  <div className="flex items-center gap-1.5 text-amber-900 font-semibold">
+                                    <RotateCcw className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                                    <span>Mục đã xóa nhầm ({lessonDeletedHistory.length}):</span>
+                                  </div>
+                                  <div className="flex flex-wrap items-center gap-1.5">
+                                    {lessonDeletedHistory.map((del, dIdx) => (
+                                      <button
+                                        key={dIdx}
+                                        type="button"
+                                        onClick={() => handleRestoreSpecificDeletedItem(lesson.id, dIdx)}
+                                        className="px-2.5 py-1 bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-amber-300 hover:border-emerald-400 rounded-md text-[11px] font-medium flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer group"
+                                        title="Bấm để phục hồi mục này trở lại bài học"
+                                      >
+                                        <RotateCcw className="w-3 h-3 text-amber-600 group-hover:text-emerald-600" />
+                                        <span className="max-w-[200px] truncate">{del.item}</span>
+                                        <span className="text-emerald-700 font-bold ml-0.5">+ Phục hồi</span>
+                                      </button>
+                                    ))}
+                                    {defaultSubItems && (
+                                      <button
+                                        type="button"
+                                        onClick={() => handleRestoreDefaultSubItems(lesson.id)}
+                                        className="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-md text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1"
+                                        title="Khôi phục lại toàn bộ danh sách đề mục chuẩn theo SGK"
+                                      >
+                                        <RefreshCw className="w-3 h-3 text-amber-700" />
+                                        Khôi phục gốc SGK
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Trường hợp danh sách mục trống (đã xóa hết) */}
+                              {(!lesson.subItems || lesson.subItems.length === 0) && (
+                                <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg flex items-center justify-between text-xs text-rose-800">
+                                  <span>Bài học này chưa có mục kiến thức nào (đã xóa hết).</span>
+                                  <div className="flex items-center gap-2">
+                                    {hasDeletedItems && (
+                                      <button
+                                        type="button"
+                                        onClick={() => handleRestoreLastDeletedSubItem(lesson.id)}
+                                        className="px-2.5 py-1 bg-white border border-rose-300 hover:bg-rose-100 text-rose-800 font-bold rounded text-xs flex items-center gap-1 cursor-pointer"
+                                      >
+                                        <RotateCcw className="w-3.5 h-3.5 text-rose-600" />
+                                        Phục hồi mục vừa xóa
+                                      </button>
+                                    )}
+                                    {defaultSubItems && (
+                                      <button
+                                        type="button"
+                                        onClick={() => handleRestoreDefaultSubItems(lesson.id)}
+                                        className="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded text-xs flex items-center gap-1 cursor-pointer shadow-xs"
+                                      >
+                                        <RefreshCw className="w-3.5 h-3.5" />
+                                        Khôi phục gốc SGK ({defaultSubItems.length} mục)
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
 
                               {/* Add subitem input */}
                               <div className="flex items-center gap-2 pt-1">
