@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Beaker, LayoutGrid, FileText, FolderClock, 
+  Beaker, LayoutGrid, FileText, FolderClock, Shuffle,
   Key, Sparkles, CheckCircle2, AlertCircle, RefreshCw 
 } from 'lucide-react';
 import { getStoredApiKey } from '../services/geminiService';
 
 interface NavbarProps {
-  activeTab: 'matrix' | 'exam' | 'history';
-  setActiveTab: (tab: 'matrix' | 'exam' | 'history') => void;
+  activeTab: 'matrix' | 'exam' | 'history' | 'mixer';
+  setActiveTab: (tab: 'matrix' | 'exam' | 'history' | 'mixer') => void;
   onOpenApiKeyModal: () => void;
   hasActiveMatrix: boolean;
 }
@@ -105,6 +105,18 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <FolderClock className="w-4 h-4" />
             <span>3. Kho Lưu Trữ</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('mixer')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all duration-200 ${
+              activeTab === 'mixer'
+                ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-md'
+                : 'text-slate-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <Shuffle className="w-4 h-4" />
+            <span>4. Trộn Đề</span>
           </button>
         </nav>
 

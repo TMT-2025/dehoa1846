@@ -4,12 +4,15 @@ import { ApiKeyModal } from './components/ApiKeyModal';
 import { MatrixCreator } from './components/matrix/MatrixCreator';
 import { ExamCreator } from './components/exam/ExamCreator';
 import { HistoryManager } from './components/storage/HistoryManager';
+import { ExamData } from './types/exam';
 import { MatrixData, SavedConfig } from './types/matrix';
 import { BridgeResult, convertMatrixToExamInput } from './services/bridgeService';
+import { ExamMixer } from './components/mixer/ExamMixer';
 
 export const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'matrix' | 'exam' | 'history'>('matrix');
+  const [activeTab, setActiveTab] = useState<'matrix' | 'exam' | 'history' | 'mixer'>('matrix');
   const [bridgeData, setBridgeData] = useState<BridgeResult | null>(null);
+  const [transferExamData, setTransferExamData] = useState<ExamData | null>(null);
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
   const [initialMatrix, setInitialMatrix] = useState<MatrixData | null>(null);
   const [loadedConfig, setLoadedConfig] = useState<SavedConfig | null>(null);
@@ -18,6 +21,12 @@ export const App: React.FC = () => {
     const bridge = convertMatrixToExamInput(matrixData);
     setBridgeData(bridge);
     setActiveTab('exam');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleTransferToMixer = (examData: ExamData) => {
+    setTransferExamData(examData);
+    setActiveTab('mixer');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -68,6 +77,7 @@ export const App: React.FC = () => {
               bridgeData={bridgeData}
               onClearBridge={handleClearBridge}
               onSwitchToMatrixTab={() => setActiveTab('matrix')}
+              onTransferToMixer={handleTransferToMixer}
             />
           </div>
         )}
@@ -77,6 +87,17 @@ export const App: React.FC = () => {
             <HistoryManager
               onLoadMatrixToEditor={handleLoadMatrixToEditor}
               onTransferMatrixToExam={handleTransferToExam}
+              onTransferExamToMixer={handleTransferToMixer}
+            />
+          </div>
+        )}
+
+        {activeTab === 'mixer' && (
+          <div className="animate-fade-in">
+            <ExamMixer
+              initialExamData={transferExamData}
+              onClearInitialExam={() => setTransferExamData(null)}
+              onSwitchToCreateTab={() => setActiveTab('exam')}
             />
           </div>
         )}

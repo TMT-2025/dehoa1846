@@ -7,7 +7,7 @@ import {
 } from '../../services/storageService';
 import { 
   FolderClock, LayoutGrid, FileText, Trash2, 
-  Download, ArrowRight, Eye, Calendar, Sparkles, Edit3 
+  Download, ArrowRight, Eye, Calendar, Sparkles, Edit3, Shuffle 
 } from 'lucide-react';
 import { ExamRenderer } from '../exam/ExamRenderer';
 import { MatrixDisplay } from '../matrix/MatrixDisplay';
@@ -15,11 +15,13 @@ import { MatrixDisplay } from '../matrix/MatrixDisplay';
 interface HistoryManagerProps {
   onLoadMatrixToEditor: (config: SavedConfig) => void;
   onTransferMatrixToExam: (matrixData: MatrixData) => void;
+  onTransferExamToMixer?: (exam: ExamData) => void;
 }
 
 export const HistoryManager: React.FC<HistoryManagerProps> = ({
   onLoadMatrixToEditor,
-  onTransferMatrixToExam
+  onTransferMatrixToExam,
+  onTransferExamToMixer
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<'matrices' | 'exams'>('matrices');
   const [matrices, setMatrices] = useState<SavedConfig[]>([]);
@@ -254,6 +256,17 @@ export const HistoryManager: React.FC<HistoryManagerProps> = ({
                       <Eye className="w-3.5 h-3.5" />
                       <span>Xem & In đề</span>
                     </button>
+
+                    {onTransferExamToMixer && (
+                      <button
+                        onClick={() => onTransferExamToMixer(item)}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-900 text-xs font-bold transition-colors cursor-pointer"
+                        title="Chuyển sang module 4. Trộn đề"
+                      >
+                        <Shuffle className="w-3.5 h-3.5 text-purple-600" />
+                        <span>Trộn đề</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -271,7 +284,10 @@ export const HistoryManager: React.FC<HistoryManagerProps> = ({
           >
             ← Quay lại danh sách đề
           </button>
-          <ExamRenderer data={previewExam} />
+          <ExamRenderer 
+            data={previewExam} 
+            onTransferToMixer={onTransferExamToMixer}
+          />
         </div>
       )}
 

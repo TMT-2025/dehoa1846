@@ -15,12 +15,14 @@ interface ExamCreatorProps {
   bridgeData: BridgeResult | null;
   onClearBridge: () => void;
   onSwitchToMatrixTab: () => void;
+  onTransferToMixer?: (exam: ExamData) => void;
 }
 
 export const ExamCreator: React.FC<ExamCreatorProps> = ({ 
   bridgeData, 
   onClearBridge,
-  onSwitchToMatrixTab
+  onSwitchToMatrixTab,
+  onTransferToMixer
 }) => {
   const [status, setStatus] = useState<AppStatus>(AppStatus.IDLE);
   const [exam, setExam] = useState<ExamData | null>(null);
@@ -428,6 +430,7 @@ export const ExamCreator: React.FC<ExamCreatorProps> = ({
           <ExamRenderer 
             data={exam} 
             onSaveExam={handleSaveCurrentExam}
+            onTransferToMixer={onTransferToMixer}
           />
         </div>
       )}

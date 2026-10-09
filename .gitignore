@@ -22,6 +22,10 @@ dist
 dist-ssr
 *.local
 
+# Root books and raw documents
+/*.pdf
+/*.docx
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

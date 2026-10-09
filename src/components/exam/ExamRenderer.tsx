@@ -2,16 +2,21 @@ import React, { useState } from 'react';
 import { ExamData } from '../../types/exam';
 import { 
   FileText, Download, Eye, EyeOff, Printer, 
-  Save, CheckCircle2, BookmarkCheck, Share2 
+  Save, CheckCircle2, BookmarkCheck, Share2, Shuffle 
 } from 'lucide-react';
 import { downloadExamDoc } from '../../services/docxService';
 
 interface ExamRendererProps {
   data: ExamData;
   onSaveExam?: () => void;
+  onTransferToMixer?: (data: ExamData) => void;
 }
 
-export const ExamRenderer: React.FC<ExamRendererProps> = ({ data, onSaveExam }) => {
+export const ExamRenderer: React.FC<ExamRendererProps> = ({ 
+  data, 
+  onSaveExam,
+  onTransferToMixer 
+}) => {
   const [showAnswers, setShowAnswers] = useState(false);
   const [isExportingDoc, setIsExportingDoc] = useState(false);
 
@@ -129,6 +134,18 @@ export const ExamRenderer: React.FC<ExamRendererProps> = ({ data, onSaveExam }) 
             >
               <Save className="w-3.5 h-3.5 text-amber-700" />
               <span>Lưu vào kho</span>
+            </button>
+          )}
+
+          {/* Transfer to Mixer */}
+          {onTransferToMixer && (
+            <button
+              onClick={() => onTransferToMixer(data)}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-indigo-500/20 transition-all cursor-pointer"
+              title="Chuyển đề này sang module 4. Trộn đề"
+            >
+              <Shuffle className="w-3.5 h-3.5" />
+              <span>Trộn đề này</span>
             </button>
           )}
         </div>
