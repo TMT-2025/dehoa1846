@@ -46,10 +46,10 @@ export function validateMixedVariant(
     });
   }
 
-  // 2. Section counts
-  const vSec1 = variantExam.sections.find(s => s.sectionIndex === 1);
-  const vSec2 = variantExam.sections.find(s => s.sectionIndex === 2);
-  const vSec3 = variantExam.sections.find(s => s.sectionIndex === 3);
+  // 2. Section counts (fallback to section type if index differs)
+  const vSec1 = variantExam.sections.find(s => s.sectionIndex === 1 || s.type === "MULTIPLE_CHOICE");
+  const vSec2 = variantExam.sections.find(s => s.sectionIndex === 2 || s.type === "TRUE_FALSE");
+  const vSec3 = variantExam.sections.find(s => s.sectionIndex === 3 || s.type === "SHORT_ANSWER");
 
   const p1Count = vSec1 ? vSec1.questions.length : 0;
   const p2Count = vSec2 ? vSec2.questions.length : 0;

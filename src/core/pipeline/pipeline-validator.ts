@@ -72,9 +72,13 @@ export function executeGate2Validation(
   );
 
   if (!report.isValid) {
+    const errorDetails = report.issues
+      .filter(i => i.severity === "CRITICAL" || i.severity === "ERROR")
+      .map(i => i.message)
+      .join("; ");
     throw new PipelineQualityGateError(
       "GATE_2_POST_MIXING",
-      `Variant ${variantResult.metadata.examCode} failed mixing validation with ${report.totalErrors} error(s).`,
+      `Variant ${variantResult.metadata.examCode} failed mixing validation with ${report.totalErrors} error(s)${errorDetails ? `: ${errorDetails}` : '.'}`,
       report.issues
     );
   }

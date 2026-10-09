@@ -82,7 +82,7 @@ export function convertExamDataToExamIR(data: ExamData): ExamIR {
       return {
         id: `q-mc-${qNum}`,
         sourcePosition: {
-          sectionIndex: 0,
+          sectionIndex: 1,
           questionIndex: idx,
           originalNumberStr: `Câu ${qNum}.`,
           startParagraphIndex: idx * 5,
@@ -105,7 +105,7 @@ export function convertExamDataToExamIR(data: ExamData): ExamIR {
 
     sections.push({
       id: "sec-part-1",
-      sectionIndex: 0,
+      sectionIndex: 1,
       title: "PHẦN I. Câu trắc nghiệm nhiều phương án lựa chọn (18 câu - 4.5 điểm).",
       type: "MULTIPLE_CHOICE",
       shufflePolicy: {
@@ -142,7 +142,7 @@ export function convertExamDataToExamIR(data: ExamData): ExamIR {
       return {
         id: `q-tf-${qNum}`,
         sourcePosition: {
-          sectionIndex: 1,
+          sectionIndex: 2,
           questionIndex: idx,
           originalNumberStr: `Câu ${qNum}.`,
           startParagraphIndex: idx * 5,
@@ -165,7 +165,7 @@ export function convertExamDataToExamIR(data: ExamData): ExamIR {
 
     sections.push({
       id: "sec-part-2",
-      sectionIndex: 1,
+      sectionIndex: 2,
       title: "PHẦN II. Câu trắc nghiệm đúng sai (4 câu - 4.0 điểm).",
       type: "TRUE_FALSE",
       shufflePolicy: {
@@ -187,7 +187,7 @@ export function convertExamDataToExamIR(data: ExamData): ExamIR {
       return {
         id: `q-sa-${qNum}`,
         sourcePosition: {
-          sectionIndex: 2,
+          sectionIndex: 3,
           questionIndex: idx,
           originalNumberStr: `Câu ${qNum}.`,
           startParagraphIndex: idx * 2,
@@ -214,7 +214,7 @@ export function convertExamDataToExamIR(data: ExamData): ExamIR {
 
     sections.push({
       id: "sec-part-3",
-      sectionIndex: 2,
+      sectionIndex: 3,
       title: "PHẦN III. Câu trắc nghiệm trả lời ngắn (6 câu - 1.5 điểm).",
       type: "SHORT_ANSWER",
       shufflePolicy: {

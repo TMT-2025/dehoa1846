@@ -54,7 +54,7 @@ export function validateExamIR(exam: ExamIR): ValidationReport {
   let tfCount = 0;
   let saCount = 0;
 
-  const sec1 = exam.sections.find(s => s.sectionIndex === 1);
+  const sec1 = exam.sections.find(s => s.sectionIndex === 1 || s.type === "MULTIPLE_CHOICE");
   if (sec1) {
     mcqCount = sec1.questions.length;
     if (sec1.type !== "MULTIPLE_CHOICE") {
@@ -75,7 +75,7 @@ export function validateExamIR(exam: ExamIR): ValidationReport {
     }
   }
 
-  const sec2 = exam.sections.find(s => s.sectionIndex === 2);
+  const sec2 = exam.sections.find(s => s.sectionIndex === 2 || s.type === "TRUE_FALSE");
   if (sec2) {
     tfCount = sec2.questions.length;
     if (sec2.type !== "TRUE_FALSE") {
@@ -96,7 +96,7 @@ export function validateExamIR(exam: ExamIR): ValidationReport {
     }
   }
 
-  const sec3 = exam.sections.find(s => s.sectionIndex === 3);
+  const sec3 = exam.sections.find(s => s.sectionIndex === 3 || s.type === "SHORT_ANSWER");
   if (sec3) {
     saCount = sec3.questions.length;
     if (sec3.type !== "SHORT_ANSWER") {
