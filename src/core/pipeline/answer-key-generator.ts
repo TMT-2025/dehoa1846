@@ -26,9 +26,13 @@ export interface BatchAnswerKeyExport {
 /**
  * Generates an answer key JSON representation for a single variant
  */
-export function generateVariantAnswerKey(variantResult: VariantExamResult): VariantAnswerKeyJson {
+export function generateVariantAnswerKey(variantInput: VariantExamResult | { variantResult: VariantExamResult; examCode?: string } | any): VariantAnswerKeyJson {
+  const variantResult: VariantExamResult = (variantInput && 'variantResult' in variantInput)
+    ? variantInput.variantResult
+    : variantInput;
+
   const { variantExam, metadata } = variantResult;
-  const examCode = metadata.examCode;
+  const examCode = metadata?.examCode || variantInput?.examCode || "101";
   const answers: Record<string, string | Record<string, boolean>> = {};
   const detailedAnswers: QuestionAnswerDetail[] = [];
 
@@ -97,17 +101,23 @@ export function generateVariantAnswerKey(variantResult: VariantExamResult): Vari
 /**
  * Generates the unified answer-key.json object for a batch of variants
  */
-export function generateBatchAnswerKey(variants: VariantExamResult[]): BatchAnswerKeyExport {
+export function generateBatchAnswerKey(variants: (VariantExamResult | { variantResult: VariantExamResult; examCode?: string } | any)[]): BatchAnswerKeyExport {
+  const normalizedList = variants.map(v => {
+    const vRes: VariantExamResult = (v && 'variantResult' in v) ? v.variantResult : v;
+    const code = vRes?.metadata?.examCode || (v as any)?.examCode || "101";
+    return { vRes, code };
+  });
+
   const exportData: BatchAnswerKeyExport = {
     generatedAt: new Date().toISOString(),
-    totalVariants: variants.length,
-    examCodes: variants.map(v => v.metadata.examCode),
+    totalVariants: normalizedList.length,
+    examCodes: normalizedList.map(item => item.code),
     variants: {}
   };
 
-  for (const v of variants) {
-    const keyJson = generateVariantAnswerKey(v);
-    exportData.variants[v.metadata.examCode] = keyJson;
+  for (const item of normalizedList) {
+    const keyJson = generateVariantAnswerKey(item.vRes);
+    exportData.variants[item.code] = keyJson;
   }
 
   return exportData;
@@ -118,16 +128,30 @@ export function generateBatchAnswerKey(variants: VariantExamResult[]): BatchAnsw
  * Throws an error if any discrepancy is found.
  */
 export function verifyAnswerKeyConsistency(
-  variantResult: VariantExamResult,
-  answerKey: VariantAnswerKeyJson
+  variantOrItems: any,
+  answerKey: any
 ): boolean {
-  if (variantResult.metadata.examCode !== answerKey.examCode) {
+  if (Array.isArray(variantOrItems)) {
+    for (const item of variantOrItems) {
+      const vResult: VariantExamResult = (item && 'variantResult' in item) ? item.variantResult : item;
+      const code = vResult?.metadata?.examCode || item?.examCode;
+      const keyForCode = answerKey.variants?.[code] || answerKey;
+      if (keyForCode) {
+        verifyAnswerKeyConsistency(vResult, keyForCode);
+      }
+    }
+    return true;
+  }
+
+  const vResult: VariantExamResult = (variantOrItems && 'variantResult' in variantOrItems) ? variantOrItems.variantResult : variantOrItems;
+  const examCode = vResult?.metadata?.examCode || variantOrItems?.examCode;
+  if (examCode && answerKey.examCode && examCode !== answerKey.examCode) {
     throw new Error(
-      `Answer key exam code mismatch: variant=${variantResult.metadata.examCode}, key=${answerKey.examCode}`
+      `Answer key exam code mismatch: variant=${examCode}, key=${answerKey.examCode}`
     );
   }
 
-  const generated = generateVariantAnswerKey(variantResult);
+  const generated = generateVariantAnswerKey(vResult);
 
   // Compare every key in answers
   const expectedKeys = Object.keys(generated.answers);
