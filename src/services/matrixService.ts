@@ -1,4 +1,4 @@
-import { Grade, Chapter, MatrixData, MatrixRow, CognitiveLevel, ExamType } from '../types/matrix';
+import { Grade, Chapter, MatrixData, MatrixRow, CognitiveLevel, ExamType, isPeriodicExamGrade10or11 } from '../types/matrix';
 import { sortChaptersByCurriculum, sortLessonsByNumber } from '../constants/curriculum';
 
 // Helper: Phân bố đều một số nguyên 'total' vào 'bins' ngăn/nhóm
@@ -9,26 +9,31 @@ export const distribute = (total: number, bins: number): number[] => {
   return Array.from({ length: bins }, (_, i) => base + (i < remainder ? 1 : 0));
 };
 
-// Helper: Phân bố 12 Biết, 4 Hiểu, 2 Vận dụng vào các chương theo chỉ tiêu Part 1
-function distributeP1Cognitive(p1Counts: number[]): { know: number; understand: number; apply: number }[] {
-  const n = p1Counts.length;
+// Helper: Phân bố mức độ nhận thức (Know, Understand, Apply) vào các ngăn dựa trên chỉ tiêu số câu
+function distributeCognitiveMulti(
+  counts: number[], 
+  targetKnow: number, 
+  targetUnderstand: number, 
+  targetApply: number
+): { know: number; understand: number; apply: number }[] {
+  const n = counts.length;
   if (n === 0) return [];
 
-  const cap = [...p1Counts];
+  const totalTarget = targetKnow + targetUnderstand + targetApply;
+  const cap = [...counts];
   const know = new Array(n).fill(0);
   const understand = new Array(n).fill(0);
   const apply = new Array(n).fill(0);
 
-  // 1. Phân bổ 12 câu Biết (Know)
-  let remainingKnow = 12;
-  const idealKnow = p1Counts.map(c => (c * 12) / 18);
+  // 1. Phân bổ Biết (Know)
+  let remainingKnow = targetKnow;
+  const idealKnow = counts.map(c => totalTarget > 0 ? (c * targetKnow) / totalTarget : 0);
   for (let i = 0; i < n; i++) {
     const k = Math.min(cap[i], Math.floor(idealKnow[i]));
     know[i] = k;
     remainingKnow -= k;
   }
 
-  // Chia phần dư của Know theo fractional remainder
   const knowRemainders = idealKnow
     .map((ideal, i) => ({ idx: i, rem: ideal - Math.floor(ideal), canAdd: cap[i] > know[i] }))
     .sort((a, b) => b.rem - a.rem);
@@ -41,7 +46,6 @@ function distributeP1Cognitive(p1Counts: number[]): { know: number; understand: 
     }
   }
 
-  // Nếu vẫn còn sót Know do ràng buộc dung lượng, gán vào bất kỳ chương nào còn chỗ
   for (let i = 0; i < n && remainingKnow > 0; i++) {
     while (know[i] < cap[i] && remainingKnow > 0) {
       know[i]++;
@@ -49,14 +53,13 @@ function distributeP1Cognitive(p1Counts: number[]): { know: number; understand: 
     }
   }
 
-  // Cập nhật dung lượng còn lại sau Know
   for (let i = 0; i < n; i++) {
     cap[i] -= know[i];
   }
 
-  // 2. Phân bổ 4 câu Hiểu (Understand)
-  let remainingUnderstand = 4;
-  const idealUnderstand = p1Counts.map(c => (c * 4) / 18);
+  // 2. Phân bổ Hiểu (Understand)
+  let remainingUnderstand = targetUnderstand;
+  const idealUnderstand = counts.map(c => totalTarget > 0 ? (c * targetUnderstand) / totalTarget : 0);
   for (let i = 0; i < n; i++) {
     const u = Math.min(cap[i], Math.floor(idealUnderstand[i]));
     understand[i] = u;
@@ -86,12 +89,15 @@ function distributeP1Cognitive(p1Counts: number[]): { know: number; understand: 
     cap[i] -= understand[i];
   }
 
-  // 3. Phân bổ 2 câu Vận dụng (Apply) vào dung lượng còn lại chính xác
-  for (let i = 0; i < n; i++) {
-    apply[i] = cap[i];
+  // 3. Phân bổ Vận dụng (Apply)
+  let remainingApply = targetApply;
+  for (let i = 0; i < n && remainingApply > 0; i++) {
+    const a = Math.min(cap[i], remainingApply);
+    apply[i] = a;
+    remainingApply -= a;
   }
 
-  return p1Counts.map((_, i) => ({
+  return counts.map((_, i) => ({
     know: know[i],
     understand: understand[i],
     apply: apply[i]
@@ -104,6 +110,25 @@ export const generateMatrix = (
   examType: ExamType, 
   extraReq?: string
 ): MatrixData => {
+  // Kiểm tra định dạng: Lớp 10, 11 kiểm tra định kì (giữa và cuối học kì) theo DINH DANG DE LOP 10-LOP11.docx
+  const isPeriodic1011 = isPeriodicExamGrade10or11(grade, examType);
+
+  // Cấu hình chỉ tiêu số câu và số lệnh hỏi
+  // Định kì Lớp 10, 11 (21 câu - 27 lệnh - 10 điểm):
+  // - P1: 12 câu trắc nghiệm 4 lựa chọn (12 lệnh = 3.0đ: 8 Biết, 4 Hiểu)
+  // - P2: 2 câu Đúng/Sai (8 lệnh = 2.0đ: 2 Biết, 4 Hiểu, 2 Vận dụng)
+  // - P3: 4 câu trả lời ngắn (4 lệnh = 2.0đ: 4 Vận dụng)
+  // - P4: 3 câu Tự luận (3 lệnh = 3.0đ: 1 Hiểu, 2 Vận dụng)
+  // Đề chuẩn 40 lệnh (Lớp 12 tốt nghiệp THPT hoặc kiểm tra thường xuyên):
+  // - P1: 18 câu (18 lệnh = 4.5đ: 12 Biết, 4 Hiểu, 2 Vận dụng)
+  // - P2: 4 câu (16 lệnh = 4.0đ: 4 Biết, 8 Hiểu, 4 Vận dụng)
+  // - P3: 6 câu (6 lệnh = 1.5đ: 6 Vận dụng)
+  const targetP1 = isPeriodic1011 ? 12 : 18;
+  const targetP2Hosts = isPeriodic1011 ? 2 : 4;
+  const targetP3 = isPeriodic1011 ? 4 : 6;
+  const targetP4 = isPeriodic1011 ? 3 : 0;
+  const targetTotalCommands = isPeriodic1011 ? 27 : 40;
+
   // Cấu trúc cố định cho mỗi câu Phần II: 1 Biết, 2 Hiểu, 1 Vận dụng (Tổng 4 lệnh)
   const p2PerQuestion: CognitiveLevel = { know: 1, understand: 2, apply: 1 };
 
@@ -118,12 +143,21 @@ export const generateMatrix = (
       chapters: [],
       extraRequirements: extraReq,
       rows: [],
-      totals: {
+      totals: isPeriodic1011 ? {
+        part1: { know: 8, understand: 4, apply: 0 },
+        part2: { know: 2, understand: 4, apply: 2 },
+        part3: { know: 0, understand: 0, apply: 4 },
+        part4: { know: 0, understand: 1, apply: 2 },
+        grandTotal: 27,
+        ratio: { know: 10, understand: 9, apply: 8 },
+        hasEssay: true
+      } : {
         part1: { know: 12, understand: 4, apply: 2 },
         part2: { know: 4, understand: 8, apply: 4 },
         part3: { know: 0, understand: 0, apply: 6 },
         grandTotal: 40,
-        ratio: { know: 16, understand: 12, apply: 12 }
+        ratio: { know: 16, understand: 12, apply: 12 },
+        hasEssay: false
       }
     };
   }
@@ -162,14 +196,13 @@ export const generateMatrix = (
     chapterSubItems.push(subsInChapter);
   });
 
-  // 2. Kiểm tra và bổ sung Phần II (4 bối cảnh) phân bố đều theo các chương nếu chưa đủ 4
+  // 2. Kiểm tra và bổ sung Phần II (2 bối cảnh với lớp 10,11 định kì; 4 bối cảnh với lớp 12)
   const existingP2Counts = chapterSubItems.map(items => items.filter(it => it.isP2Host).length);
   const totalExistingP2 = existingP2Counts.reduce((a, b) => a + b, 0);
 
-  if (totalExistingP2 < 4) {
-    // Chỉ tiêu bối cảnh P.II phân bố đều theo số chương
-    const p2TargetPerChapter = distribute(4, numChapters);
-    let needed = 4 - totalExistingP2;
+  if (totalExistingP2 < targetP2Hosts) {
+    const p2TargetPerChapter = distribute(targetP2Hosts, numChapters);
+    let needed = targetP2Hosts - totalExistingP2;
 
     for (let cIdx = 0; cIdx < numChapters && needed > 0; cIdx++) {
       const items = chapterSubItems[cIdx];
@@ -196,33 +229,49 @@ export const generateMatrix = (
         }
       }
     }
+  } else if (totalExistingP2 > targetP2Hosts) {
+    // Nếu chọn dư số bối cảnh mục tiêu, bỏ bớt
+    let excess = totalExistingP2 - targetP2Hosts;
+    for (let cIdx = numChapters - 1; cIdx >= 0 && excess > 0; cIdx--) {
+      for (let it of chapterSubItems[cIdx]) {
+        if (it.isP2Host && excess > 0) {
+          it.isP2Host = false;
+          excess--;
+        }
+      }
+    }
   }
 
-  // 3. Phân bổ số câu đều nhau giữa các chương (Mặc định cho đề kiểm tra định kì có nhiều chương)
-  // Tổng chỉ tiêu cả đề: 40 lệnh (10 điểm). Mỗi chương nhận mục tiêu: distribute(40, numChapters)
-  const targetTotalPerChapter = distribute(40, numChapters);
+  // 3. Phân bổ số câu đều nhau giữa các chương
+  const targetTotalPerChapter = distribute(targetTotalCommands, numChapters);
   const actualP2CountPerChapter = chapterSubItems.map(items => items.filter(it => it.isP2Host).length);
 
-  // Phần III: 6 câu trả lời ngắn (6 lệnh Vận dụng), phân bố đều cho các chương
-  const p3CountPerChapter = distribute(6, numChapters);
+  // Phần III: 4 câu (lớp 10, 11 định kì) hoặc 6 câu (lớp 12)
+  const p3CountPerChapter = distribute(targetP3, numChapters);
 
-  // Phần I: 18 câu trắc nghiệm (18 lệnh). Mỗi chương = Chỉ tiêu chương - (Số câu P2 * 4) - Số câu P3
+  // Phần IV (Tự luận): 3 câu (lớp 10, 11 định kì) hoặc 0 câu (lớp 12)
+  const p4CountPerChapter = distribute(targetP4, numChapters);
+  // Phân bổ nhận thức Phần IV (1 Hiểu, 2 Vận dụng) vào các chương
+  const p4CognitivePerChapter = distributeCognitiveMulti(p4CountPerChapter, 0, 1, 2);
+
+  // Phần I: Số câu = Chỉ tiêu chương - (Số câu P2 * 4) - Số câu P3 - Số câu P4
   let p1CountPerChapter = targetTotalPerChapter.map((target, cIdx) => {
     const p2Commands = actualP2CountPerChapter[cIdx] * 4;
     const p3Commands = p3CountPerChapter[cIdx];
-    return Math.max(0, target - p2Commands - p3Commands);
+    const p4Commands = p4CountPerChapter[cIdx];
+    return Math.max(0, target - p2Commands - p3Commands - p4Commands);
   });
 
-  // Đảm bảo tổng số câu Phần I luôn bằng 18
+  // Đảm bảo tổng số câu Phần I luôn bằng targetP1 (12 hoặc 18)
   let currentP1Sum = p1CountPerChapter.reduce((a, b) => a + b, 0);
-  if (currentP1Sum < 18) {
-    let diff = 18 - currentP1Sum;
+  if (currentP1Sum < targetP1) {
+    let diff = targetP1 - currentP1Sum;
     for (let i = 0; i < numChapters && diff > 0; i++) {
       p1CountPerChapter[i]++;
       diff--;
     }
-  } else if (currentP1Sum > 18) {
-    let diff = currentP1Sum - 18;
+  } else if (currentP1Sum > targetP1) {
+    let diff = currentP1Sum - targetP1;
     for (let i = numChapters - 1; i >= 0 && diff > 0; i--) {
       if (p1CountPerChapter[i] > 0) {
         p1CountPerChapter[i]--;
@@ -231,8 +280,12 @@ export const generateMatrix = (
     }
   }
 
-  // 4. Phân bổ mức độ nhận thức Part 1 (12 Biết, 4 Hiểu, 2 Vận dụng) vào từng chương
-  const p1CognitivePerChapter = distributeP1Cognitive(p1CountPerChapter);
+  // 4. Phân bổ mức độ nhận thức Part 1:
+  // Lớp 10,11 định kì: 12 câu (8 Biết, 4 Hiểu, 0 Vận dụng)
+  // Lớp 12: 18 câu (12 Biết, 4 Hiểu, 2 Vận dụng)
+  const p1CognitivePerChapter = isPeriodic1011
+    ? distributeCognitiveMulti(p1CountPerChapter, 8, 4, 0)
+    : distributeCognitiveMulti(p1CountPerChapter, 12, 4, 2);
 
   // 5. Sinh từng dòng ma trận (MatrixRow) theo từng chương
   const rows: MatrixRow[] = [];
@@ -243,12 +296,11 @@ export const generateMatrix = (
 
     const p1Cog = p1CognitivePerChapter[cIdx] || { know: 0, understand: 0, apply: 0 };
     const p3Count = p3CountPerChapter[cIdx] || 0;
+    const p4Cog = p4CognitivePerChapter[cIdx] || { know: 0, understand: 0, apply: 0 };
 
-    const p2Items = items.filter(it => it.isP2Host);
     const nonP2Items = items.filter(it => !it.isP2Host);
 
     // Phân bổ chỉ tiêu của chương vào các mục không phải P2
-    // Nếu tất cả mục trong chương đều là P2, phân bổ vào tất cả mục để bảo toàn số câu
     const targetReceivers = nonP2Items.length > 0 ? nonP2Items : items;
     const receiverCount = targetReceivers.length;
 
@@ -256,6 +308,8 @@ export const generateMatrix = (
     const p1uDist = distribute(p1Cog.understand, receiverCount);
     const p1vDist = distribute(p1Cog.apply, receiverCount);
     const p3vDist = distribute(p3Count, receiverCount);
+    const p4uDist = distribute(p4Cog.understand, receiverCount);
+    const p4vDist = distribute(p4Cog.apply, receiverCount);
 
     let receiverIdx = 0;
 
@@ -263,13 +317,14 @@ export const generateMatrix = (
       let rowP1 = { know: 0, understand: 0, apply: 0 };
       let rowP2 = { know: 0, understand: 0, apply: 0 };
       let rowP3 = { know: 0, understand: 0, apply: 0 };
+      let rowP4: CognitiveLevel | undefined = isPeriodic1011 ? { know: 0, understand: 0, apply: 0 } : undefined;
 
       if (item.isP2Host) {
         // Mỗi bối cảnh P.II nhận đúng cấu trúc 1 Biết - 2 Hiểu - 1 Vận dụng
         rowP2 = { ...p2PerQuestion };
       }
 
-      // Nhận chỉ tiêu Part 1 và Part 3 nếu thuộc nhóm nhận chỉ tiêu
+      // Nhận chỉ tiêu Part 1, Part 3 và Part 4 nếu thuộc nhóm nhận chỉ tiêu
       if (nonP2Items.length === 0 || !item.isP2Host) {
         const idx = receiverIdx;
         rowP1 = {
@@ -282,6 +337,13 @@ export const generateMatrix = (
           understand: 0,
           apply: p3vDist[idx] || 0
         };
+        if (isPeriodic1011) {
+          rowP4 = {
+            know: 0,
+            understand: p4uDist[idx] || 0,
+            apply: p4vDist[idx] || 0
+          };
+        }
         receiverIdx++;
       }
 
@@ -290,7 +352,8 @@ export const generateMatrix = (
 
       const totalCommands = (rowP1.know + rowP1.understand + rowP1.apply) +
                             (rowP2.know + rowP2.understand + rowP2.apply) +
-                            (rowP3.apply);
+                            (rowP3.apply) +
+                            ((rowP4?.know || 0) + (rowP4?.understand || 0) + (rowP4?.apply || 0));
 
       rows.push({
         content: item.chapterName,
@@ -302,6 +365,7 @@ export const generateMatrix = (
         part1: rowP1,
         part2: rowP2,
         part3: rowP3,
+        part4: rowP4,
         total: totalCommands
       });
     });
@@ -326,9 +390,16 @@ export const generateMatrix = (
     apply: acc.apply + r.part3.apply
   }), { know: 0, understand: 0, apply: 0 });
 
+  const sumP4 = isPeriodic1011 ? rows.reduce((acc, r) => ({
+    know: acc.know + (r.part4?.know || 0),
+    understand: acc.understand + (r.part4?.understand || 0),
+    apply: acc.apply + (r.part4?.apply || 0)
+  }), { know: 0, understand: 0, apply: 0 }) : undefined;
+
   const grandTotal = (sumP1.know + sumP1.understand + sumP1.apply) +
                      (sumP2.know + sumP2.understand + sumP2.apply) +
-                     (sumP3.apply);
+                     (sumP3.apply) +
+                     ((sumP4?.know || 0) + (sumP4?.understand || 0) + (sumP4?.apply || 0));
 
   return {
     grade,
@@ -340,12 +411,14 @@ export const generateMatrix = (
       part1: sumP1,
       part2: sumP2,
       part3: sumP3,
+      part4: sumP4,
       grandTotal,
       ratio: {
-        know: sumP1.know + sumP2.know,
-        understand: sumP1.understand + sumP2.understand,
-        apply: sumP1.apply + sumP2.apply + sumP3.apply
-      }
+        know: sumP1.know + sumP2.know + (sumP4?.know || 0),
+        understand: sumP1.understand + sumP2.understand + (sumP4?.understand || 0),
+        apply: sumP1.apply + sumP2.apply + sumP3.apply + (sumP4?.apply || 0)
+      },
+      hasEssay: isPeriodic1011
     }
   };
 };

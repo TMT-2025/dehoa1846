@@ -103,10 +103,11 @@ export function convertExamDataToExamIR(data: ExamData): ExamIR {
       };
     });
 
+    const p1Pts = (data.part1.length * 0.25).toFixed(1).replace('.', ',');
     sections.push({
       id: "sec-part-1",
       sectionIndex: 1,
-      title: "PHẦN I. Câu trắc nghiệm nhiều phương án lựa chọn (18 câu - 4.5 điểm).",
+      title: `PHẦN I. Câu trắc nghiệm nhiều phương án lựa chọn (${data.part1.length} câu - ${p1Pts} điểm).`,
       type: "MULTIPLE_CHOICE",
       shufflePolicy: {
         shuffleQuestions: true,
@@ -163,10 +164,11 @@ export function convertExamDataToExamIR(data: ExamData): ExamIR {
       };
     });
 
+    const p2Pts = (data.part2.length * 1.0).toFixed(1).replace('.', ',');
     sections.push({
       id: "sec-part-2",
       sectionIndex: 2,
-      title: "PHẦN II. Câu trắc nghiệm đúng sai (4 câu - 4.0 điểm).",
+      title: `PHẦN II. Câu trắc nghiệm đúng sai (${data.part2.length} câu - ${p2Pts} điểm).`,
       type: "TRUE_FALSE",
       shufflePolicy: {
         shuffleQuestions: true,
@@ -212,10 +214,11 @@ export function convertExamDataToExamIR(data: ExamData): ExamIR {
       };
     });
 
+    const p3Pts = (data.part3.length === 4 || (data.part4 && data.part4.length > 0)) ? '2,0' : '1,5';
     sections.push({
       id: "sec-part-3",
       sectionIndex: 3,
-      title: "PHẦN III. Câu trắc nghiệm trả lời ngắn (6 câu - 1.5 điểm).",
+      title: `PHẦN III. Câu trắc nghiệm trả lời ngắn (${data.part3.length} câu - ${p3Pts} điểm).`,
       type: "SHORT_ANSWER",
       shufflePolicy: {
         shuffleQuestions: true,

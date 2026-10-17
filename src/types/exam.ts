@@ -20,6 +20,12 @@ export interface ShortAnswerQuestion {
   explanation?: string;
 }
 
+export interface EssayQuestion {
+  question: string;
+  points: number; // Điểm số, ví dụ 1.0 điểm
+  solution?: string; // Hướng dẫn chấm chi tiết và thang điểm
+}
+
 export interface ExamMatrixRow {
   topic: string;
   recognition: number;   // Nhận biết
@@ -32,10 +38,12 @@ export interface ExamData {
   id?: string;
   title: string;
   grade: string;
+  examType?: string;
   createdAt?: number;
   part1: MCQQuestion[];
   part2: TFScenario[];
   part3: ShortAnswerQuestion[];
+  part4?: EssayQuestion[];
   matrix: ExamMatrixRow[];
   sourceMatrixId?: string;
 }

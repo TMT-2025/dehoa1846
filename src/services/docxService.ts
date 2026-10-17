@@ -108,8 +108,9 @@ export const downloadExamDoc = async (data: ExamData, isAnswerKey: boolean) => {
   }));
 
   // PART 1
+  const p1Pts = (data.part1.length * 0.25).toFixed(1).replace('.', ',');
   children.push(new Paragraph({ 
-    children: [new TextRun({ text: "PHẦN I. Câu trắc nghiệm nhiều phương án lựa chọn (18 câu - 4.5 điểm).", bold: true })], 
+    children: [new TextRun({ text: `PHẦN I. Câu trắc nghiệm nhiều phương án lựa chọn (${data.part1.length} câu - ${p1Pts} điểm).`, bold: true })], 
     spacing 
   }));
   const labels1 = ["A", "B", "C", "D"];
@@ -133,8 +134,9 @@ export const downloadExamDoc = async (data: ExamData, isAnswerKey: boolean) => {
   });
 
   // PART 2
+  const p2Pts = (data.part2.length * 1.0).toFixed(1).replace('.', ',');
   children.push(new Paragraph({ 
-    children: [new TextRun({ text: "PHẦN II. Câu trắc nghiệm đúng sai (4 câu - 4.0 điểm).", bold: true })], 
+    children: [new TextRun({ text: `PHẦN II. Câu trắc nghiệm đúng sai (${data.part2.length} câu - ${p2Pts} điểm).`, bold: true })], 
     spacing 
   }));
   const labels2 = ["a", "b", "c", "d"];
@@ -158,8 +160,10 @@ export const downloadExamDoc = async (data: ExamData, isAnswerKey: boolean) => {
   });
 
   // PART 3
+  const hasPart4 = Array.isArray(data.part4) && data.part4.length > 0;
+  const p3Pts = (data.part3.length === 4 || hasPart4) ? '2,0' : '1,5';
   children.push(new Paragraph({ 
-    children: [new TextRun({ text: "PHẦN III. Câu trắc nghiệm trả lời ngắn (6 câu - 1.5 điểm).", bold: true })], 
+    children: [new TextRun({ text: `PHẦN III. Câu trắc nghiệm trả lời ngắn (${data.part3.length} câu - ${p3Pts} điểm).`, bold: true })], 
     spacing 
   }));
   data.part3.forEach((q, idx) => {
@@ -195,6 +199,65 @@ export const downloadExamDoc = async (data: ExamData, isAnswerKey: boolean) => {
       }));
     }
   });
+
+  // PART 4 (TỰ LUẬN)
+  if (hasPart4 && data.part4) {
+    children.push(new Paragraph({ 
+      children: [new TextRun({ text: `PHẦN IV. TỰ LUẬN (${data.part4.length} câu - 3,0 điểm).`, bold: true })], 
+      spacing 
+    }));
+
+    data.part4.forEach((q, idx) => {
+      children.push(new Paragraph({ 
+        children: [
+          new TextRun({ text: `Câu ${idx + 1} (${q.points || 1.0} điểm). `, bold: true }), 
+          ...parseChemicalText(q.question)
+        ], 
+        spacing: { before: 120 } 
+      }));
+
+      if (isAnswerKey) {
+        if (q.solution) {
+          const lines = q.solution.split('\n');
+          children.push(new Paragraph({
+            children: [
+              new TextRun({ text: "Hướng dẫn giải & Thang điểm:", bold: true, italics: true, color: "006600" })
+            ],
+            indent: { left: 450 },
+            spacing: { before: 50, after: 30 }
+          }));
+          lines.forEach(line => {
+            children.push(new Paragraph({
+              children: [
+                ...parseChemicalText(line, { italics: true, color: "333333" })
+              ],
+              indent: { left: 700 },
+              spacing: { before: 0, after: 20 }
+            }));
+          });
+        }
+      } else {
+        children.push(new Paragraph({
+          children: [new TextRun({ text: "Bài làm:", italics: true, color: "888888" })],
+          indent: { left: 450 },
+          spacing: { before: 60, after: 30 }
+        }));
+        for (let i = 0; i < 5; i++) {
+          children.push(new Paragraph({
+            children: [new TextRun({ text: "..........................................................................................................................................................................", color: "CCCCCC" })],
+            indent: { left: 450 },
+            spacing: { before: 0, after: 40 }
+          }));
+        }
+      }
+    });
+  }
+
+  children.push(new Paragraph({
+    text: "--- HẾT ---",
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 300, after: 100 }
+  }));
 
   const doc = new Document({
     sections: [{ 

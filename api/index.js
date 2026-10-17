@@ -79,6 +79,27 @@ app.post('/api/generate-exam', async (req, res) => {
       4. NGUYÊN TẮC: Nếu không có nguồn quốc tế phù hợp với bài học cụ thể thì tạo đề chuẩn mực theo CT GDPT 2018 như cũ.
       5. TOÀN BỘ CÂU HỎI VÀ NGỮ CẢNH TỪ NGUỒN QUỐC TẾ BẮT BUỘC ĐƯỢC DỊCH VÀ DIỄN ĐẠT HOÀN TOÀN SANG TIẾNG VIỆT CHUẨN MỰC SƯ PHẠM (chỉ giữ nguyên tên chất theo danh pháp quốc tế IUPAC theo CT GDPT 2018). Các câu hỏi khác ở Phần I, II, III thực hiện bình thường như cũ.
 
+      QUY CHUẨN ĐẶC BIỆT KHI SOẠN ĐỀ KIỂM TRA ĐỊNH KÌ KHỐI 10 VÀ KHỐI 11 (THEO FILE 'DINH DANG DE LOP 10-LOP11.docx'):
+      Khi tạo đề kiểm tra định kì (giữa kỳ / cuối kỳ) cho Lớp 10 hoặc Lớp 11 hoặc khi yêu cầu có Tự luận:
+      Đề thi gồm 2 phần Trắc nghiệm (7.0 điểm) và Tự luận (3.0 điểm), tổng cộng 4 phần, 21 câu hỏi, 27 lệnh hỏi, 10 điểm:
+      1. PHẦN I (12 câu Trắc nghiệm 4 lựa chọn - 3.0 điểm):
+         - Gồm đúng 12 câu (Câu 1 đến Câu 12), mỗi câu 0.25 điểm.
+         - Tập trung kiểm tra mức độ Nhận biết (8 câu) và Thông hiểu (4 câu).
+      2. PHẦN II (2 câu Trắc nghiệm Đúng/Sai - 2.0 điểm):
+         - Gồm đúng 2 câu (Câu 1 đến Câu 2) với 2 bối cảnh thực tiễn.
+         - Mỗi câu gồm 4 ý a, b, c, d (tổng 8 ý/lệnh hỏi), mỗi ý 0.25 điểm. Cấu trúc 4 ý phát triển: 1 Biết, 2 Hiểu, 1 Vận dụng.
+      3. PHẦN III (4 câu Trắc nghiệm Trả lời ngắn - 2.0 điểm):
+         - Gồm đúng 4 câu (Câu 1 đến Câu 4), mỗi câu 0.5 điểm.
+         - Bài toán tính toán có ý nghĩa thực tế, yêu cầu làm tròn rõ ràng, đáp án (answer) là 1 con số duy nhất.
+      4. PHẦN IV (3 câu Tự luận - 3.0 điểm):
+         - Gồm đúng 3 câu (Câu 1 đến Câu 3) ở mảng 'part4', mỗi câu 1.0 điểm (points: 1.0):
+           + Câu 1 (1.0 điểm): Mức độ Thông hiểu / Vận dụng thấp (viết phương trình hóa học, giải thích hiện tượng, cấu tạo nguyên tử, liên kết hóa học hoặc cân bằng hóa học).
+           + Câu 2 (1.0 điểm): Mức độ Vận dụng (bài toán thực tế hoặc tính nồng độ, pH, hiệu suất, biến thiên enthalpy...).
+           + Câu 3 (1.0 điểm): Mức độ Vận dụng cao (bài toán thực nghiệm sâu sắc, xử lý số liệu hoặc liên hệ thực tiễn đời sống / sản xuất).
+           + Mỗi câu tự luận bắt buộc phải có hướng dẫn giải chi tiết (solution) kèm thang điểm/biểu điểm cụ thể cho từng bước để giáo viên chấm điểm.
+
+      (LƯU Ý: Với KHỐI 12 hoặc khi đề yêu cầu 40 lệnh 100% trắc nghiệm theo chuẩn tốt nghiệp THPT của Bộ GD&ĐT: Phần I gồm 18 câu, Phần II gồm 4 câu, Phần III gồm 6 câu, Phần IV để mảng rỗng []).
+
       QUY CHUẨN PHONG CÁCH ĐỀ THI TỐT NGHIỆP THPT (BỘ GD&ĐT 2025 - 2026) - ĐẶC BIỆT ÁP DỤNG CHO LỚP 12 (KIỂM TRA THƯỜNG XUYÊN VÀ ĐỊNH KÌ):
       Ghi nhớ và tuân thủ tuyệt đối hình thức, độ dài phần dẫn, bối cảnh thực tiễn và phương thức tạo câu hỏi từ Đề thi tốt nghiệp THPT 2025 và 2026 môn Hóa học của Bộ GD&ĐT:
       
@@ -124,7 +145,7 @@ app.post('/api/generate-exam', async (req, res) => {
     `;
 
     contents.push({
-      text: `Soạn đề kiểm tra Hóa học khối ${grade} - Các chương: ${topicStr}. Yêu cầu bổ sung: ${details || 'Chuẩn cấu trúc 40 lệnh hỏi'}. Đảm bảo tỉ lệ 4:3:3, phân bổ đều kiến thức giữa các chương. ĐẶC BIỆT với Lớp 12 (cả kiểm tra thường xuyên và định kì), đề thi phải bám sát tuyệt đối phong cách đề thi Tốt nghiệp THPT 2025 - 2026 của Bộ GD&ĐT về độ dài phần dẫn, bối cảnh thực nghiệm 4 bước kiểm chứng giả thuyết, câu hỏi điền khuyết và thảo luận đề xuất, 4 cấp độ tư duy a-b-c-d ở Phần II, hướng dẫn làm tròn và đáp án là một con số duy nhất ở Phần III; đồng thời tích hợp từ 0-3 câu Phần I, 0-1 câu Phần II, 0-2 câu Phần III từ nguồn quốc tế (AP Chemistry, Cambridge, RSC Education, NIST, PubChem) khi có nội dung phù hợp và dịch toàn bộ sang Tiếng Việt chuẩn mực.`
+      text: `Soạn đề kiểm tra Hóa học khối ${grade} - Các chương: ${topicStr}. Yêu cầu: ${details || 'Chuẩn GDPT 2018'}. Đảm bảo tỉ lệ 4:3:3, phân bổ đều kiến thức giữa các chương. Nếu là kiểm tra định kì Lớp 10 hoặc 11 (hoặc có yêu cầu tự luận), đề thi BẮT BUỘC có 4 phần (21 câu, 27 lệnh hỏi, 10 điểm: 12 câu Phần I, 2 câu Phần II, 4 câu Phần III, 3 câu Phần IV tự luận kèm biểu điểm solution). Nếu là Lớp 12, đề thi tuân thủ 40 lệnh trắc nghiệm (18 câu Phần I, 4 câu Phần II, 6 câu Phần III).`
     });
 
     const response = await ai.models.generateContent({
@@ -182,6 +203,19 @@ app.post('/api/generate-exam', async (req, res) => {
                   explanation: { type: Type.STRING }
                 },
                 required: ['question', 'answer', 'explanation']
+              }
+            },
+            part4: {
+              type: Type.ARRAY,
+              description: "Phần IV: Câu hỏi tự luận (bắt buộc gồm 3 câu cho kiểm tra định kì Lớp 10, Lớp 11)",
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  question: { type: Type.STRING },
+                  points: { type: Type.NUMBER },
+                  solution: { type: Type.STRING }
+                },
+                required: ['question', 'points', 'solution']
               }
             },
             matrix: {

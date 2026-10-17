@@ -28,6 +28,16 @@ export interface CognitiveLevel {
   apply: number;
 }
 
+export const isPeriodicExamGrade10or11 = (grade: Grade | null | undefined, examType: ExamType): boolean => {
+  if (grade !== 10 && grade !== 11) return false;
+  return [
+    ExamType.MID_TERM_1,
+    ExamType.END_TERM_1,
+    ExamType.MID_TERM_2,
+    ExamType.END_TERM_2
+  ].includes(examType);
+};
+
 export interface MatrixRow {
   content: string;
   lessonName: string;
@@ -38,6 +48,7 @@ export interface MatrixRow {
   part1: CognitiveLevel;
   part2: CognitiveLevel;
   part3: CognitiveLevel;
+  part4?: CognitiveLevel;
   total: number;
 }
 
@@ -51,8 +62,10 @@ export interface MatrixData {
     part1: CognitiveLevel;
     part2: CognitiveLevel;
     part3: CognitiveLevel;
+    part4?: CognitiveLevel;
     grandTotal: number;
     ratio: CognitiveLevel;
+    hasEssay?: boolean;
   };
 }
 

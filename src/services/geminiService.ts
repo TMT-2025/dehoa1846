@@ -103,10 +103,31 @@ export const generateExam = async (
     4. NGUYÊN TẮC: Nếu không có nguồn quốc tế phù hợp với bài học cụ thể thì tạo đề chuẩn mực theo CT GDPT 2018 như cũ.
     5. TOÀN BỘ CÂU HỎI VÀ NGỮ CẢNH TỪ NGUỒN QUỐC TẾ BẮT BUỘC ĐƯỢC DỊCH VÀ DIỄN ĐẠT HOÀN TOÀN SANG TIẾNG VIỆT CHUẨN MỰC SƯ PHẠM (chỉ giữ nguyên tên chất theo danh pháp quốc tế IUPAC theo CT GDPT 2018). Các câu hỏi khác ở Phần I, II, III thực hiện bình thường như cũ.
 
+    QUY CHUẨN ĐẶC BIỆT KHI SOẠN ĐỀ KIỂM TRA ĐỊNH KÌ KHỐI 10 VÀ KHỐI 11 (THEO FILE 'DINH DANG DE LOP 10-LOP11.docx'):
+    Khi tạo đề kiểm tra định kì (giữa kỳ / cuối kỳ) cho Lớp 10 hoặc Lớp 11 hoặc khi yêu cầu có Tự luận:
+    Đề thi gồm 2 phần Trắc nghiệm (7.0 điểm) và Tự luận (3.0 điểm), tổng cộng 4 phần, 21 câu hỏi, 27 lệnh hỏi, 10 điểm:
+    1. PHẦN I (12 câu Trắc nghiệm 4 lựa chọn - 3.0 điểm):
+       - Gồm đúng 12 câu (Câu 1 đến Câu 12), mỗi câu 0.25 điểm.
+       - Tập trung kiểm tra mức độ Nhận biết (8 câu) và Thông hiểu (4 câu).
+    2. PHẦN II (2 câu Trắc nghiệm Đúng/Sai - 2.0 điểm):
+       - Gồm đúng 2 câu (Câu 1 đến Câu 2) với 2 bối cảnh thực tiễn.
+       - Mỗi câu gồm 4 ý a, b, c, d (tổng 8 ý/lệnh hỏi), mỗi ý 0.25 điểm. Cấu trúc 4 ý phát triển: 1 Biết, 2 Hiểu, 1 Vận dụng.
+    3. PHẦN III (4 câu Trắc nghiệm Trả lời ngắn - 2.0 điểm):
+       - Gồm đúng 4 câu (Câu 1 đến Câu 4), mỗi câu 0.5 điểm.
+       - Bài toán tính toán có ý nghĩa thực tế, yêu cầu làm tròn rõ ràng, đáp án (answer) là 1 con số duy nhất.
+    4. PHẦN IV (3 câu Tự luận - 3.0 điểm):
+       - Gồm đúng 3 câu (Câu 1 đến Câu 3) ở mảng 'part4', mỗi câu 1.0 điểm (points: 1.0):
+         + Câu 1 (1.0 điểm): Mức độ Thông hiểu / Vận dụng thấp (viết phương trình hóa học, giải thích hiện tượng, cấu tạo nguyên tử, liên kết hóa học hoặc cân bằng hóa học).
+         + Câu 2 (1.0 điểm): Mức độ Vận dụng (bài toán thực tế hoặc tính nồng độ, pH, hiệu suất, biến thiên enthalpy...).
+         + Câu 3 (1.0 điểm): Mức độ Vận dụng cao (bài toán thực nghiệm sâu sắc, xử lý số liệu hoặc liên hệ thực tiễn đời sống / sản xuất).
+         + Mỗi câu tự luận bắt buộc phải có hướng dẫn giải chi tiết (solution) kèm thang điểm/biểu điểm cụ thể cho từng bước để giáo viên chấm điểm.
+
+    (LƯU Ý: Với KHỐI 12 hoặc khi đề yêu cầu 40 lệnh 100% trắc nghiệm theo chuẩn tốt nghiệp THPT của Bộ GD&ĐT: Phần I gồm 18 câu, Phần II gồm 4 câu, Phần III gồm 6 câu, Phần IV để mảng rỗng []).
+
     QUY CHUẨN PHONG CÁCH ĐỀ THI TỐT NGHIỆP THPT (BỘ GD&ĐT 2025 - 2026) - ĐẶC BIỆT ÁP DỤNG CHO LỚP 12 (KIỂM TRA THƯỜNG XUYÊN VÀ ĐỊNH KÌ):
     Ghi nhớ và tuân thủ tuyệt đối hình thức, độ dài phần dẫn, bối cảnh thực tiễn và phương thức tạo câu hỏi từ Đề thi tốt nghiệp THPT 2025 và 2026 môn Hóa học của Bộ GD&ĐT:
     
-    1. PHẦN I (18 câu Trắc nghiệm 4 lựa chọn):
+    1. PHẦN I (18 câu Trắc nghiệm 4 lựa chọn cho Lớp 12):
        - Độ dài phần dẫn: Ngắn gọn, súc tích từ 10 đến 35 từ.
        - Các hình thức câu hỏi đặc trưng của Bộ GD&ĐT:
          + Câu hỏi điền khuyết: "... (1) ... là hợp chất/quá trình... Cụm từ thích hợp điền vào (1) là:".
@@ -114,29 +135,21 @@ export const generateExam = async (
          + Câu hỏi đọc dữ liệu phổ / sơ đồ thí nghiệm / pin: Đọc tín hiệu peak phổ hồng ngoại IR (nhóm C=O ~1700 cm⁻¹, O-H ~3300 cm⁻¹), peak ion phân tử m/z trên phổ MS, sơ đồ pin Galvanic (xác định cực anode, cathode, chiều electron, ion trong cầu muối), hoặc nhận diện dụng cụ thí nghiệm (bình cầu, sinh hàn, phễu chiết).
          + Bốn phương án A, B, C, D ngắn gọn, ngữ pháp và cấu trúc đồng nhất. 'options' chỉ chứa nội dung câu trả lời, không kèm chữ A. B. C. D ở đầu.
     
-    2. PHẦN II (4 câu Trắc nghiệm Đúng/Sai - 4 bối cảnh lớn):
+    2. PHẦN II (Trắc nghiệm Đúng/Sai - 4 bối cảnh cho Lớp 12; 2 bối cảnh cho định kì Lớp 10/11):
        - Độ dài bối cảnh (context): 100 đến 250 từ. Bối cảnh phải giàu hàm lượng chuyên môn, gắn với thí nghiệm thực hành, đời sống hoặc sản xuất công nghiệp.
-       - 4 bối cảnh chủ đạo của Bộ GD&ĐT (đặc biệt Lớp 12):
-         + Bối cảnh 1 (Thí nghiệm thực hành & kiểm chứng giả thuyết): Trình bày quy trình thí nghiệm gồm các bước rõ ràng (Bước 1: ..., Bước 2: ..., Bước 3: ...; ví dụ: thủy phân ester, xà phòng hóa chất béo, chuẩn độ oxi hóa - khử FeSO4 bằng dung dịch KMnO4, điều chế tơ polymer).
-         + Bối cảnh 2 (Hóa học hữu cơ sinh học & Dược phẩm): Cấu trúc phân tử kháng sinh, amino acid, peptide, protein, carbohydrate (glucose, saccharose, cellulose), lipid (omega-3, chất béo), kết hợp công thức hoặc phổ IR.
-         + Bối cảnh 3 (Quá trình sản xuất công nghiệp & Môi trường): Quy trình sản xuất công nghiệp (Solvay, clo - kiềm màng ngăn, luyện gang thép lò thổi oxy, xử lý khí thải SO2/NOx).
-         + Bối cảnh 4 (Điện hóa học & Phức chất): Pin điện hóa (galvanic, lithium-ion, pin nhiên liệu), ăn mòn điện hóa giàn khoan biển, hoặc phức chất kim loại chuyển tiếp (cấu trúc hình học, phối tử, ứng dụng y học cisplatin).
        - Phương thức tạo 4 lệnh hỏi a, b, c, d phát triển theo 4 cấp độ tư duy nhận thức:
          + a) Nhận biết: Kiểm tra định nghĩa, nhóm chức, phân loại, tên gọi hoặc vai trò cơ bản của hóa chất ban đầu.
-         + b) Thông hiểu: Bản chất phản ứng, giải thích hiện tượng ở từng bước thí nghiệm (ví dụ: vai trò của dung dịch NaCl bão hòa để làm nổi xà phòng, vai trò môi trường H2SO4).
-         + c) Vận dụng: Tính toán định lượng gắn liền với số liệu trong bối cảnh (khối lượng, thể tích khí, hiệu suất, nồng độ mol, hằng số cân bằng).
+         + b) Thông hiểu: Bản chất phản ứng, giải thích hiện tượng ở từng bước thí nghiệm.
+         + c) Vận dụng: Tính toán định lượng gắn liền với số liệu trong bối cảnh.
          + d) Vận dụng cao / Đánh giá: Đánh giá tính đúng/sai của giả thuyết học sinh đưa ra, dự đoán hiện tượng khi thay đổi hóa chất/điều kiện, suy luận cấu trúc lập thể hoặc tối ưu hóa phản ứng.
        - 'statements' gồm đúng 4 nhận định bằng TIẾNG VIỆT, không kèm a) b) c) d) ở đầu.
     
-    3. PHẦN III (6 câu Trắc nghiệm Trả lời ngắn):
+    3. PHẦN III (Trắc nghiệm Trả lời ngắn - 6 câu cho Lớp 12; 4 câu cho định kì Lớp 10/11):
        - Độ dài câu hỏi: 50 đến 180 từ per question.
-       - Phương thức tạo câu hỏi chuẩn Bộ GD&ĐT:
-         + Câu đếm cấu trúc / tính chất: Đếm số đồng phân cấu tạo thỏa mãn điều kiện hoặc số chất trong dãy tham gia phản ứng.
-         + Bài toán Nhiệt hóa học & Năng lượng: Tính nhiệt lượng Q tỏa ra khi đốt nhiên liệu (khí gas LPG, than đá, cồn), tính biến thiên enthalpy chuẩn ΔrH°298 hoặc nhiệt tạo thành ΔfH°298.
-         + Bài toán Điện hóa & Pin điện: Tính sức điện động chuẩn của pin E°cell = E°(+) - E°(-), hoặc bài toán điện phân theo định luật Faraday.
-         + Bài toán Sản xuất công nghiệp & Đời sống: Tính lượng nguyên liệu thực tế (quặng bauxite, đá vôi, quặng sắt, phân bón, xi măng, oleum), thành phần phần trăm kim loại trong hợp kim/thép, thể tích dung dịch chuẩn độ.
+       - Phương thức tạo câu hỏi chuẩn:
+         + Câu đếm cấu trúc / tính chất hoặc bài toán tính toán thực tế.
        - Quy cách câu lệnh và làm tròn BẮT BUỘC:
-         + Cuối câu hỏi LUÔN PHẢI CÓ câu chỉ dẫn làm tròn rõ ràng chuẩn Bộ GD&ĐT: "(Làm tròn kết quả đến hàng phần mười)" HOẶC "(Làm tròn kết quả đến hàng phần trăm)" HOẶC "(Làm tròn kết quả đến hàng đơn vị)" kèm "(không làm tròn các phép tính trung gian, chỉ làm tròn kết quả cuối cùng)" nếu có nhiều bước tính.
+         + Cuối câu hỏi LUÔN PHẢI CÓ câu chỉ dẫn làm tròn rõ ràng chuẩn Bộ GD&ĐT: "(Làm tròn kết quả đến hàng phần mười)" HOẶC "(Làm tròn kết quả đến hàng phần trăm)" HOẶC "(Làm tròn kết quả đến hàng đơn vị)".
          + ĐÁP ÁN (answer): BẮT BUỘC là 1 CON SỐ DUY NHẤT (nguyên hoặc thập phân, ví dụ: "12", "3.5", "0.24", "4"). TUYỆT ĐỐI KHÔNG chứa đơn vị đo (như gam, mol, lít, %...) hay chữ cái trong trường 'answer'.
          + GIẢI THÍCH (explanation): Cung cấp các bước biến đổi và tính toán then chốt ngắn gọn, rõ ràng (2-3 bước).
     
@@ -148,7 +161,7 @@ export const generateExam = async (
   `;
 
   contents.push({
-    text: `Soạn đề kiểm tra Hóa học khối ${grade} - Các chương: ${topicStr}. Yêu cầu bổ sung: ${details || 'Chuẩn cấu trúc 40 lệnh hỏi'}. Đảm bảo tỉ lệ 4:3:3, phân bổ đều kiến thức giữa các chương. ĐẶC BIỆT với Lớp 12 (cả kiểm tra thường xuyên và định kì), đề thi phải bám sát tuyệt đối phong cách đề thi Tốt nghiệp THPT 2025 - 2026 của Bộ GD&ĐT về độ dài phần dẫn, bối cảnh thực nghiệm 4 bước kiểm chứng giả thuyết, câu hỏi điền khuyết và thảo luận đề xuất, 4 cấp độ tư duy a-b-c-d ở Phần II, hướng dẫn làm tròn và đáp án là một con số duy nhất ở Phần III; đồng thời tích hợp từ 0-3 câu Phần I, 0-1 câu Phần II, 0-2 câu Phần III từ nguồn quốc tế (AP Chemistry, Cambridge, RSC Education, NIST, PubChem) khi có nội dung phù hợp và dịch toàn bộ sang Tiếng Việt chuẩn mực.`
+    text: `Soạn đề kiểm tra Hóa học khối ${grade} - Các chương: ${topicStr}. Yêu cầu: ${details || 'Chuẩn GDPT 2018'}. Đảm bảo tỉ lệ 4:3:3, phân bổ đều kiến thức giữa các chương. Nếu là kiểm tra định kì Lớp 10 hoặc 11 (hoặc có yêu cầu tự luận), đề thi BẮT BUỘC có 4 phần (21 câu, 27 lệnh hỏi, 10 điểm: 12 câu Phần I, 2 câu Phần II, 4 câu Phần III, 3 câu Phần IV tự luận kèm biểu điểm solution). Nếu là Lớp 12, đề thi tuân thủ 40 lệnh trắc nghiệm (18 câu Phần I, 4 câu Phần II, 6 câu Phần III).`
   });
 
   const response = await ai.models.generateContent({
@@ -206,6 +219,19 @@ export const generateExam = async (
                 explanation: { type: Type.STRING }
               },
               required: ["question", "answer", "explanation"]
+            }
+          },
+          part4: {
+            type: Type.ARRAY,
+            description: "Phần IV: Câu hỏi tự luận (bắt buộc gồm 3 câu cho kiểm tra định kì Lớp 10, Lớp 11)",
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                question: { type: Type.STRING },
+                points: { type: Type.NUMBER },
+                solution: { type: Type.STRING }
+              },
+              required: ["question", "points", "solution"]
             }
           },
           matrix: {

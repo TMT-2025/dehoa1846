@@ -197,7 +197,7 @@ export const ExamRenderer: React.FC<ExamRendererProps> = ({
         <section className="mb-10">
           <div className="p-2.5 bg-slate-100 rounded-lg mb-4 flex items-center justify-between">
             <h2 className="font-bold text-xs uppercase tracking-wider text-slate-900">
-              PHẦN I. Câu trắc nghiệm nhiều phương án lựa chọn (18 câu - 4.5 điểm)
+              PHẦN I. Câu trắc nghiệm nhiều phương án lựa chọn ({data.part1.length} câu - {(data.part1.length * 0.25).toFixed(1).replace('.', ',')} điểm)
             </h2>
             <span className="text-[11px] italic text-slate-500">Mỗi câu chọn 01 phương án đúng</span>
           </div>
@@ -238,7 +238,7 @@ export const ExamRenderer: React.FC<ExamRendererProps> = ({
         <section className="mb-10">
           <div className="p-2.5 bg-emerald-50 border border-emerald-100 rounded-lg mb-4 flex items-center justify-between">
             <h2 className="font-bold text-xs uppercase tracking-wider text-emerald-950">
-              PHẦN II. Câu trắc nghiệm đúng sai (4 câu - 4.0 điểm)
+              PHẦN II. Câu trắc nghiệm đúng sai ({data.part2.length} câu - {(data.part2.length * 1.0).toFixed(1).replace('.', ',')} điểm)
             </h2>
             <span className="text-[11px] italic text-emerald-700">Mỗi câu gồm 4 ý nhận định</span>
           </div>
@@ -274,12 +274,14 @@ export const ExamRenderer: React.FC<ExamRendererProps> = ({
         </section>
 
         {/* PART 3 */}
-        <section className="mb-6">
+        <section className="mb-8">
           <div className="p-2.5 bg-indigo-50 border border-indigo-100 rounded-lg mb-4 flex items-center justify-between">
             <h2 className="font-bold text-xs uppercase tracking-wider text-indigo-950">
-              PHẦN III. Câu trắc nghiệm trả lời ngắn (6 câu - 1.5 điểm)
+              PHẦN III. Câu trắc nghiệm trả lời ngắn ({data.part3.length} câu - {(data.part3.length === 4 || (data.part4 && data.part4.length > 0)) ? '2,0' : '1,5'} điểm)
             </h2>
-            <span className="text-[11px] italic text-indigo-700">Điền con số đáp án cụ thể</span>
+            <span className="text-[11px] italic text-indigo-700">
+              {(data.part3.length === 4 || (data.part4 && data.part4.length > 0)) ? 'Mỗi câu đúng 0,5 điểm' : 'Điền con số đáp án cụ thể'}
+            </span>
           </div>
 
           <div className="space-y-6">
@@ -311,6 +313,53 @@ export const ExamRenderer: React.FC<ExamRendererProps> = ({
             ))}
           </div>
         </section>
+
+        {/* PART 4 (TỰ LUẬN) */}
+        {data.part4 && data.part4.length > 0 && (
+          <section className="mb-8">
+            <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-lg mb-4 flex items-center justify-between">
+              <h2 className="font-bold text-xs uppercase tracking-wider text-amber-950">
+                PHẦN IV. TỰ LUẬN ({data.part4.length} câu - 3,0 điểm)
+              </h2>
+              <span className="text-[11px] italic text-amber-800">Thí sinh trình bày lời giải chi tiết</span>
+            </div>
+
+            <div className="space-y-6">
+              {data.part4.map((q, idx) => (
+                <div key={idx} className="text-sm p-4 rounded-xl bg-amber-50/30 border border-amber-200">
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <p className="font-medium text-slate-900 leading-relaxed flex-1">
+                      <span className="font-bold text-amber-950">Câu {idx + 1} ({q.points || 1.0} điểm).</span> {formatFormula(q.question)}
+                    </p>
+                    <span className="shrink-0 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 text-xs font-bold border border-amber-300">
+                      {q.points || 1.0} điểm
+                    </span>
+                  </div>
+
+                  {showAnswers ? (
+                    <div className="mt-3 p-3.5 bg-emerald-50/80 rounded-xl border border-emerald-300 space-y-2 text-xs">
+                      <div className="font-bold text-emerald-900 flex items-center gap-1.5 border-b border-emerald-200 pb-1.5">
+                        <BookmarkCheck className="w-4 h-4 text-emerald-600" />
+                        <span>HƯỚNG DẪN GIẢI & BIỂU ĐIỂM CHI TIẾT:</span>
+                      </div>
+                      <div className="text-slate-800 leading-relaxed whitespace-pre-line pl-1 pt-1 font-sans text-xs">
+                        {q.solution ? formatFormula(q.solution) : 'Chưa có biểu điểm chi tiết.'}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mt-4 pt-3 border-t border-dashed border-amber-200 space-y-2">
+                      <div className="text-[11px] italic text-slate-400">Bài làm:</div>
+                      <div className="border-b border-dotted border-slate-300 h-6"></div>
+                      <div className="border-b border-dotted border-slate-300 h-6"></div>
+                      <div className="border-b border-dotted border-slate-300 h-6"></div>
+                      <div className="border-b border-dotted border-slate-300 h-6"></div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Footer */}
         <div className="text-center pt-8 border-t border-slate-200 text-xs font-bold text-slate-400 uppercase tracking-widest">

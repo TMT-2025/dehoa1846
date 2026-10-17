@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { CURRICULUM, sortChaptersByCurriculum, sortLessonsByNumber } from '../../constants/curriculum';
-import { Grade, Chapter, MatrixData, Lesson, ExamType, SavedConfig } from '../../types/matrix';
+import { Grade, Chapter, MatrixData, Lesson, ExamType, SavedConfig, isPeriodicExamGrade10or11 } from '../../types/matrix';
 import { generateMatrix, distribute } from '../../services/matrixService';
 import { MatrixDisplay } from './MatrixDisplay';
 import { 
@@ -19,7 +19,7 @@ interface MatrixCreatorProps {
 }
 
 // Helper: Safely restore lessons and reconstruct missing part2Hosts from generatedMatrix if needed
-const restoreLessonsWithPart2Hosts = (lessons: Lesson[], matrix?: MatrixData | null): Lesson[] => {
+const restoreLessonsWithPart2Hosts = (lessons: Lesson[], matrix?: MatrixData | null, targetHosts: number = 4): Lesson[] => {
   if (!lessons || lessons.length === 0) return [];
 
   let normalizedLessons: Lesson[] = lessons.map(l => ({
@@ -29,7 +29,7 @@ const restoreLessonsWithPart2Hosts = (lessons: Lesson[], matrix?: MatrixData | n
   }));
 
   const currentTotalHosts = normalizedLessons.reduce((acc, l) => acc + (l.part2Hosts?.length || 0), 0);
-  if (currentTotalHosts >= 4) {
+  if (currentTotalHosts >= targetHosts) {
     return sortLessonsByNumber(normalizedLessons);
   }
 
@@ -199,6 +199,28 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
 
   // Lưu lịch sử các mục kiến thức đã bị xóa theo từng bài học để phục hồi
   const [deletedSubItemsHistory, setDeletedSubItemsHistory] = useState<Record<string, { item: string; index: number; wasHost?: boolean }[]>>({});
+
+  // Cấu hình linh hoạt theo định dạng đề: Định kì lớp 10, 11 (2 bối cảnh P.II, 27 lệnh có tự luận) vs Lớp 12 (4 bối cảnh P.II, 40 lệnh trắc nghiệm)
+  const isPeriodic1011 = isPeriodicExamGrade10or11(activeGrade, examType);
+  const targetP2Hosts = isPeriodic1011 ? 2 : 4;
+  const targetTotalCommands = isPeriodic1011 ? 27 : 40;
+
+  // Tự động thu gọn số bối cảnh nếu vượt quá targetP2Hosts khi chuyển đổi lớp/kì thi
+  useEffect(() => {
+    const currentHostsCount = editableLessons.reduce((acc, l) => acc + (l.part2Hosts?.length || 0), 0);
+    if (currentHostsCount > targetP2Hosts) {
+      let excess = currentHostsCount - targetP2Hosts;
+      setEditableLessons(prev => prev.map(l => {
+        if (!l.part2Hosts || l.part2Hosts.length === 0 || excess <= 0) return l;
+        const keepCount = Math.max(0, l.part2Hosts.length - excess);
+        excess -= (l.part2Hosts.length - keepCount);
+        return {
+          ...l,
+          part2Hosts: l.part2Hosts.slice(0, keepCount)
+        };
+      }));
+    }
+  }, [targetP2Hosts]);
 
   const handleGradeSelect = (grade: Grade) => {
     setIsCustomMode(false);
@@ -443,8 +465,8 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
           return { ...l, part2Hosts: currentHosts.filter(h => h !== itemName) };
         } else {
           // Thêm bối cảnh này
-          if (totalSelected >= 4) {
-            alert("Bạn đã chọn đủ 4 bối cảnh cho Phần II (Đúng/Sai). Vui lòng bỏ chọn bớt một bối cảnh (nhấn dấu ✕ ở bảng trên) nếu muốn chọn mục này!");
+          if (totalSelected >= targetP2Hosts) {
+            alert(`Bạn đã chọn đủ ${targetP2Hosts} bối cảnh cho Phần II (Đúng/Sai). Vui lòng bỏ chọn bớt một bối cảnh (nhấn dấu ✕ ở bảng trên) nếu muốn chọn mục này!`);
             return l; 
           }
           return { ...l, part2Hosts: [...currentHosts, itemName] };
@@ -465,17 +487,18 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
     }))
   );
 
-  // Tự động phân bổ đều 4 bối cảnh P.II cho các chương
+  // Tự động phân bổ đều bối cảnh P.II cho các chương (2 bối cảnh cho lớp 10,11 định kì; 4 bối cảnh cho lớp 12)
   const autoDistributeHostsAcrossChapters = (
     currentLessons: Lesson[], 
     chapters: Chapter[], 
-    grade: Grade | null
+    grade: Grade | null,
+    targetHosts: number = targetP2Hosts
   ): Lesson[] => {
     const sortedChaps = sortChaptersByCurriculum(chapters, grade);
     const numChaps = sortedChaps.length;
     if (numChaps === 0) return currentLessons;
 
-    const p2TargetPerChap = distribute(4, numChaps);
+    const p2TargetPerChap = distribute(targetHosts, numChaps);
     let lessonsCopy: Lesson[] = currentLessons.map(l => ({
       ...l,
       part2Hosts: [] as string[]
@@ -493,7 +516,7 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
 
       // Ưu tiên chọn từ các bài học khác nhau trong chương
       for (const lesson of chapLessons) {
-        if (chapAllocated >= targetForChap || totalAllocated >= 4) break;
+        if (chapAllocated >= targetForChap || totalAllocated >= targetHosts) break;
         if (!lesson.subItems || lesson.subItems.length === 0) continue;
 
         for (const sub of lesson.subItems) {
@@ -507,12 +530,12 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
       }
 
       // Nếu vẫn chưa đủ chỉ tiêu của chương và còn bài/mục
-      if (chapAllocated < targetForChap && totalAllocated < 4) {
+      if (chapAllocated < targetForChap && totalAllocated < targetHosts) {
         for (const lesson of chapLessons) {
-          if (chapAllocated >= targetForChap || totalAllocated >= 4) break;
+          if (chapAllocated >= targetForChap || totalAllocated >= targetHosts) break;
           if (!lesson.subItems) continue;
           for (const sub of lesson.subItems) {
-            if (chapAllocated >= targetForChap || totalAllocated >= 4) break;
+            if (chapAllocated >= targetForChap || totalAllocated >= targetHosts) break;
             if (!lesson.part2Hosts.includes(sub)) {
               lesson.part2Hosts.push(sub);
               chapAllocated++;
@@ -523,13 +546,13 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
       }
     });
 
-    // Nếu vẫn chưa đủ 4 (do chương nào đó ít bài), bù từ các bài còn lại
-    if (totalAllocated < 4) {
+    // Nếu vẫn chưa đủ (do chương nào đó ít bài), bù từ các bài còn lại
+    if (totalAllocated < targetHosts) {
       for (const lesson of lessonsCopy) {
-        if (totalAllocated >= 4) break;
+        if (totalAllocated >= targetHosts) break;
         if (!lesson.subItems) continue;
         for (const sub of lesson.subItems) {
-          if (totalAllocated >= 4) break;
+          if (totalAllocated >= targetHosts) break;
           if (!lesson.part2Hosts.includes(sub)) {
             lesson.part2Hosts.push(sub);
             totalAllocated++;
@@ -541,9 +564,9 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
     return lessonsCopy;
   };
 
-  // Auto select 4 hosts if user hasn't selected yet or requests auto balance
+  // Auto select hosts if user hasn't selected yet or requests auto balance
   const handleAutoSelectHosts = () => {
-    const newLessons = autoDistributeHostsAcrossChapters(editableLessons, selectedChapters, activeGrade);
+    const newLessons = autoDistributeHostsAcrossChapters(editableLessons, selectedChapters, activeGrade, targetP2Hosts);
     setEditableLessons(newLessons);
     return newLessons;
   };
@@ -555,8 +578,8 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
     }
     
     let lessonsToUse = editableLessons;
-    if (totalPart2Selected < 4) {
-      const confirmAuto = confirm(`Bạn mới chọn ${totalPart2Selected}/4 bối cảnh cho Phần II. Bạn có muốn hệ thống tự động phân bổ đều 4 bối cảnh cho các chương không?`);
+    if (totalPart2Selected < targetP2Hosts) {
+      const confirmAuto = confirm(`Bạn mới chọn ${totalPart2Selected}/${targetP2Hosts} bối cảnh cho Phần II. Bạn có muốn hệ thống tự động phân bổ đều ${targetP2Hosts} bối cảnh cho các chương không?`);
       if (confirmAuto) {
         lessonsToUse = handleAutoSelectHosts();
       } else {
@@ -727,7 +750,9 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
                 {editingConfigId ? `Chỉnh Sửa Ma Trận: ${editingConfigName}` : 'Thiết Lập Ma Trận Đề Kiểm Tra (GDPT 2018)'}
               </h2>
               <p className="text-xs text-indigo-300">
-                Phân bổ chuẩn 40 lệnh hỏi (16 Biết, 12 Hiểu, 12 Vận dụng)
+                {isPeriodic1011 
+                  ? 'Định dạng kiểm tra định kì Lớp 10/11: 4 phần (21 câu - 27 lệnh hỏi - 10 điểm: TN 7.0đ + Tự luận 3.0đ)' 
+                  : 'Phân bổ chuẩn 40 lệnh hỏi (16 Biết, 12 Hiểu, 12 Vận dụng)'}
               </p>
             </div>
           </div>
@@ -945,14 +970,14 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
                     <div className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse"></span>
                       <h4 className="text-xs font-black uppercase tracking-wider text-emerald-950">
-                        4 Bối cảnh đã ấn định cho Phần II (Đúng/Sai):
+                        {targetP2Hosts} Bối cảnh đã ấn định cho Phần II (Đúng/Sai):
                       </h4>
                       <span className={`px-2.5 py-0.5 rounded-full text-xs font-black ${
-                        totalPart2Selected === 4 
+                        totalPart2Selected === targetP2Hosts 
                           ? 'bg-emerald-600 text-white' 
                           : 'bg-amber-500 text-white animate-bounce'
                       }`}>
-                        {totalPart2Selected}/4 bối cảnh
+                        {totalPart2Selected}/{targetP2Hosts} bối cảnh
                       </span>
                     </div>
 
@@ -961,7 +986,7 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
                         type="button"
                         onClick={handleAutoSelectHosts}
                         className="text-xs font-bold text-emerald-800 hover:text-emerald-950 bg-emerald-100 hover:bg-emerald-200 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 cursor-pointer shadow-2xs"
-                        title="Tự động phân bổ đều 4 câu Phần II cho các chương đã chọn"
+                        title={`Tự động phân bổ đều ${targetP2Hosts} câu Phần II cho các chương đã chọn`}
                       >
                         ⚡ Phân bổ đều P.II các chương
                       </button>
@@ -969,7 +994,9 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
                   </div>
 
                   <p className="text-[11px] text-emerald-800">
-                    Mỗi bối cảnh Phần II tương ứng với 1 câu Đúng/Sai (gồm 4 ý: 1 Biết, 2 Hiểu, 1 Vận dụng). Bạn có thể bấm dấu <b>✕</b> để bỏ chọn một bối cảnh và chọn bối cảnh khác từ danh sách bài học bên dưới.
+                    {isPeriodic1011 
+                      ? 'Đề định kì Lớp 10/11 có 2 câu Đúng/Sai (tổng 8 ý = 2.0 điểm). Mỗi bối cảnh Phần II tương ứng với 1 câu Đúng/Sai (1 Biết, 2 Hiểu, 1 Vận dụng). Bạn có thể bấm dấu ✕ để bỏ chọn và chọn bối cảnh khác từ danh sách bài học bên dưới.'
+                      : 'Mỗi bối cảnh Phần II tương ứng với 1 câu Đúng/Sai (gồm 4 ý: 1 Biết, 2 Hiểu, 1 Vận dụng). Bạn có thể bấm dấu ✕ để bỏ chọn một bối cảnh và chọn bối cảnh khác từ danh sách bài học bên dưới.'}
                   </p>
 
                   {/* Visual Selected Context Cards */}
@@ -1283,12 +1310,18 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
                     {isGenerating ? (
                       <>
                         <RefreshCw className="w-4 h-4 animate-spin" />
-                        <span>Đang tính toán phân bổ 40 lệnh...</span>
+                        <span>Đang tính toán phân bổ {targetTotalCommands} lệnh...</span>
                       </>
                     ) : (
                       <>
                         <Sparkles className="w-4 h-4" />
-                        <span>{editingConfigId ? 'CẬP NHẬT & TÁI TẠO MA TRẬN' : 'TẠO MA TRẬN ĐỀ (40 LỆNH HỎI)'}</span>
+                        <span>
+                          {editingConfigId 
+                            ? 'CẬP NHẬT & TÁI TẠO MA TRẬN' 
+                            : isPeriodic1011 
+                              ? 'TẠO MA TRẬN ĐỀ (27 LỆNH - CÓ TỰ LUẬN)' 
+                              : 'TẠO MA TRẬN ĐỀ (40 LỆNH HỎI)'}
+                        </span>
                       </>
                     )}
                   </button>
