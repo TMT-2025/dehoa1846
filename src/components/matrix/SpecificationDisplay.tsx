@@ -7,6 +7,20 @@ import { SpecificationData, SpecificationRow } from '../../types/specification';
 import { exportSpecificationToExcel, downloadMatrixAndSpecDoc } from '../../services/exportService';
 import { MatrixData } from '../../types/matrix';
 
+const formatPoint = (val: number, suffix = 'đ') => {
+  if (val === 0) return `0${suffix}`;
+  const rounded = Math.round(val * 100) / 100;
+  const formatted = (rounded % 1 === 0) ? `${rounded.toFixed(1)}` : `${rounded}`;
+  return `${formatted.replace('.', ',')}${suffix}`;
+};
+
+const formatPercent = (val: number) => {
+  if (val === 0) return '0%';
+  const rounded = Math.round(val * 10) / 10;
+  const formatted = (rounded % 1 === 0) ? `${rounded.toFixed(0)}` : `${rounded.toFixed(1)}`;
+  return `${formatted.replace('.', ',')}%`;
+};
+
 interface SpecificationDisplayProps {
   specData: SpecificationData;
   matrixData?: MatrixData;
@@ -126,10 +140,10 @@ export const SpecificationDisplay: React.FC<SpecificationDisplayProps> = ({
           </p>
           <div className="flex flex-wrap justify-center gap-2 mt-2 text-[11px] font-bold text-slate-600">
             <span className="bg-slate-100 px-3 py-0.5 rounded-full border border-slate-300">
-              Tổng số lệnh hỏi: <strong className="text-indigo-900">{specData.totals.totalCommands}</strong> ({hasEssay ? 'TN 7.0đ + TL 3.0đ = 10 điểm' : '10 điểm'})
+              Tổng số lệnh hỏi: <strong className="text-indigo-900">{specData.totals.totalCommands}</strong> ({formatPoint(specData.totals.totalPoints.grandTotal, ' điểm')}: TN {formatPoint(specData.totals.totalPoints.part1 + specData.totals.totalPoints.part2 + specData.totals.totalPoints.part3)} {hasEssay ? `+ TL ${formatPoint(specData.totals.totalPoints.part4 || 0)}` : ''})
             </span>
             <span className="bg-indigo-50 px-3 py-0.5 rounded-full border border-indigo-200 text-indigo-900">
-              Tỉ lệ nhận thức: Biết {specData.totals.percentages.know}% - Hiểu {specData.totals.percentages.understand}% - Vận dụng {specData.totals.percentages.apply}%
+              Tỉ lệ nhận thức: Biết {formatPercent(specData.totals.percentages.know)} ({formatPoint(specData.totals.totalPoints.know)}) - Hiểu {formatPercent(specData.totals.percentages.understand)} ({formatPoint(specData.totals.totalPoints.understand)}) - Vận dụng {formatPercent(specData.totals.percentages.apply)} ({formatPoint(specData.totals.totalPoints.apply)})
             </span>
           </div>
         </div>
@@ -347,17 +361,17 @@ export const SpecificationDisplay: React.FC<SpecificationDisplayProps> = ({
                 Tổng số điểm
               </td>
               <td colSpan={3} className="border border-black p-1.5 bg-[#fefce8] text-amber-950 font-bold">
-                {specData.totals.totalPoints.part1.toFixed(1).replace('.', ',')} điểm
+                {formatPoint(specData.totals.totalPoints.part1, ' điểm')}
               </td>
               <td colSpan={3} className="border border-black p-1.5 bg-[#f0fdf4] text-emerald-950 font-bold">
-                {specData.totals.totalPoints.part2.toFixed(1).replace('.', ',')} điểm
+                {formatPoint(specData.totals.totalPoints.part2, ' điểm')}
               </td>
               <td colSpan={3} className="border border-black p-1.5 bg-[#eef2ff] text-indigo-950 font-bold">
-                {specData.totals.totalPoints.part3.toFixed(1).replace('.', ',')} điểm
+                {formatPoint(specData.totals.totalPoints.part3, ' điểm')}
               </td>
               {hasEssay && (
                 <td colSpan={3} className="border border-black p-1.5 bg-[#faf5ff] text-purple-950 font-bold">
-                  {(specData.totals.totalPoints.part4 || 3.0).toFixed(1).replace('.', ',')} điểm
+                  {formatPoint(specData.totals.totalPoints.part4 || 0, ' điểm')}
                 </td>
               )}
             </tr>
@@ -368,17 +382,17 @@ export const SpecificationDisplay: React.FC<SpecificationDisplayProps> = ({
                 Tỉ lệ %
               </td>
               <td colSpan={3} className="border border-black p-1 bg-[#fefce8] text-amber-950 font-bold">
-                {specData.totals.percentages.part1}%
+                {formatPercent(specData.totals.percentages.part1)}
               </td>
               <td colSpan={3} className="border border-black p-1 bg-[#f0fdf4] text-emerald-950 font-bold">
-                {specData.totals.percentages.part2}%
+                {formatPercent(specData.totals.percentages.part2)}
               </td>
               <td colSpan={3} className="border border-black p-1 bg-[#eef2ff] text-indigo-950 font-bold">
-                {specData.totals.percentages.part3}%
+                {formatPercent(specData.totals.percentages.part3)}
               </td>
               {hasEssay && (
                 <td colSpan={3} className="border border-black p-1 bg-[#faf5ff] text-purple-950 font-bold">
-                  {specData.totals.percentages.part4 || 30}%
+                  {formatPercent(specData.totals.percentages.part4 || 0)}
                 </td>
               )}
             </tr>
@@ -389,13 +403,13 @@ export const SpecificationDisplay: React.FC<SpecificationDisplayProps> = ({
                 Tổng hợp tỉ lệ nhận thức toàn đề:
               </td>
               <td colSpan={hasEssay ? 4 : 3} className="border border-black p-1.5 bg-[#fefce8] text-center">
-                Nhận biết: <strong>{specData.totals.percentages.know}%</strong> ({specData.totals.totalPoints.know.toFixed(1).replace('.', ',')}đ)
+                Nhận biết: <strong>{formatPercent(specData.totals.percentages.know)}</strong> ({formatPoint(specData.totals.totalPoints.know)})
               </td>
               <td colSpan={hasEssay ? 4 : 3} className="border border-black p-1.5 bg-[#f0fdf4] text-center">
-                Thông hiểu: <strong>{specData.totals.percentages.understand}%</strong> ({specData.totals.totalPoints.understand.toFixed(1).replace('.', ',')}đ)
+                Thông hiểu: <strong>{formatPercent(specData.totals.percentages.understand)}</strong> ({formatPoint(specData.totals.totalPoints.understand)})
               </td>
               <td colSpan={hasEssay ? 4 : 3} className="border border-black p-1.5 bg-[#eef2ff] text-center">
-                Vận dụng: <strong>{specData.totals.percentages.apply}%</strong> ({specData.totals.totalPoints.apply.toFixed(1).replace('.', ',')}đ)
+                Vận dụng: <strong>{formatPercent(specData.totals.percentages.apply)}</strong> ({formatPoint(specData.totals.totalPoints.apply)})
               </td>
             </tr>
           </tfoot>

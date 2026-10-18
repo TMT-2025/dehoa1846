@@ -113,29 +113,63 @@ export function buildSpecificationFromMatrix(matrix: MatrixData): SpecificationD
     };
   });
 
-  // 3. Tính điểm và tỉ lệ chuẩn
+  // 3. Tính điểm và tỉ lệ thực tế động dựa trên số lệnh hỏi hiện tại
   const totals = { ...matrix.totals };
   const totalCommands = totals.grandTotal || standardCommands;
 
-  let totalPoints = {
-    part1: hasEssay ? 3.0 : 4.5,
-    part2: hasEssay ? 2.0 : 4.0,
-    part3: hasEssay ? 2.0 : 1.5,
-    part4: hasEssay ? 3.0 : 0,
-    grandTotal: 10.0,
-    know: hasEssay ? 3.7 : 4.0,
-    understand: hasEssay ? 3.3 : 3.0,
-    apply: 3.0
+  const p1Cmds = totals.part1.know + totals.part1.understand + totals.part1.apply;
+  const p2Cmds = totals.part2.know + totals.part2.understand + totals.part2.apply;
+  const p3Cmds = totals.part3.know + totals.part3.understand + totals.part3.apply;
+  const p4Cmds = hasEssay ? ((totals.part4?.know || 0) + (totals.part4?.understand || 0) + (totals.part4?.apply || 0)) : 0;
+
+  const p3Unit = hasEssay ? 0.5 : 0.25;
+
+  const p1Points = p1Cmds * 0.25;
+  const p2Points = p2Cmds * 0.25;
+  const p3Points = p3Cmds * p3Unit;
+  const p4Points = hasEssay ? (p4Cmds * 1.0) : 0;
+
+  const grandTotalPoints = p1Points + p2Points + p3Points + p4Points;
+
+  const knowPoints = 
+    (totals.part1.know * 0.25) + 
+    (totals.part2.know * 0.25) + 
+    (totals.part3.know * p3Unit) + 
+    (hasEssay ? ((totals.part4?.know || 0) * 1.0) : 0);
+
+  const understandPoints = 
+    (totals.part1.understand * 0.25) + 
+    (totals.part2.understand * 0.25) + 
+    (totals.part3.understand * p3Unit) + 
+    (hasEssay ? ((totals.part4?.understand || 0) * 1.0) : 0);
+
+  const applyPoints = 
+    (totals.part1.apply * 0.25) + 
+    (totals.part2.apply * 0.25) + 
+    (totals.part3.apply * p3Unit) + 
+    (hasEssay ? ((totals.part4?.apply || 0) * 1.0) : 0);
+
+  const basePoints = grandTotalPoints > 0 ? grandTotalPoints : 10.0;
+
+  const totalPoints = {
+    part1: p1Points,
+    part2: p2Points,
+    part3: p3Points,
+    part4: hasEssay ? p4Points : 0,
+    grandTotal: grandTotalPoints,
+    know: knowPoints,
+    understand: understandPoints,
+    apply: applyPoints
   };
 
-  let percentages = {
-    part1: hasEssay ? 30 : 45,
-    part2: hasEssay ? 20 : 40,
-    part3: hasEssay ? 20 : 15,
-    part4: hasEssay ? 30 : 0,
-    know: hasEssay ? 37 : 40,
-    understand: hasEssay ? 33 : 30,
-    apply: 30
+  const percentages = {
+    part1: Math.round((p1Points / basePoints) * 1000) / 10,
+    part2: Math.round((p2Points / basePoints) * 1000) / 10,
+    part3: Math.round((p3Points / basePoints) * 1000) / 10,
+    part4: hasEssay ? (Math.round((p4Points / basePoints) * 1000) / 10) : 0,
+    know: Math.round((knowPoints / basePoints) * 1000) / 10,
+    understand: Math.round((understandPoints / basePoints) * 1000) / 10,
+    apply: Math.round((applyPoints / basePoints) * 1000) / 10
   };
 
   const title = `BẢN ĐẶC TẢ ĐỀ KIỂM TRA ĐỊNH KỲ MÔN HÓA HỌC - KHỐI ${matrix.grade} (${matrix.examType.toUpperCase()})`;

@@ -65,6 +65,20 @@ const SpinCell: React.FC<SpinCellProps> = ({
   );
 };
 
+const formatPoint = (val: number, suffix = 'đ') => {
+  if (val === 0) return `0${suffix}`;
+  const rounded = Math.round(val * 100) / 100;
+  const formatted = (rounded % 1 === 0) ? `${rounded.toFixed(1)}` : `${rounded}`;
+  return `${formatted.replace('.', ',')}${suffix}`;
+};
+
+const formatPercent = (val: number) => {
+  if (val === 0) return '0%';
+  const rounded = Math.round(val * 10) / 10;
+  const formatted = (rounded % 1 === 0) ? `${rounded.toFixed(0)}` : `${rounded.toFixed(1)}`;
+  return `${formatted.replace('.', ',')}%`;
+};
+
 interface MatrixDisplayProps {
   data: MatrixData;
   onTransferToExam: (matrixData: MatrixData) => void;
@@ -429,14 +443,14 @@ export const MatrixDisplay: React.FC<MatrixDisplayProps> = ({
             </p>
             <div className="flex flex-wrap justify-center gap-3 mt-3 text-[11px] font-black uppercase tracking-widest text-slate-500">
               <span className={`px-3.5 py-1 rounded-full border shadow-sm font-bold ${
-                currentData.totals.grandTotal === standardCommands 
+                currentData.totals.grandTotal === standardCommands && Math.abs(specData.totals.totalPoints.grandTotal - 10.0) < 0.01
                   ? 'bg-slate-100 border-slate-300 text-slate-700' 
                   : 'bg-amber-100 border-amber-400 text-amber-900 font-black'
               }`}>
-                Tổng số lệnh: {currentData.totals.grandTotal} / {standardCommands} lệnh ({hasEssay ? 'TN 7.0đ + TL 3.0đ = 10 điểm' : '10 điểm'})
+                Tổng số lệnh: {currentData.totals.grandTotal} / {standardCommands} lệnh ({formatPoint(specData.totals.totalPoints.grandTotal, ' điểm')}: TN {formatPoint(specData.totals.totalPoints.part1 + specData.totals.totalPoints.part2 + specData.totals.totalPoints.part3)} {hasEssay ? `+ TL ${formatPoint(specData.totals.totalPoints.part4 || 0)}` : ''})
               </span>
               <span className="bg-indigo-700 px-3.5 py-1 rounded-full text-white shadow-sm font-bold">
-                Tỉ lệ: Biết {currentData.totals.ratio.know} - Hiểu {currentData.totals.ratio.understand} - Vận dụng {currentData.totals.ratio.apply} ({Math.round((currentData.totals.ratio.know / (currentData.totals.grandTotal || 1)) * 100)}% : {Math.round((currentData.totals.ratio.understand / (currentData.totals.grandTotal || 1)) * 100)}% : {Math.round((currentData.totals.ratio.apply / (currentData.totals.grandTotal || 1)) * 100)}%)
+                Tỉ lệ điểm: Biết {formatPercent(specData.totals.percentages.know)} ({formatPoint(specData.totals.totalPoints.know)}) - Hiểu {formatPercent(specData.totals.percentages.understand)} ({formatPoint(specData.totals.totalPoints.understand)}) - Vận dụng {formatPercent(specData.totals.percentages.apply)} ({formatPoint(specData.totals.totalPoints.apply)})
               </span>
             </div>
           </div>
@@ -725,31 +739,35 @@ export const MatrixDisplay: React.FC<MatrixDisplayProps> = ({
                 <td colSpan={4} className="border border-black p-1.5 text-center uppercase tracking-wider text-[10px]">
                   Tổng số điểm
                 </td>
-                <td colSpan={3} className="border border-black p-1 bg-[#fefce8] text-amber-950">
-                  {specData.totals.totalPoints.part1.toFixed(1).replace('.', ',')} điểm
+                <td colSpan={3} className="border border-black p-1 bg-[#fefce8] text-amber-950 font-bold">
+                  {formatPoint(specData.totals.totalPoints.part1, ' điểm')}
                 </td>
-                <td colSpan={3} className="border border-black p-1 bg-[#f0fdf4] text-emerald-950">
-                  {specData.totals.totalPoints.part2.toFixed(1).replace('.', ',')} điểm
+                <td colSpan={3} className="border border-black p-1 bg-[#f0fdf4] text-emerald-950 font-bold">
+                  {formatPoint(specData.totals.totalPoints.part2, ' điểm')}
                 </td>
-                <td colSpan={3} className="border border-black p-1 bg-[#eef2ff] text-indigo-950">
-                  {specData.totals.totalPoints.part3.toFixed(1).replace('.', ',')} điểm
+                <td colSpan={3} className="border border-black p-1 bg-[#eef2ff] text-indigo-950 font-bold">
+                  {formatPoint(specData.totals.totalPoints.part3, ' điểm')}
                 </td>
                 {hasEssay && (
-                  <td colSpan={3} className="border border-black p-1 bg-[#faf5ff] text-purple-950">
-                    {(specData.totals.totalPoints.part4 || 3.0).toFixed(1).replace('.', ',')} điểm
+                  <td colSpan={3} className="border border-black p-1 bg-[#faf5ff] text-purple-950 font-bold">
+                    {formatPoint(specData.totals.totalPoints.part4 || 0, ' điểm')}
                   </td>
                 )}
-                <td className="border border-black p-1 bg-[#fefce8] text-amber-950">
-                  {specData.totals.totalPoints.know.toFixed(1).replace('.', ',')}đ
+                <td className="border border-black p-1 bg-[#fefce8] text-amber-950 font-bold">
+                  {formatPoint(specData.totals.totalPoints.know)}
                 </td>
-                <td className="border border-black p-1 bg-[#f0fdf4] text-emerald-950">
-                  {specData.totals.totalPoints.understand.toFixed(1).replace('.', ',')}đ
+                <td className="border border-black p-1 bg-[#f0fdf4] text-emerald-950 font-bold">
+                  {formatPoint(specData.totals.totalPoints.understand)}
                 </td>
-                <td className="border border-black p-1 bg-[#eef2ff] text-indigo-950">
-                  {specData.totals.totalPoints.apply.toFixed(1).replace('.', ',')}đ
+                <td className="border border-black p-1 bg-[#eef2ff] text-indigo-950 font-bold">
+                  {formatPoint(specData.totals.totalPoints.apply)}
                 </td>
-                <td colSpan={2} className="border border-black p-1 bg-indigo-100 text-indigo-950">
-                  10,0 điểm
+                <td colSpan={2} className={`border border-black p-1 font-black ${
+                  Math.abs(specData.totals.totalPoints.grandTotal - 10.0) < 0.01 
+                    ? 'bg-indigo-100 text-indigo-950' 
+                    : 'bg-amber-200 text-amber-950'
+                }`}>
+                  {formatPoint(specData.totals.totalPoints.grandTotal, ' điểm')}
                 </td>
               </tr>
 
@@ -758,30 +776,30 @@ export const MatrixDisplay: React.FC<MatrixDisplayProps> = ({
                 <td colSpan={4} className="border border-black p-1.5 text-center uppercase tracking-wider text-[10px]">
                   Tỉ lệ % điểm
                 </td>
-                <td colSpan={3} className="border border-black p-1 bg-[#fefce8] text-amber-950">
-                  {specData.totals.percentages.part1}%
+                <td colSpan={3} className="border border-black p-1 bg-[#fefce8] text-amber-950 font-bold">
+                  {formatPercent(specData.totals.percentages.part1)}
                 </td>
-                <td colSpan={3} className="border border-black p-1 bg-[#f0fdf4] text-emerald-950">
-                  {specData.totals.percentages.part2}%
+                <td colSpan={3} className="border border-black p-1 bg-[#f0fdf4] text-emerald-950 font-bold">
+                  {formatPercent(specData.totals.percentages.part2)}
                 </td>
-                <td colSpan={3} className="border border-black p-1 bg-[#eef2ff] text-indigo-950">
-                  {specData.totals.percentages.part3}%
+                <td colSpan={3} className="border border-black p-1 bg-[#eef2ff] text-indigo-950 font-bold">
+                  {formatPercent(specData.totals.percentages.part3)}
                 </td>
                 {hasEssay && (
-                  <td colSpan={3} className="border border-black p-1 bg-[#faf5ff] text-purple-950">
-                    {specData.totals.percentages.part4 || 30}%
+                  <td colSpan={3} className="border border-black p-1 bg-[#faf5ff] text-purple-950 font-bold">
+                    {formatPercent(specData.totals.percentages.part4 || 0)}
                   </td>
                 )}
-                <td className="border border-black p-1 bg-[#fefce8] text-amber-950">
-                  {specData.totals.percentages.know}%
+                <td className="border border-black p-1 bg-[#fefce8] text-amber-950 font-bold">
+                  {formatPercent(specData.totals.percentages.know)}
                 </td>
-                <td className="border border-black p-1 bg-[#f0fdf4] text-emerald-950">
-                  {specData.totals.percentages.understand}%
+                <td className="border border-black p-1 bg-[#f0fdf4] text-emerald-950 font-bold">
+                  {formatPercent(specData.totals.percentages.understand)}
                 </td>
-                <td className="border border-black p-1 bg-[#eef2ff] text-indigo-950">
-                  {specData.totals.percentages.apply}%
+                <td className="border border-black p-1 bg-[#eef2ff] text-indigo-950 font-bold">
+                  {formatPercent(specData.totals.percentages.apply)}
                 </td>
-                <td colSpan={2} className="border border-black p-1 bg-indigo-100 text-indigo-950">
+                <td colSpan={2} className="border border-black p-1 bg-indigo-100 text-indigo-950 font-black">
                   100%
                 </td>
               </tr>

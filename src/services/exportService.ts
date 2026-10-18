@@ -124,20 +124,28 @@ export const exportMatrixToExcel = (matrixData: MatrixData, customSpecData?: Spe
     '100%'
   );
 
+  const formatPt = (val: number, suffix = 'đ') => {
+    if (val === undefined || isNaN(val)) return `0${suffix}`;
+    const fixed = val.toFixed(2);
+    const formatted = (fixed.endsWith('.00') ? val.toFixed(1) : fixed.endsWith('0') ? val.toFixed(1) : fixed).replace('.', ',');
+    return `${formatted}${suffix}`;
+  };
+  const totalPercent = Math.round((percentages.know + percentages.understand + percentages.apply) * 10) / 10;
+
   const footerRow2 = [
     'Tổng số điểm', '', '', '',
-    `${totalPoints.part1.toFixed(1)}đ`, '', '',
-    `${totalPoints.part2.toFixed(1)}đ`, '', '',
-    `${totalPoints.part3.toFixed(1)}đ`, '', ''
+    formatPt(totalPoints.part1), '', '',
+    formatPt(totalPoints.part2), '', '',
+    formatPt(totalPoints.part3), '', ''
   ];
   if (hasEssay) {
-    footerRow2.push(`${(totalPoints.part4 || 3.0).toFixed(1)}đ`, '', '');
+    footerRow2.push(formatPt(totalPoints.part4 || 0), '', '');
   }
   footerRow2.push(
-    `${totalPoints.know.toFixed(1)}đ`,
-    `${totalPoints.understand.toFixed(1)}đ`,
-    `${totalPoints.apply.toFixed(1)}đ`,
-    '10.0 điểm',
+    formatPt(totalPoints.know),
+    formatPt(totalPoints.understand),
+    formatPt(totalPoints.apply),
+    formatPt(totalPoints.grandTotal ?? 10.0, ' điểm'),
     ''
   );
 
@@ -148,13 +156,13 @@ export const exportMatrixToExcel = (matrixData: MatrixData, customSpecData?: Spe
     `${percentages.part3}%`, '', ''
   ];
   if (hasEssay) {
-    footerRow3.push(`${percentages.part4 || 30}%`, '', '');
+    footerRow3.push(`${percentages.part4 || 0}%`, '', '');
   }
   footerRow3.push(
     `${percentages.know}%`,
     `${percentages.understand}%`,
     `${percentages.apply}%`,
-    '100%',
+    `${totalPercent}%`,
     ''
   );
 
@@ -226,14 +234,14 @@ export const exportMatrixToExcel = (matrixData: MatrixData, customSpecData?: Spe
 
   const specFooter2 = [
     'Tổng số điểm', '', '', '',
-    `${totalPoints.part1.toFixed(1)}đ`, '', '',
-    `${totalPoints.part2.toFixed(1)}đ`, '', '',
-    `${totalPoints.part3.toFixed(1)}đ`, '', ''
+    formatPt(totalPoints.part1), '', '',
+    formatPt(totalPoints.part2), '', '',
+    formatPt(totalPoints.part3), '', ''
   ];
   if (hasEssay) {
-    specFooter2.push(`${(totalPoints.part4 || 3.0).toFixed(1)}đ`, '', '');
+    specFooter2.push(formatPt(totalPoints.part4 || 0), '', '');
   }
-  specFooter2.push('10.0 điểm');
+  specFooter2.push(formatPt(totalPoints.grandTotal ?? 10.0, ' điểm'));
 
   const specFooter3 = [
     'Tỉ lệ %', '', '', '',
@@ -242,9 +250,9 @@ export const exportMatrixToExcel = (matrixData: MatrixData, customSpecData?: Spe
     `${percentages.part3}%`, '', ''
   ];
   if (hasEssay) {
-    specFooter3.push(`${percentages.part4 || 30}%`, '', '');
+    specFooter3.push(`${percentages.part4 || 0}%`, '', '');
   }
-  specFooter3.push('100%');
+  specFooter3.push(`${totalPercent}%`);
 
   const ws2Data = [
     ['BỘ GIÁO DỤC VÀ ĐÀO TẠO - CÔNG VĂN SỐ 7991/BGDĐT-GDTrH'],
@@ -404,11 +412,17 @@ export const downloadMatrixAndSpecDoc = async (matrixData: MatrixData, customSpe
   }));
 
   // Summary note
+  const formatPtDoc = (val: number) => {
+    const fixed = val.toFixed(2);
+    return (fixed.endsWith('.00') ? val.toFixed(1) : fixed.endsWith('0') ? val.toFixed(1) : fixed).replace('.', ',');
+  };
+  const grandPts = formatPtDoc(specData.totals.totalPoints.grandTotal ?? 10.0);
+  const summaryText = `Tổng số: ${specData.totals.totalCommands} lệnh (${grandPts} điểm). Tỉ lệ: Biết ${specData.totals.percentages.know}% - Hiểu ${specData.totals.percentages.understand}% - Vận dụng ${specData.totals.percentages.apply}%.`;
   children.push(new Paragraph({
-    text: `Tổng số lệnh: ${specData.totals.totalCommands} lệnh (10.0 điểm). Tỉ lệ: Biết ${specData.totals.percentages.know}% - Hiểu ${specData.totals.percentages.understand}% - Vận dụng ${specData.totals.percentages.apply}%.`,
+    text: summaryText,
     spacing: { before: 120, after: 300 },
     children: [new TextRun({ 
-      text: `Tổng số: ${specData.totals.totalCommands} lệnh (10.0 điểm). Tỉ lệ: Biết ${specData.totals.percentages.know}% - Hiểu ${specData.totals.percentages.understand}% - Vận dụng ${specData.totals.percentages.apply}%.`,
+      text: summaryText,
       bold: true,
       italics: true,
       size: 20
