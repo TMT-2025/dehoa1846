@@ -1,7 +1,7 @@
 import * as XLSX from 'xlsx';
 import { domToPng, domToCanvas } from 'modern-screenshot';
 import { jsPDF } from 'jspdf';
-import { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle } from "docx";
+import { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle, PageOrientation } from "docx";
 import saveAs from "file-saver";
 import { MatrixData } from '../types/matrix';
 import { SpecificationData } from '../types/specification';
@@ -167,7 +167,7 @@ export const exportMatrixToExcel = (matrixData: MatrixData, customSpecData?: Spe
   );
 
   const ws1Data = [
-    ['BỘ GIÁO DỤC VÀ ĐÀO TẠO - CÔNG VĂN SỐ 7991/BGDĐT-GDTrH'],
+    ['TRƯỜNG THCS-THPT PHAN VĂN TRỊ - VĨNH LONG'],
     ['1. MA TRẬN ĐỀ KIỂM TRA ĐỊNH KÌ MÔN HÓA HỌC'],
     [`LỚP ${matrixData.grade} - ${matrixData.examType}${hasEssay ? ' (ĐỊNH DẠNG ĐỊNH KÌ CÓ TỰ LUẬN)' : ' (100% TRẮC NGHIỆM)'}`],
     [`Phạm vi: ${matrixData.chapters.map(c => c.name).join(', ')}`],
@@ -255,7 +255,7 @@ export const exportMatrixToExcel = (matrixData: MatrixData, customSpecData?: Spe
   specFooter3.push(`${totalPercent}%`);
 
   const ws2Data = [
-    ['BỘ GIÁO DỤC VÀ ĐÀO TẠO - CÔNG VĂN SỐ 7991/BGDĐT-GDTrH'],
+    ['TRƯỜNG THCS-THPT PHAN VĂN TRỊ - VĨNH LONG'],
     ['2. BẢN ĐẶC TẢ ĐỀ KIỂM TRA ĐỊNH KÌ MÔN HÓA HỌC'],
     [`LỚP ${specData.grade} - ${specData.examType}${hasEssay ? ' (CÓ PHẦN TỰ LUẬN)' : ' (100% TRẮC NGHIỆM)'}`],
     [],
@@ -286,6 +286,7 @@ export const exportSpecificationToExcel = (matrixData: MatrixData, specData?: Sp
 export const downloadMatrixAndSpecDoc = async (matrixData: MatrixData, customSpecData?: SpecificationData) => {
   const specData = customSpecData || buildSpecificationFromMatrix(matrixData);
   const hasEssay = specData.hasEssay;
+  const baseTotal = specData.standardCommands;
   const children: any[] = [];
 
   const noBorder = {
@@ -295,15 +296,64 @@ export const downloadMatrixAndSpecDoc = async (matrixData: MatrixData, customSpe
     right: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
   };
 
+  const borderDef = { style: BorderStyle.SINGLE, size: 1, color: "000000" };
   const tableBorder = {
-    top: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
-    bottom: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
-    left: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
-    right: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
+    top: borderDef,
+    bottom: borderDef,
+    left: borderDef,
+    right: borderDef,
+    insideHorizontal: borderDef,
+    insideVertical: borderDef
   };
 
-  // Header Table
-  children.push(new Table({
+  const formatPt = (val: number, suffix = 'đ') => {
+    if (val === undefined || isNaN(val)) return `0${suffix}`;
+    const fixed = val.toFixed(2);
+    const formatted = (fixed.endsWith('.00') ? val.toFixed(1) : fixed.endsWith('0') ? val.toFixed(1) : fixed).replace('.', ',');
+    return `${formatted}${suffix}`;
+  };
+
+  const totalPoints = specData.totals.totalPoints;
+  const percentages = specData.totals.percentages;
+  const totalPercent = Math.round((percentages.know + percentages.understand + percentages.apply) * 10) / 10;
+
+  const cell = (text: string | number, options?: {
+    bold?: boolean;
+    size?: number;
+    alignment?: AlignmentType;
+    shading?: string;
+    rowSpan?: number;
+    columnSpan?: number;
+    color?: string;
+  }) => {
+    const isBold = options?.bold ?? false;
+    const size = options?.size ?? 16;
+    const alignment = options?.alignment ?? AlignmentType.CENTER;
+    const shadingFill = options?.shading ? { fill: options.shading } : undefined;
+    
+    return new TableCell({
+      borders: tableBorder,
+      rowSpan: options?.rowSpan,
+      columnSpan: options?.columnSpan,
+      shading: shadingFill,
+      children: [
+        new Paragraph({
+          alignment,
+          spacing: { before: 15, after: 15 },
+          children: [
+            new TextRun({
+              text: String(text !== undefined ? text : ''),
+              bold: isBold,
+              size,
+              color: options?.color
+            })
+          ]
+        })
+      ]
+    });
+  };
+
+  const createNationalHeader = () => new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
     borders: noBorder,
     rows: [
@@ -315,11 +365,13 @@ export const downloadMatrixAndSpecDoc = async (matrixData: MatrixData, customSpe
             children: [
               new Paragraph({
                 alignment: AlignmentType.CENTER,
-                children: [new TextRun({ text: "SỞ GIÁO DỤC VÀ ĐÀO TẠO VĨNH LONG", bold: true, size: 21 })]
+                spacing: { before: 0, after: 20 },
+                children: [new TextRun({ text: "SỞ GIÁO DỤC VÀ ĐÀO TẠO VĨNH LONG", bold: true, size: 20 })]
               }),
               new Paragraph({
                 alignment: AlignmentType.CENTER,
-                children: [new TextRun({ text: "TRƯỜNG THCS-THPT PHAN VĂN TRỊ", bold: true, underline: {}, size: 22 })]
+                spacing: { before: 0, after: 40 },
+                children: [new TextRun({ text: "TRƯỜNG THCS-THPT PHAN VĂN TRỊ", bold: true, underline: {}, size: 21 })]
               })
             ]
           }),
@@ -329,171 +381,480 @@ export const downloadMatrixAndSpecDoc = async (matrixData: MatrixData, customSpe
             children: [
               new Paragraph({
                 alignment: AlignmentType.CENTER,
-                children: [new TextRun({ text: "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM", bold: true, size: 21 })]
+                spacing: { before: 0, after: 20 },
+                children: [new TextRun({ text: "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM", bold: true, size: 20 })]
               }),
               new Paragraph({
                 alignment: AlignmentType.CENTER,
-                children: [new TextRun({ text: "Độc lập - Tự do - Hạnh phúc", bold: true, underline: {}, size: 21 })]
+                spacing: { before: 0, after: 40 },
+                children: [new TextRun({ text: "Độc lập - Tự do - Hạnh phúc", bold: true, underline: {}, size: 20 })]
               })
             ]
           })
         ]
       })
     ]
-  }));
+  });
 
-  children.push(new Paragraph({
-    text: `KÈM THEO CÔNG VĂN SỐ 7991/BGDĐT-GDTrH CỦA BỘ GD&ĐT`,
-    alignment: AlignmentType.CENTER,
-    spacing: { before: 150, after: 150 },
-    children: [new TextRun({ text: "KÈM THEO CÔNG VĂN SỐ 7991/BGDĐT-GDTrH CỦA BỘ GD&ĐT", italics: true, size: 20 })]
-  }));
-
-  // SECTION 1: MA TRẬN
-  children.push(new Paragraph({
-    text: "1. MA TRẬN ĐỀ KIỂM TRA ĐỊNH KÌ",
-    heading: HeadingLevel.HEADING_1,
-    alignment: AlignmentType.CENTER,
-    spacing: { before: 200, after: 100 },
-  }));
+  // ==========================================
+  // SECTION 1: MA TRẬN ĐỀ KIỂM TRA ĐỊNH KÌ
+  // ==========================================
+  children.push(createNationalHeader());
 
   children.push(new Paragraph({
     alignment: AlignmentType.CENTER,
+    spacing: { before: 80, after: 40 },
+    children: [new TextRun({ text: "TRƯỜNG THCS-THPT PHAN VĂN TRỊ - VĨNH LONG", bold: true, size: 21, color: "334155" })]
+  }));
+
+  children.push(new Paragraph({
+    text: "1. MA TRẬN ĐỀ KIỂM TRA ĐỊNH KÌ MÔN HÓA HỌC",
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 30, after: 50 },
+    children: [new TextRun({ text: "1. MA TRẬN ĐỀ KIỂM TRA ĐỊNH KÌ MÔN HÓA HỌC", bold: true, size: 25, color: "1E3A8A" })]
+  }));
+
+  children.push(new Paragraph({
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 0, after: 40 },
     children: [
       new TextRun({ 
-        text: `Môn: Hóa Học - Lớp ${matrixData.grade} (${matrixData.examType.toUpperCase()})` + (hasEssay ? " - CÓ PHẦN TỰ LUẬN" : ""),
+        text: `LỚP ${matrixData.grade} - ${matrixData.examType.toUpperCase()}${hasEssay ? ' (CÓ PHẦN TỰ LUẬN)' : ' (100% TRẮC NGHIỆM KHÁCH QUAN)'}`,
         bold: true,
-        size: 22 
+        size: 20 
       })
-    ],
-    spacing: { before: 50, after: 200 }
+    ]
   }));
 
-  // Build Matrix Table in Docx
+  children.push(new Paragraph({
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 0, after: 30 },
+    children: [
+      new TextRun({ 
+        text: `Phạm vi: ${matrixData.chapters.map(c => c.name).join(', ')}`,
+        italics: true,
+        size: 18,
+        color: "475569"
+      })
+    ]
+  }));
+
+  children.push(new Paragraph({
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 0, after: 140 },
+    children: [
+      new TextRun({ 
+        text: `Tỉ lệ điểm: Biết ${percentages.know}% (${formatPt(totalPoints.know)}) - Hiểu ${percentages.understand}% (${formatPt(totalPoints.understand)}) - Vận dụng ${percentages.apply}% (${formatPt(totalPoints.apply)}) • Tổng: ${formatPt(totalPoints.grandTotal ?? 10.0, ' điểm')}`,
+        bold: true,
+        italics: true,
+        size: 19,
+        color: "3730A3"
+      })
+    ]
+  }));
+
+  // Build Matrix Table in Docx (3-Tier Header matching Web)
   const matrixHeaderRow1 = new TableRow({
     children: [
-      new TableCell({ children: [new Paragraph({ text: "TT", alignment: AlignmentType.CENTER })], borders: tableBorder }),
-      new TableCell({ children: [new Paragraph({ text: "Chủ đề / Chương", alignment: AlignmentType.CENTER })], borders: tableBorder }),
-      new TableCell({ children: [new Paragraph({ text: "Nội dung / đơn vị kiến thức", alignment: AlignmentType.CENTER })], borders: tableBorder }),
-      new TableCell({ children: [new Paragraph({ text: "Nhiều lựa chọn (P.I)", alignment: AlignmentType.CENTER })], borders: tableBorder }),
-      new TableCell({ children: [new Paragraph({ text: "Đúng - Sai (P.II)", alignment: AlignmentType.CENTER })], borders: tableBorder }),
-      new TableCell({ children: [new Paragraph({ text: "Trả lời ngắn (P.III)", alignment: AlignmentType.CENTER })], borders: tableBorder }),
-      ...(hasEssay ? [new TableCell({ children: [new Paragraph({ text: "Tự luận (P.IV)", alignment: AlignmentType.CENTER })], borders: tableBorder })] : []),
-      new TableCell({ children: [new Paragraph({ text: "Tổng lệnh", alignment: AlignmentType.CENTER })], borders: tableBorder }),
-      new TableCell({ children: [new Paragraph({ text: "Tỉ lệ %", alignment: AlignmentType.CENTER })], borders: tableBorder })
+      cell("TT", { rowSpan: 3, shading: "E2E8F0", bold: true }),
+      cell("Chủ đề/Chương", { rowSpan: 3, shading: "E2E8F0", bold: true }),
+      cell("Nội dung/đơn vị kiến thức", { rowSpan: 3, shading: "E2E8F0", bold: true }),
+      cell("Mục chi tiết nội dung", { rowSpan: 3, shading: "E2E8F0", bold: true }),
+      cell("Mức độ đánh giá (Số lệnh hỏi)", { columnSpan: hasEssay ? 12 : 9, shading: "CBD5E1", bold: true }),
+      cell("Tổng", { columnSpan: 3, shading: "CBD5E1", bold: true }),
+      cell("Tổng lệnh", { rowSpan: 3, shading: "E2E8F0", bold: true }),
+      cell("Tỉ lệ %", { rowSpan: 3, shading: "E2E8F0", bold: true })
     ]
   });
 
-  const matrixBodyRows: TableRow[] = specData.rows.map(r => {
-    const p1Text = `B:${r.part1.know} H:${r.part1.understand} V:${r.part1.apply}`;
-    const p2Text = `B:${r.part2.know} H:${r.part2.understand} V:${r.part2.apply}`;
-    const p3Text = `B:${r.part3.know} H:${r.part3.understand} V:${r.part3.apply}`;
-    const p4Text = r.part4 ? `B:${r.part4.know} H:${r.part4.understand} V:${r.part4.apply}` : '';
-
-    return new TableRow({
-      children: [
-        new TableCell({ children: [new Paragraph({ text: String(r.index), alignment: AlignmentType.CENTER })], borders: tableBorder }),
-        new TableCell({ children: [new Paragraph({ text: r.chapterName })], borders: tableBorder }),
-        new TableCell({ children: [new Paragraph({ text: r.lessonName })], borders: tableBorder }),
-        new TableCell({ children: [new Paragraph({ text: p1Text, alignment: AlignmentType.CENTER })], borders: tableBorder }),
-        new TableCell({ children: [new Paragraph({ text: p2Text, alignment: AlignmentType.CENTER })], borders: tableBorder }),
-        new TableCell({ children: [new Paragraph({ text: p3Text, alignment: AlignmentType.CENTER })], borders: tableBorder }),
-        ...(hasEssay ? [new TableCell({ children: [new Paragraph({ text: p4Text, alignment: AlignmentType.CENTER })], borders: tableBorder })] : []),
-        new TableCell({ children: [new Paragraph({ text: String(r.totalCommands), alignment: AlignmentType.CENTER })], borders: tableBorder }),
-        new TableCell({ children: [new Paragraph({ text: `${((r.totalCommands / specData.totals.totalCommands) * 100).toFixed(1)}%`, alignment: AlignmentType.CENTER })], borders: tableBorder })
-      ]
-    });
+  const matrixHeaderRow2 = new TableRow({
+    children: [
+      cell("Nhiều lựa chọn (P.I)", { columnSpan: 3, shading: "FEF3C7", bold: true }),
+      cell("Đúng - Sai (P.II)", { columnSpan: 3, shading: "D1FAE5", bold: true }),
+      cell("Trả lời ngắn (P.III)", { columnSpan: 3, shading: "E0E7FF", bold: true }),
+      ...(hasEssay ? [cell("Tự luận (P.IV)", { columnSpan: 3, shading: "F3E8FF", bold: true })] : []),
+      cell("Biết", { rowSpan: 2, shading: "E2E8F0", bold: true }),
+      cell("Hiểu", { rowSpan: 2, shading: "E2E8F0", bold: true }),
+      cell("Vận dụng", { rowSpan: 2, shading: "E2E8F0", bold: true })
+    ]
   });
+
+  const matrixHeaderRow3 = new TableRow({
+    children: [
+      cell("B", { shading: "FFFBEB", bold: true }), cell("H", { shading: "FFFBEB", bold: true }), cell("V", { shading: "FFFBEB", bold: true }),
+      cell("B", { shading: "ECFDF5", bold: true }), cell("H", { shading: "ECFDF5", bold: true }), cell("V", { shading: "ECFDF5", bold: true }),
+      cell("B", { shading: "EEF2FF", bold: true }), cell("H", { shading: "EEF2FF", bold: true }), cell("V", { shading: "EEF2FF", bold: true }),
+      ...(hasEssay ? [
+        cell("B", { shading: "FAF5FF", bold: true }), cell("H", { shading: "FAF5FF", bold: true }), cell("V", { shading: "FAF5FF", bold: true })
+      ] : [])
+    ]
+  });
+
+  // Group rows by chapter
+  const matrixRowsDocx: TableRow[] = [];
+  const chaptersMap = new Map<string, typeof matrixData.rows>();
+  matrixData.rows.forEach(r => {
+    if (!chaptersMap.has(r.content)) {
+      chaptersMap.set(r.content, []);
+    }
+    chaptersMap.get(r.content)!.push(r);
+  });
+
+  let globalRowIdx = 1;
+  chaptersMap.forEach((cRows, chapterName) => {
+    let chapP1K = 0, chapP1U = 0, chapP1A = 0;
+    let chapP2K = 0, chapP2U = 0, chapP2A = 0;
+    let chapP3K = 0, chapP3U = 0, chapP3A = 0;
+    let chapP4K = 0, chapP4U = 0, chapP4A = 0;
+    let chapTotalCmds = 0;
+
+    cRows.forEach(r => {
+      chapP1K += r.part1.know; chapP1U += r.part1.understand; chapP1A += r.part1.apply;
+      chapP2K += r.part2.know; chapP2U += r.part2.understand; chapP2A += r.part2.apply;
+      chapP3K += r.part3.know; chapP3U += r.part3.understand; chapP3A += r.part3.apply;
+      if (r.part4) {
+        chapP4K += r.part4.know; chapP4U += r.part4.understand; chapP4A += r.part4.apply;
+      }
+      chapTotalCmds += r.total;
+
+      const rKnow = r.part1.know + r.part2.know + r.part3.know + (r.part4?.know || 0);
+      const rUnderstand = r.part1.understand + r.part2.understand + r.part3.understand + (r.part4?.understand || 0);
+      const rApply = r.part1.apply + r.part2.apply + r.part3.apply + (r.part4?.apply || 0);
+      const pctStr = r.total ? `${((r.total / (matrixData.totals.grandTotal || baseTotal)) * 100).toFixed(1)}%` : '';
+
+      const cells = [
+        cell(globalRowIdx++),
+        cell(r.content, { alignment: AlignmentType.LEFT }),
+        cell(r.lessonName, { alignment: AlignmentType.LEFT }),
+        cell(r.detailName, { alignment: AlignmentType.LEFT }),
+        cell(r.part1.know || ''), cell(r.part1.understand || ''), cell(r.part1.apply || ''),
+        cell(r.part2.know || ''), cell(r.part2.understand || ''), cell(r.part2.apply || ''),
+        cell(r.part3.know || ''), cell(r.part3.understand || ''), cell(r.part3.apply || '')
+      ];
+      if (hasEssay) {
+        cells.push(
+          cell(r.part4?.know || ''),
+          cell(r.part4?.understand || ''),
+          cell(r.part4?.apply || '')
+        );
+      }
+      cells.push(
+        cell(rKnow || ''),
+        cell(rUnderstand || ''),
+        cell(rApply || ''),
+        cell(r.total || '', { bold: true }),
+        cell(pctStr)
+      );
+
+      matrixRowsDocx.push(new TableRow({ children: cells }));
+    });
+
+    // Chapter summary row
+    const chapK = chapP1K + chapP2K + chapP3K + chapP4K;
+    const chapU = chapP1U + chapP2U + chapP3U + chapP4U;
+    const chapA = chapP1A + chapP2A + chapP3A + chapP4A;
+    const chapPct = `${((chapTotalCmds / (matrixData.totals.grandTotal || baseTotal)) * 100).toFixed(1)}%`;
+
+    const summaryCells = [
+      cell(`Tổng cộng ${chapterName}`, { columnSpan: 4, bold: true, alignment: AlignmentType.RIGHT, shading: 'EEF2FF', color: '1E1B4B' }),
+      cell(chapP1K || '', { bold: true, shading: 'EEF2FF' }),
+      cell(chapP1U || '', { bold: true, shading: 'EEF2FF' }),
+      cell(chapP1A || '', { bold: true, shading: 'EEF2FF' }),
+      cell(chapP2K || '', { bold: true, shading: 'EEF2FF' }),
+      cell(chapP2U || '', { bold: true, shading: 'EEF2FF' }),
+      cell(chapP2A || '', { bold: true, shading: 'EEF2FF' }),
+      cell(chapP3K || '', { bold: true, shading: 'EEF2FF' }),
+      cell(chapP3U || '', { bold: true, shading: 'EEF2FF' }),
+      cell(chapP3A || '', { bold: true, shading: 'EEF2FF' })
+    ];
+    if (hasEssay) {
+      summaryCells.push(
+        cell(chapP4K || '', { bold: true, shading: 'EEF2FF' }),
+        cell(chapP4U || '', { bold: true, shading: 'EEF2FF' }),
+        cell(chapP4A || '', { bold: true, shading: 'EEF2FF' })
+      );
+    }
+    summaryCells.push(
+      cell(chapK || '', { bold: true, shading: 'EEF2FF' }),
+      cell(chapU || '', { bold: true, shading: 'EEF2FF' }),
+      cell(chapA || '', { bold: true, shading: 'EEF2FF' }),
+      cell(`${chapTotalCmds} lệnh`, { bold: true, shading: 'E0E7FF' }),
+      cell(chapPct, { bold: true, shading: 'E0E7FF' })
+    );
+
+    matrixRowsDocx.push(new TableRow({ children: summaryCells }));
+  });
+
+  // Footer 1: Tổng số câu hỏi / lệnh hỏi
+  const f1Cells = [
+    cell('Tổng số câu hỏi / lệnh hỏi', { columnSpan: 4, bold: true, shading: 'CBD5E1', color: '0F172A' }),
+    cell(matrixData.totals.part1.know, { bold: true, shading: 'CBD5E1' }),
+    cell(matrixData.totals.part1.understand, { bold: true, shading: 'CBD5E1' }),
+    cell(matrixData.totals.part1.apply, { bold: true, shading: 'CBD5E1' }),
+    cell(matrixData.totals.part2.know, { bold: true, shading: 'CBD5E1' }),
+    cell(matrixData.totals.part2.understand, { bold: true, shading: 'CBD5E1' }),
+    cell(matrixData.totals.part2.apply, { bold: true, shading: 'CBD5E1' }),
+    cell(matrixData.totals.part3.know, { bold: true, shading: 'CBD5E1' }),
+    cell(matrixData.totals.part3.understand, { bold: true, shading: 'CBD5E1' }),
+    cell(matrixData.totals.part3.apply, { bold: true, shading: 'CBD5E1' })
+  ];
+  if (hasEssay) {
+    f1Cells.push(
+      cell(matrixData.totals.part4?.know || 0, { bold: true, shading: 'CBD5E1' }),
+      cell(matrixData.totals.part4?.understand || 0, { bold: true, shading: 'CBD5E1' }),
+      cell(matrixData.totals.part4?.apply || 0, { bold: true, shading: 'CBD5E1' })
+    );
+  }
+  f1Cells.push(
+    cell(matrixData.totals.ratio.know, { bold: true, shading: 'CBD5E1' }),
+    cell(matrixData.totals.ratio.understand, { bold: true, shading: 'CBD5E1' }),
+    cell(matrixData.totals.ratio.apply, { bold: true, shading: 'CBD5E1' }),
+    cell(matrixData.totals.grandTotal, { bold: true, shading: 'CBD5E1' }),
+    cell('100%', { bold: true, shading: 'CBD5E1' })
+  );
+
+  // Footer 2: Tổng số điểm
+  const f2Cells = [
+    cell('Tổng số điểm', { columnSpan: 4, bold: true, shading: 'E2E8F0', color: '0F172A' }),
+    cell(formatPt(totalPoints.part1), { columnSpan: 3, bold: true, shading: 'E2E8F0' }),
+    cell(formatPt(totalPoints.part2), { columnSpan: 3, bold: true, shading: 'E2E8F0' }),
+    cell(formatPt(totalPoints.part3), { columnSpan: 3, bold: true, shading: 'E2E8F0' })
+  ];
+  if (hasEssay) {
+    f2Cells.push(cell(formatPt(totalPoints.part4 || 0), { columnSpan: 3, bold: true, shading: 'E2E8F0' }));
+  }
+  f2Cells.push(
+    cell(formatPt(totalPoints.know), { bold: true, shading: 'E2E8F0' }),
+    cell(formatPt(totalPoints.understand), { bold: true, shading: 'E2E8F0' }),
+    cell(formatPt(totalPoints.apply), { bold: true, shading: 'E2E8F0' }),
+    cell(formatPt(totalPoints.grandTotal ?? 10.0, ' điểm'), { bold: true, shading: 'E0E7FF', color: '3730A3' }),
+    cell('', { shading: 'E2E8F0' })
+  );
+
+  // Footer 3: Tỉ lệ % điểm
+  const f3Cells = [
+    cell('Tỉ lệ % điểm', { columnSpan: 4, bold: true, shading: 'F1F5F9', color: '0F172A' }),
+    cell(`${percentages.part1}%`, { columnSpan: 3, bold: true, shading: 'F1F5F9' }),
+    cell(`${percentages.part2}%`, { columnSpan: 3, bold: true, shading: 'F1F5F9' }),
+    cell(`${percentages.part3}%`, { columnSpan: 3, bold: true, shading: 'F1F5F9' })
+  ];
+  if (hasEssay) {
+    f3Cells.push(cell(`${percentages.part4 || 0}%`, { columnSpan: 3, bold: true, shading: 'F1F5F9' }));
+  }
+  f3Cells.push(
+    cell(`${percentages.know}%`, { bold: true, shading: 'F1F5F9' }),
+    cell(`${percentages.understand}%`, { bold: true, shading: 'F1F5F9' }),
+    cell(`${percentages.apply}%`, { bold: true, shading: 'F1F5F9' }),
+    cell(`${totalPercent}%`, { bold: true, shading: 'E0E7FF', color: '3730A3' }),
+    cell('', { shading: 'F1F5F9' })
+  );
 
   children.push(new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
     borders: tableBorder,
-    rows: [matrixHeaderRow1, ...matrixBodyRows]
+    rows: [
+      matrixHeaderRow1,
+      matrixHeaderRow2,
+      matrixHeaderRow3,
+      ...matrixRowsDocx,
+      new TableRow({ children: f1Cells }),
+      new TableRow({ children: f2Cells }),
+      new TableRow({ children: f3Cells })
+    ]
   }));
 
-  // Summary note
-  const formatPtDoc = (val: number) => {
-    const fixed = val.toFixed(2);
-    return (fixed.endsWith('.00') ? val.toFixed(1) : fixed.endsWith('0') ? val.toFixed(1) : fixed).replace('.', ',');
-  };
-  const grandPts = formatPtDoc(specData.totals.totalPoints.grandTotal ?? 10.0);
-  const summaryText = `Tổng số: ${specData.totals.totalCommands} lệnh (${grandPts} điểm). Tỉ lệ: Biết ${specData.totals.percentages.know}% - Hiểu ${specData.totals.percentages.understand}% - Vận dụng ${specData.totals.percentages.apply}%.`;
-  children.push(new Paragraph({
-    text: summaryText,
-    spacing: { before: 120, after: 300 },
-    children: [new TextRun({ 
-      text: summaryText,
-      bold: true,
-      italics: true,
-      size: 20
-    })]
-  }));
+  // ==========================================
+  // SECTION 2: BẢN ĐẶC TẢ ĐỀ KIỂM TRA ĐỊNH KÌ
+  // ==========================================
+  children.push(new Paragraph({ pageBreakBefore: true }));
+  children.push(createNationalHeader());
 
-  // SECTION 2: BẢN ĐẶC TẢ
   children.push(new Paragraph({
-    text: "2. BẢN ĐẶC TẢ ĐỀ KIỂM TRA ĐỊNH KÌ",
-    heading: HeadingLevel.HEADING_1,
     alignment: AlignmentType.CENTER,
-    spacing: { before: 300, after: 150 },
+    spacing: { before: 80, after: 40 },
+    children: [new TextRun({ text: "TRƯỜNG THCS-THPT PHAN VĂN TRỊ - VĨNH LONG", bold: true, size: 21, color: "334155" })]
   }));
 
-  const specHeaderDocx = new TableRow({
+  children.push(new Paragraph({
+    text: "2. BẢN ĐẶC TẢ ĐỀ KIỂM TRA ĐỊNH KÌ MÔN HÓA HỌC",
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 30, after: 50 },
+    children: [new TextRun({ text: "2. BẢN ĐẶC TẢ ĐỀ KIỂM TRA ĐỊNH KÌ MÔN HÓA HỌC", bold: true, size: 25, color: "1E3A8A" })]
+  }));
+
+  children.push(new Paragraph({
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 0, after: 40 },
     children: [
-      new TableCell({ children: [new Paragraph({ text: "TT", alignment: AlignmentType.CENTER })], borders: tableBorder }),
-      new TableCell({ children: [new Paragraph({ text: "Chủ đề / Chương", alignment: AlignmentType.CENTER })], borders: tableBorder }),
-      new TableCell({ children: [new Paragraph({ text: "Nội dung kiến thức", alignment: AlignmentType.CENTER })], borders: tableBorder }),
-      new TableCell({ children: [new Paragraph({ text: "Yêu cầu cần đạt", alignment: AlignmentType.CENTER })], borders: tableBorder }),
-      new TableCell({ children: [new Paragraph({ text: "P.I (MCQ)", alignment: AlignmentType.CENTER })], borders: tableBorder }),
-      new TableCell({ children: [new Paragraph({ text: "P.II (Đ/S)", alignment: AlignmentType.CENTER })], borders: tableBorder }),
-      new TableCell({ children: [new Paragraph({ text: "P.III (SA)", alignment: AlignmentType.CENTER })], borders: tableBorder }),
-      ...(hasEssay ? [new TableCell({ children: [new Paragraph({ text: "P.IV (TL)", alignment: AlignmentType.CENTER })], borders: tableBorder })] : [])
+      new TextRun({ 
+        text: `LỚP ${specData.grade} - ${specData.examType.toUpperCase()}${hasEssay ? ' (CÓ PHẦN TỰ LUẬN)' : ' (100% TRẮC NGHIỆM KHÁCH QUAN)'}`,
+        bold: true,
+        size: 20 
+      })
+    ]
+  }));
+
+  children.push(new Paragraph({
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 0, after: 140 },
+    children: [
+      new TextRun({ 
+        text: `Tỉ lệ điểm: Biết ${percentages.know}% (${formatPt(totalPoints.know)}) - Hiểu ${percentages.understand}% (${formatPt(totalPoints.understand)}) - Vận dụng ${percentages.apply}% (${formatPt(totalPoints.apply)}) • Tổng: ${formatPt(totalPoints.grandTotal ?? 10.0, ' điểm')}`,
+        bold: true,
+        italics: true,
+        size: 19,
+        color: "3730A3"
+      })
+    ]
+  }));
+
+  const specHeaderRow1 = new TableRow({
+    children: [
+      cell("TT", { rowSpan: 2, shading: "CBD5E1", bold: true }),
+      cell("Chủ đề / Chương", { rowSpan: 2, shading: "CBD5E1", bold: true }),
+      cell("Nội dung kiến thức", { rowSpan: 2, shading: "CBD5E1", bold: true }),
+      cell("Yêu cầu cần đạt", { rowSpan: 2, shading: "CBD5E1", bold: true }),
+      cell("Nhiều lựa chọn (P.I)", { columnSpan: 3, shading: "FEF3C7", bold: true }),
+      cell("Đúng - Sai (P.II)", { columnSpan: 3, shading: "D1FAE5", bold: true }),
+      cell("Trả lời ngắn (P.III)", { columnSpan: 3, shading: "E0E7FF", bold: true }),
+      ...(hasEssay ? [cell("Tự luận (P.IV)", { columnSpan: 3, shading: "F3E8FF", bold: true })] : []),
+      cell("Tổng lệnh", { rowSpan: 2, shading: "CBD5E1", bold: true })
+    ]
+  });
+
+  const specHeaderRow2 = new TableRow({
+    children: [
+      cell("B", { shading: "FFFBEB", bold: true }), cell("H", { shading: "FFFBEB", bold: true }), cell("V", { shading: "FFFBEB", bold: true }),
+      cell("B", { shading: "ECFDF5", bold: true }), cell("H", { shading: "ECFDF5", bold: true }), cell("V", { shading: "ECFDF5", bold: true }),
+      cell("B", { shading: "EEF2FF", bold: true }), cell("H", { shading: "EEF2FF", bold: true }), cell("V", { shading: "EEF2FF", bold: true }),
+      ...(hasEssay ? [
+        cell("B", { shading: "FAF5FF", bold: true }), cell("H", { shading: "FAF5FF", bold: true }), cell("V", { shading: "FAF5FF", bold: true })
+      ] : [])
     ]
   });
 
   const specRowsDocx: TableRow[] = specData.rows.map(r => {
     const outcomeParagraphs: Paragraph[] = [];
     if (r.outcomes.recognition?.length) {
-      outcomeParagraphs.push(new Paragraph({ children: [new TextRun({ text: "- Nhận biết:", bold: true })] }));
-      r.outcomes.recognition.forEach(o => outcomeParagraphs.push(new Paragraph({ children: [new TextRun({ text: `+ ${o}` })] })));
+      outcomeParagraphs.push(new Paragraph({
+        spacing: { before: 15, after: 5 },
+        children: [new TextRun({ text: "- Nhận biết:", bold: true, size: 16, color: "1E293B" })]
+      }));
+      r.outcomes.recognition.forEach(o => outcomeParagraphs.push(new Paragraph({
+        spacing: { before: 0, after: 5 },
+        children: [new TextRun({ text: `+ ${o}`, size: 16, color: "334155" })]
+      })));
     }
     if (r.outcomes.understanding?.length) {
-      outcomeParagraphs.push(new Paragraph({ children: [new TextRun({ text: "- Thông hiểu:", bold: true })] }));
-      r.outcomes.understanding.forEach(o => outcomeParagraphs.push(new Paragraph({ children: [new TextRun({ text: `+ ${o}` })] })));
+      outcomeParagraphs.push(new Paragraph({
+        spacing: { before: 15, after: 5 },
+        children: [new TextRun({ text: "- Thông hiểu:", bold: true, size: 16, color: "1E293B" })]
+      }));
+      r.outcomes.understanding.forEach(o => outcomeParagraphs.push(new Paragraph({
+        spacing: { before: 0, after: 5 },
+        children: [new TextRun({ text: `+ ${o}`, size: 16, color: "334155" })]
+      })));
     }
     if (r.outcomes.application?.length) {
-      outcomeParagraphs.push(new Paragraph({ children: [new TextRun({ text: "- Vận dụng:", bold: true })] }));
-      r.outcomes.application.forEach(o => outcomeParagraphs.push(new Paragraph({ children: [new TextRun({ text: `+ ${o}` })] })));
+      outcomeParagraphs.push(new Paragraph({
+        spacing: { before: 15, after: 5 },
+        children: [new TextRun({ text: "- Vận dụng:", bold: true, size: 16, color: "1E293B" })]
+      }));
+      r.outcomes.application.forEach(o => outcomeParagraphs.push(new Paragraph({
+        spacing: { before: 0, after: 5 },
+        children: [new TextRun({ text: `+ ${o}`, size: 16, color: "334155" })]
+      })));
     }
 
-    const p1Summary = `B:${r.part1.know} H:${r.part1.understand} V:${r.part1.apply}`;
-    const p2Summary = `B:${r.part2.know} H:${r.part2.understand} V:${r.part2.apply}`;
-    const p3Summary = `B:${r.part3.know} H:${r.part3.understand} V:${r.part3.apply}`;
-    const p4Summary = r.part4 ? `B:${r.part4.know} H:${r.part4.understand} V:${r.part4.apply}` : '';
+    const rowCells = [
+      cell(r.index),
+      cell(r.chapterName, { bold: true, alignment: AlignmentType.LEFT }),
+      cell(r.lessonName, { bold: true, alignment: AlignmentType.LEFT }),
+      new TableCell({
+        borders: tableBorder,
+        children: outcomeParagraphs.length ? outcomeParagraphs : [new Paragraph({ children: [new TextRun({ text: "Kiến thức bài học.", size: 16 })] })]
+      }),
+      cell(r.part1.know || ''), cell(r.part1.understand || ''), cell(r.part1.apply || ''),
+      cell(r.part2.know || ''), cell(r.part2.understand || ''), cell(r.part2.apply || ''),
+      cell(r.part3.know || ''), cell(r.part3.understand || ''), cell(r.part3.apply || '')
+    ];
+    if (hasEssay) {
+      rowCells.push(
+        cell(r.part4?.know || ''),
+        cell(r.part4?.understand || ''),
+        cell(r.part4?.apply || '')
+      );
+    }
+    rowCells.push(cell(r.totalCommands || '', { bold: true }));
 
-    return new TableRow({
-      children: [
-        new TableCell({ children: [new Paragraph({ text: String(r.index), alignment: AlignmentType.CENTER })], borders: tableBorder }),
-        new TableCell({ children: [new Paragraph({ text: r.chapterName, bold: true })], borders: tableBorder }),
-        new TableCell({ children: [new Paragraph({ text: r.lessonName, bold: true })], borders: tableBorder }),
-        new TableCell({ children: outcomeParagraphs.length ? outcomeParagraphs : [new Paragraph({ text: "Kiến thức bài học." })], borders: tableBorder }),
-        new TableCell({ children: [new Paragraph({ text: p1Summary, alignment: AlignmentType.CENTER })], borders: tableBorder }),
-        new TableCell({ children: [new Paragraph({ text: p2Summary, alignment: AlignmentType.CENTER })], borders: tableBorder }),
-        new TableCell({ children: [new Paragraph({ text: p3Summary, alignment: AlignmentType.CENTER })], borders: tableBorder }),
-        ...(hasEssay ? [new TableCell({ children: [new Paragraph({ text: p4Summary, alignment: AlignmentType.CENTER })], borders: tableBorder })] : [])
-      ]
-    });
+    return new TableRow({ children: rowCells });
   });
+
+  const specF1 = [
+    cell('Tổng số câu hỏi / lệnh hỏi', { columnSpan: 4, bold: true, shading: 'CBD5E1', color: '0F172A' }),
+    cell(specData.totals.part1.know, { bold: true, shading: 'CBD5E1' }),
+    cell(specData.totals.part1.understand, { bold: true, shading: 'CBD5E1' }),
+    cell(specData.totals.part1.apply, { bold: true, shading: 'CBD5E1' }),
+    cell(specData.totals.part2.know, { bold: true, shading: 'CBD5E1' }),
+    cell(specData.totals.part2.understand, { bold: true, shading: 'CBD5E1' }),
+    cell(specData.totals.part2.apply, { bold: true, shading: 'CBD5E1' }),
+    cell(specData.totals.part3.know, { bold: true, shading: 'CBD5E1' }),
+    cell(specData.totals.part3.understand, { bold: true, shading: 'CBD5E1' }),
+    cell(specData.totals.part3.apply, { bold: true, shading: 'CBD5E1' })
+  ];
+  if (hasEssay) {
+    specF1.push(
+      cell(specData.totals.part4?.know || 0, { bold: true, shading: 'CBD5E1' }),
+      cell(specData.totals.part4?.understand || 0, { bold: true, shading: 'CBD5E1' }),
+      cell(specData.totals.part4?.apply || 0, { bold: true, shading: 'CBD5E1' })
+    );
+  }
+  specF1.push(cell(specData.totals.totalCommands, { bold: true, shading: 'CBD5E1' }));
+
+  const specF2 = [
+    cell('Tổng số điểm', { columnSpan: 4, bold: true, shading: 'E2E8F0', color: '0F172A' }),
+    cell(formatPt(totalPoints.part1), { columnSpan: 3, bold: true, shading: 'E2E8F0' }),
+    cell(formatPt(totalPoints.part2), { columnSpan: 3, bold: true, shading: 'E2E8F0' }),
+    cell(formatPt(totalPoints.part3), { columnSpan: 3, bold: true, shading: 'E2E8F0' })
+  ];
+  if (hasEssay) {
+    specF2.push(cell(formatPt(totalPoints.part4 || 0), { columnSpan: 3, bold: true, shading: 'E2E8F0' }));
+  }
+  specF2.push(cell(formatPt(totalPoints.grandTotal ?? 10.0, ' điểm'), { bold: true, shading: 'E0E7FF', color: '3730A3' }));
+
+  const specF3 = [
+    cell('Tỉ lệ %', { columnSpan: 4, bold: true, shading: 'F1F5F9', color: '0F172A' }),
+    cell(`${percentages.part1}%`, { columnSpan: 3, bold: true, shading: 'F1F5F9' }),
+    cell(`${percentages.part2}%`, { columnSpan: 3, bold: true, shading: 'F1F5F9' }),
+    cell(`${percentages.part3}%`, { columnSpan: 3, bold: true, shading: 'F1F5F9' })
+  ];
+  if (hasEssay) {
+    specF3.push(cell(`${percentages.part4 || 0}%`, { columnSpan: 3, bold: true, shading: 'F1F5F9' }));
+  }
+  specF3.push(cell(`${totalPercent}%`, { bold: true, shading: 'E0E7FF', color: '3730A3' }));
 
   children.push(new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
     borders: tableBorder,
-    rows: [specHeaderDocx, ...specRowsDocx]
+    rows: [
+      specHeaderRow1,
+      specHeaderRow2,
+      ...specRowsDocx,
+      new TableRow({ children: specF1 }),
+      new TableRow({ children: specF2 }),
+      new TableRow({ children: specF3 })
+    ]
   }));
 
   const doc = new Document({
     sections: [{
       properties: {
         page: {
+          size: {
+            orientation: PageOrientation.LANDSCAPE,
+            width: 16838,
+            height: 11906
+          },
           margin: { top: 720, bottom: 720, left: 720, right: 720 }
         }
       },
@@ -509,7 +870,7 @@ export const downloadMatrixAndSpecDoc = async (matrixData: MatrixData, customSpe
 
 export const exportMatrixToImage = async (elementId: string, filename: string): Promise<void> => {
   const element = document.getElementById(elementId);
-  if (!element) throw new Error("Không tìm thấy bảng ma trận");
+  if (!element) throw new Error(`Không tìm thấy bảng để xuất ảnh: ${elementId}`);
   
   const originalStyle = element.getAttribute('style') || '';
   try {
@@ -519,7 +880,7 @@ export const exportMatrixToImage = async (elementId: string, filename: string): 
     element.style.width = 'fit-content';
     element.style.maxWidth = 'none';
     
-    await new Promise(resolve => setTimeout(resolve, 150));
+    await new Promise(resolve => setTimeout(resolve, 200));
     
     const dataUrl = await domToPng(element, {
       scale: 2,
@@ -545,7 +906,7 @@ export const exportMatrixToImage = async (elementId: string, filename: string): 
 
 export const exportMatrixToPDF = async (elementId: string, filename: string): Promise<void> => {
   const element = document.getElementById(elementId);
-  if (!element) throw new Error("Không tìm thấy bảng ma trận");
+  if (!element) throw new Error(`Không tìm thấy bảng để xuất PDF: ${elementId}`);
   
   const originalStyle = element.getAttribute('style') || '';
   try {
@@ -555,7 +916,7 @@ export const exportMatrixToPDF = async (elementId: string, filename: string): Pr
     element.style.width = 'fit-content';
     element.style.maxWidth = 'none';
     
-    await new Promise(resolve => setTimeout(resolve, 150));
+    await new Promise(resolve => setTimeout(resolve, 200));
     
     const canvas = await domToCanvas(element, {
       scale: 2,

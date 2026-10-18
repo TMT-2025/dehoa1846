@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { 
-  FileSpreadsheet, Download, Printer, 
+  FileSpreadsheet, Download, Printer, ImageIcon,
   ChevronDown, ChevronUp, Layers, CheckSquare, Sparkles, BookOpen
 } from 'lucide-react';
 import { SpecificationData, SpecificationRow } from '../../types/specification';
-import { exportSpecificationToExcel, downloadMatrixAndSpecDoc } from '../../services/exportService';
+import { exportSpecificationToExcel, downloadMatrixAndSpecDoc, exportMatrixToImage } from '../../services/exportService';
 import { MatrixData } from '../../types/matrix';
 
 const formatPoint = (val: number, suffix = 'đ') => {
@@ -54,6 +54,19 @@ export const SpecificationDisplay: React.FC<SpecificationDisplayProps> = ({
       }
     } catch (e: any) {
       alert(e.message || 'Lỗi khi xuất file Word');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleExportImage = async () => {
+    try {
+      setIsExporting(true);
+      const cleanGrade = String(specData.grade).replace(/\s+/g, '_');
+      const cleanExamType = specData.examType.replace(/\s+/g, '_');
+      await exportMatrixToImage('specification-table-container', `BanDacTa_HoaHoc_Lop${cleanGrade}_${cleanExamType}`);
+    } catch (e: any) {
+      alert(e.message || 'Lỗi khi xuất file ảnh Bản đặc tả');
     } finally {
       setIsExporting(false);
     }
@@ -113,6 +126,16 @@ export const SpecificationDisplay: React.FC<SpecificationDisplayProps> = ({
           </button>
 
           <button
+            onClick={handleExportImage}
+            disabled={isExporting}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-300 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+            title="Xuất file ảnh Bản đặc tả (.png)"
+          >
+            <ImageIcon className="w-4 h-4 text-slate-600" />
+            <span>Xuất Ảnh (.png)</span>
+          </button>
+
+          <button
             onClick={handlePrint}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 rounded-lg text-xs font-bold transition-colors cursor-pointer"
           >
@@ -128,8 +151,8 @@ export const SpecificationDisplay: React.FC<SpecificationDisplayProps> = ({
         className="overflow-x-auto bg-white p-6 md:p-10 border border-gray-300 shadow-xl rounded-2xl relative"
       >
         <div className="text-center mb-6">
-          <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-1">
-            BỘ GIÁO DỤC VÀ ĐÀO TẠO - CÔNG VĂN SỐ 7991/BGDĐT-GDTrH
+          <p className="text-xs font-bold uppercase tracking-widest text-slate-600 mb-1">
+            TRƯỜNG THCS-THPT PHAN VĂN TRỊ - VĨNH LONG
           </p>
           <h2 className="text-xl md:text-2xl font-black uppercase text-indigo-950 tracking-tight leading-snug">
             2. BẢN ĐẶC TẢ ĐỀ KIỂM TRA ĐỊNH KÌ MÔN HÓA HỌC

@@ -222,7 +222,15 @@ export const MatrixDisplay: React.FC<MatrixDisplayProps> = ({
       setIsExporting(true);
       const cleanGrade = String(currentData.grade).replace(/\s+/g, '_');
       const cleanExamType = currentData.examType.replace(/\s+/g, '_');
-      await exportMatrixToImage('matrix-table-container', `MaTran_HoaHoc_Lop${cleanGrade}_${cleanExamType}`);
+      
+      if (activeView === 'specification') {
+        await exportMatrixToImage('specification-table-container', `BanDacTa_HoaHoc_Lop${cleanGrade}_${cleanExamType}`);
+      } else if (activeView === 'both') {
+        await exportMatrixToImage('matrix-table-container', `MaTran_HoaHoc_Lop${cleanGrade}_${cleanExamType}`);
+        await exportMatrixToImage('specification-table-container', `BanDacTa_HoaHoc_Lop${cleanGrade}_${cleanExamType}`);
+      } else {
+        await exportMatrixToImage('matrix-table-container', `MaTran_HoaHoc_Lop${cleanGrade}_${cleanExamType}`);
+      }
     } catch (e: any) {
       alert(e.message || 'Lỗi khi xuất file ảnh');
     } finally {
@@ -235,7 +243,9 @@ export const MatrixDisplay: React.FC<MatrixDisplayProps> = ({
       setIsExporting(true);
       const cleanGrade = String(currentData.grade).replace(/\s+/g, '_');
       const cleanExamType = currentData.examType.replace(/\s+/g, '_');
-      await exportMatrixToPDF('matrix-table-container', `MaTran_HoaHoc_Lop${cleanGrade}_${cleanExamType}`);
+      const targetId = activeView === 'specification' ? 'specification-table-container' : 'matrix-table-container';
+      const prefix = activeView === 'specification' ? 'BanDacTa' : 'MaTran';
+      await exportMatrixToPDF(targetId, `${prefix}_HoaHoc_Lop${cleanGrade}_${cleanExamType}`);
     } catch (e: any) {
       alert(e.message || 'Lỗi khi xuất file PDF');
     } finally {
@@ -388,9 +398,10 @@ export const MatrixDisplay: React.FC<MatrixDisplayProps> = ({
             onClick={handleExportImage}
             disabled={isExporting}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-300 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+            title={activeView === 'specification' ? 'Xuất ảnh Bản đặc tả (.png)' : activeView === 'both' ? 'Xuất ảnh Ma trận và Bản đặc tả (.png)' : 'Xuất ảnh Ma trận (.png)'}
           >
             <ImageIcon className="w-4 h-4 text-slate-600" />
-            <span>Xuất Ảnh (.png)</span>
+            <span>{activeView === 'specification' ? 'Xuất Ảnh Bản đặc tả (.png)' : 'Xuất Ảnh (.png)'}</span>
           </button>
 
           <button
@@ -428,8 +439,8 @@ export const MatrixDisplay: React.FC<MatrixDisplayProps> = ({
           className="overflow-x-auto bg-white p-6 md:p-10 border border-gray-300 shadow-xl rounded-2xl relative"
         >
           <div className="text-center mb-6">
-            <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-1">
-              BỘ GIÁO DỤC VÀ ĐÀO TẠO - CÔNG VĂN SỐ 7991/BGDĐT-GDTrH
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-600 mb-1">
+              TRƯỜNG THCS-THPT PHAN VĂN TRỊ - VĨNH LONG
             </p>
             <h2 className="text-xl md:text-2xl font-black uppercase text-blue-950 tracking-tight leading-snug">
               1. MA TRẬN ĐỀ KIỂM TRA ĐỊNH KỲ MÔN HÓA HỌC
