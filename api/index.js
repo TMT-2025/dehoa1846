@@ -87,15 +87,15 @@ app.post('/api/generate-exam', async (req, res) => {
          - Tập trung kiểm tra mức độ Nhận biết (8 câu) và Thông hiểu (4 câu).
       2. PHẦN II (2 câu Trắc nghiệm Đúng/Sai - 2.0 điểm):
          - Gồm đúng 2 câu (Câu 1 đến Câu 2) với 2 bối cảnh thực tiễn.
-         - Mỗi câu gồm 4 ý a, b, c, d (tổng 8 ý/lệnh hỏi), mỗi ý 0.25 điểm. Cấu trúc 4 ý phát triển: 1 Biết, 2 Hiểu, 1 Vận dụng.
+         - Mỗi câu gồm 4 ý a, b, c, d (tổng 8 ý/lệnh hỏi), mỗi ý 0.25 điểm. Cấu trúc 4 ý: 2 Biết, 2 Hiểu (hoặc bám sát ma trận).
       3. PHẦN III (4 câu Trắc nghiệm Trả lời ngắn - 2.0 điểm):
-         - Gồm đúng 4 câu (Câu 1 đến Câu 4), mỗi câu 0.5 điểm.
+         - Gồm đúng 4 câu (Câu 1 đến Câu 4), mỗi câu 0.5 điểm ở mức độ Vận dụng.
          - Bài toán tính toán có ý nghĩa thực tế, yêu cầu làm tròn rõ ràng, đáp án (answer) là 1 con số duy nhất.
       4. PHẦN IV (3 câu Tự luận - 3.0 điểm):
          - Gồm đúng 3 câu (Câu 1 đến Câu 3) ở mảng 'part4', mỗi câu 1.0 điểm (points: 1.0):
-           + Câu 1 (1.0 điểm): Mức độ Thông hiểu / Vận dụng thấp (viết phương trình hóa học, giải thích hiện tượng, cấu tạo nguyên tử, liên kết hóa học hoặc cân bằng hóa học).
-           + Câu 2 (1.0 điểm): Mức độ Vận dụng (bài toán thực tế hoặc tính nồng độ, pH, hiệu suất, biến thiên enthalpy...).
-           + Câu 3 (1.0 điểm): Mức độ Vận dụng cao (bài toán thực nghiệm sâu sắc, xử lý số liệu hoặc liên hệ thực tiễn đời sống / sản xuất).
+           + Câu 1 (1.0 điểm): Mức độ Nhận biết (khái niệm lí thuyết, nêu quy tắc, viết cấu hình electron, công thức Lewis hoặc danh pháp).
+           + Câu 2 (1.0 điểm): Mức độ Thông hiểu (giải thích hiện tượng, so sánh, bản chất liên kết hóa học, viết PTHH và cân bằng phản ứng oxi hóa - khử).
+           + Câu 3 (1.0 điểm): Mức độ Vận dụng (bài toán thực tế hoặc tính nồng độ, pH, hiệu suất, biến thiên enthalpy...).
            + Mỗi câu tự luận bắt buộc phải có hướng dẫn giải chi tiết (solution) kèm thang điểm/biểu điểm cụ thể cho từng bước để giáo viên chấm điểm.
 
       (LƯU Ý: Với KHỐI 12 hoặc khi đề yêu cầu 40 lệnh 100% trắc nghiệm theo chuẩn tốt nghiệp THPT của Bộ GD&ĐT: Phần I gồm 18 câu, Phần II gồm 4 câu, Phần III gồm 6 câu, Phần IV để mảng rỗng []).

@@ -751,8 +751,8 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
               </h2>
               <p className="text-xs text-indigo-300">
                 {isPeriodic1011 
-                  ? 'Định dạng kiểm tra định kì Lớp 10/11: 4 phần (21 câu - 27 lệnh hỏi - 10 điểm: TN 7.0đ + Tự luận 3.0đ)' 
-                  : 'Phân bổ chuẩn 40 lệnh hỏi (16 Biết, 12 Hiểu, 12 Vận dụng)'}
+                  ? 'Định dạng kiểm tra định kì Lớp 10/11: 4 phần (21 câu - 27 lệnh hỏi - 10 điểm: TN 7.0đ + TL 3.0đ) • Tỉ lệ điểm: 40% Biết - 30% Hiểu - 30% Vận dụng' 
+                  : 'Phân bổ chuẩn 40 lệnh hỏi (16 Biết, 12 Hiểu, 12 Vận dụng) • Tỉ lệ điểm: 40% Biết - 30% Hiểu - 30% Vận dụng'}
               </p>
             </div>
           </div>
@@ -995,7 +995,7 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
 
                   <p className="text-[11px] text-emerald-800">
                     {isPeriodic1011 
-                      ? 'Đề định kì Lớp 10/11 có 2 câu Đúng/Sai (tổng 8 ý = 2.0 điểm). Mỗi bối cảnh Phần II tương ứng với 1 câu Đúng/Sai (1 Biết, 2 Hiểu, 1 Vận dụng). Bạn có thể bấm dấu ✕ để bỏ chọn và chọn bối cảnh khác từ danh sách bài học bên dưới.'
+                      ? 'Đề định kì Lớp 10/11 có 2 câu Đúng/Sai (tổng 8 ý = 2.0 điểm: 4 Biết, 4 Hiểu). Mỗi bối cảnh Phần II tương ứng với 1 câu Đúng/Sai (2 Biết, 2 Hiểu). Bạn có thể bấm dấu ✕ để bỏ chọn và chọn bối cảnh khác từ danh sách bài học bên dưới.'
                       : 'Mỗi bối cảnh Phần II tương ứng với 1 câu Đúng/Sai (gồm 4 ý: 1 Biết, 2 Hiểu, 1 Vận dụng). Bạn có thể bấm dấu ✕ để bỏ chọn một bối cảnh và chọn bối cảnh khác từ danh sách bài học bên dưới.'}
                   </p>
 

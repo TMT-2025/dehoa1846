@@ -114,23 +114,29 @@ export const generateMatrix = (
   const isPeriodic1011 = isPeriodicExamGrade10or11(grade, examType);
 
   // Cấu hình chỉ tiêu số câu và số lệnh hỏi
-  // Định kì Lớp 10, 11 (21 câu - 27 lệnh - 10 điểm):
+  // Định kì Lớp 10, 11 (21 câu - 27 lệnh - 10 điểm - Chuẩn 40% Biết, 30% Hiểu, 30% Vận dụng):
   // - P1: 12 câu trắc nghiệm 4 lựa chọn (12 lệnh = 3.0đ: 8 Biết, 4 Hiểu)
-  // - P2: 2 câu Đúng/Sai (8 lệnh = 2.0đ: 2 Biết, 4 Hiểu, 2 Vận dụng)
+  // - P2: 2 câu Đúng/Sai (8 lệnh = 2.0đ: 4 Biết, 4 Hiểu) [Mỗi câu: 2 Biết, 2 Hiểu]
   // - P3: 4 câu trả lời ngắn (4 lệnh = 2.0đ: 4 Vận dụng)
-  // - P4: 3 câu Tự luận (3 lệnh = 3.0đ: 1 Hiểu, 2 Vận dụng)
-  // Đề chuẩn 40 lệnh (Lớp 12 tốt nghiệp THPT hoặc kiểm tra thường xuyên):
+  // - P4: 3 câu Tự luận (3 lệnh = 3.0đ: 1 Biết, 1 Hiểu, 1 Vận dụng)
+  // -> Tổng điểm: Biết 4.0đ (40%), Hiểu 3.0đ (30%), Vận dụng 3.0đ (30%)
+  // Đề chuẩn 40 lệnh (Lớp 12 tốt nghiệp THPT hoặc kiểm tra thường xuyên - Chuẩn 40% Biết, 30% Hiểu, 30% Vận dụng):
   // - P1: 18 câu (18 lệnh = 4.5đ: 12 Biết, 4 Hiểu, 2 Vận dụng)
-  // - P2: 4 câu (16 lệnh = 4.0đ: 4 Biết, 8 Hiểu, 4 Vận dụng)
+  // - P2: 4 câu (16 lệnh = 4.0đ: 4 Biết, 8 Hiểu, 4 Vận dụng) [Mỗi câu: 1 Biết, 2 Hiểu, 1 Vận dụng]
   // - P3: 6 câu (6 lệnh = 1.5đ: 6 Vận dụng)
+  // -> Tổng điểm: Biết 4.0đ (40%), Hiểu 3.0đ (30%), Vận dụng 3.0đ (30%)
   const targetP1 = isPeriodic1011 ? 12 : 18;
   const targetP2Hosts = isPeriodic1011 ? 2 : 4;
   const targetP3 = isPeriodic1011 ? 4 : 6;
   const targetP4 = isPeriodic1011 ? 3 : 0;
   const targetTotalCommands = isPeriodic1011 ? 27 : 40;
 
-  // Cấu trúc cố định cho mỗi câu Phần II: 1 Biết, 2 Hiểu, 1 Vận dụng (Tổng 4 lệnh)
-  const p2PerQuestion: CognitiveLevel = { know: 1, understand: 2, apply: 1 };
+  // Cấu trúc cho mỗi câu Phần II:
+  // Lớp 10, 11 định kì: 2 Biết, 2 Hiểu, 0 Vận dụng (Tổng 4 lệnh)
+  // Lớp 12: 1 Biết, 2 Hiểu, 1 Vận dụng (Tổng 4 lệnh)
+  const p2PerQuestion: CognitiveLevel = isPeriodic1011 
+    ? { know: 2, understand: 2, apply: 0 } 
+    : { know: 1, understand: 2, apply: 1 };
 
   // Sắp xếp các chương và các bài học trong từng chương theo đúng thứ tự chuẩn SGK
   const sortedChapters = sortChaptersByCurriculum(chapters, grade);
@@ -145,11 +151,11 @@ export const generateMatrix = (
       rows: [],
       totals: isPeriodic1011 ? {
         part1: { know: 8, understand: 4, apply: 0 },
-        part2: { know: 2, understand: 4, apply: 2 },
+        part2: { know: 4, understand: 4, apply: 0 },
         part3: { know: 0, understand: 0, apply: 4 },
-        part4: { know: 0, understand: 1, apply: 2 },
+        part4: { know: 1, understand: 1, apply: 1 },
         grandTotal: 27,
-        ratio: { know: 10, understand: 9, apply: 8 },
+        ratio: { know: 13, understand: 9, apply: 5 },
         hasEssay: true
       } : {
         part1: { know: 12, understand: 4, apply: 2 },
@@ -251,8 +257,8 @@ export const generateMatrix = (
 
   // Phần IV (Tự luận): 3 câu (lớp 10, 11 định kì) hoặc 0 câu (lớp 12)
   const p4CountPerChapter = distribute(targetP4, numChapters);
-  // Phân bổ nhận thức Phần IV (1 Hiểu, 2 Vận dụng) vào các chương
-  const p4CognitivePerChapter = distributeCognitiveMulti(p4CountPerChapter, 0, 1, 2);
+  // Phân bổ nhận thức Phần IV (1 Biết, 1 Hiểu, 1 Vận dụng) vào các chương
+  const p4CognitivePerChapter = distributeCognitiveMulti(p4CountPerChapter, 1, 1, 1);
 
   // Phần I: Số câu = Chỉ tiêu chương - (Số câu P2 * 4) - Số câu P3 - Số câu P4
   let p1CountPerChapter = targetTotalPerChapter.map((target, cIdx) => {
@@ -308,6 +314,7 @@ export const generateMatrix = (
     const p1uDist = distribute(p1Cog.understand, receiverCount);
     const p1vDist = distribute(p1Cog.apply, receiverCount);
     const p3vDist = distribute(p3Count, receiverCount);
+    const p4kDist = distribute(p4Cog.know, receiverCount);
     const p4uDist = distribute(p4Cog.understand, receiverCount);
     const p4vDist = distribute(p4Cog.apply, receiverCount);
 
@@ -320,7 +327,7 @@ export const generateMatrix = (
       let rowP4: CognitiveLevel | undefined = isPeriodic1011 ? { know: 0, understand: 0, apply: 0 } : undefined;
 
       if (item.isP2Host) {
-        // Mỗi bối cảnh P.II nhận đúng cấu trúc 1 Biết - 2 Hiểu - 1 Vận dụng
+        // Mỗi bối cảnh P.II nhận đúng cấu trúc chuẩn
         rowP2 = { ...p2PerQuestion };
       }
 
@@ -339,7 +346,7 @@ export const generateMatrix = (
         };
         if (isPeriodic1011) {
           rowP4 = {
-            know: 0,
+            know: p4kDist[idx] || 0,
             understand: p4uDist[idx] || 0,
             apply: p4vDist[idx] || 0
           };
