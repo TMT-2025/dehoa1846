@@ -38,7 +38,7 @@ app.post('/api/generate-exam', async (req, res) => {
     }
 
     const ai = new GoogleGenAI({ apiKey });
-    const selectedModel = modelName || 'gemini-2.5-flash';
+    const selectedModel = modelName || 'gemini-3.8-flash';
     const topicStr = topics.join(', ');
     
     let matrixContext = '';

@@ -33,7 +33,7 @@ export const ExamCreator: React.FC<ExamCreatorProps> = ({
   const [grade, setGrade] = useState<GradeLevel>('12');
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const [details, setDetails] = useState('');
-  const [modelName, setModelName] = useState('gemini-2.5-flash');
+  const [modelName, setModelName] = useState('gemini-3.8-flash');
 
   // Matrix image upload
   const [matrixImage, setMatrixImage] = useState<string | null>(null);
@@ -220,9 +220,10 @@ export const ExamCreator: React.FC<ExamCreatorProps> = ({
                 onChange={(e) => setModelName(e.target.value)}
                 className="px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-bold text-indigo-900 bg-slate-50 focus:border-indigo-500 outline-none"
               >
-                <option value="gemini-2.5-flash">Gemini 2.5 Flash (Khuyên dùng - Nhanh, chuẩn)</option>
-                <option value="gemini-3-flash-preview">Gemini 3 Flash Preview (Thế hệ mới)</option>
-                <option value="gemini-1.5-pro">Gemini 1.5 Pro (Lý luận cao cấp)</option>
+                <option value="gemini-3.8-flash">Gemini 3.8 Flash (Mặc định - Nhanh, chuẩn xác nhất)</option>
+                <option value="gemini-3.5-flash">Gemini 3.5 Flash (Tốc độ cao, ổn định)</option>
+                <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro (Suy luận sâu, bài tập nâng cao)</option>
+                <option value="gemini-3-flash-preview">Gemini 3 Flash Preview (Bản thử nghiệm)</option>
               </select>
             </div>
           </div>

@@ -22,7 +22,7 @@ export const generateExam = async (
   details: string, 
   existingMatrix?: ExamMatrixRow[],
   matrixImageBase64?: string,
-  modelName: string = 'gemini-2.5-flash'
+  modelName: string = 'gemini-3.8-flash'
 ): Promise<ExamData> => {
   const customApiKey = getStoredApiKey();
 
@@ -62,7 +62,7 @@ export const generateExam = async (
   }
 
   const ai = new GoogleGenAI({ apiKey });
-  const selectedModel = modelName || 'gemini-2.5-flash';
+  const selectedModel = modelName || 'gemini-3.8-flash';
   
   const topicStr = topics.join(', ');
   let matrixContext = "";
