@@ -181,7 +181,7 @@ export function buildExamManifest(
         engineName: "EXAM_MIXER_CORE",
         engineVersion: "1.0.0",
         totalVariants: params.variantCount || (items?.length || 4),
-        totalQuestionsPerVariant: 28
+        totalQuestionsPerVariant: (items?.[0]?.variantResult?.variantExam?.sections?.reduce((sum: number, s: any) => sum + (s.questions?.length || 0), 0)) || 28
       },
       benchmarks: params.benchmarks || (benchmarks as any)
     };
@@ -191,6 +191,9 @@ export function buildExamManifest(
   const config = paramsOrConfig || {};
   const vCount = items?.length || config.variantCount || 4;
   const examCodes = items?.map((it: any) => it.examCode) || [];
+  const totalQ = examIR?.sections?.reduce((sum, s) => sum + (s.questions?.length || 0), 0)
+    || (items?.[0]?.variantResult?.variantExam?.sections?.reduce((sum: number, s: any) => sum + (s.questions?.length || 0), 0))
+    || 28;
 
   return {
     manifestVersion: "1.0.0",
@@ -219,7 +222,7 @@ export function buildExamManifest(
       engineName: "EXAM_MIXER_CORE",
       engineVersion: "1.0.0",
       totalVariants: vCount,
-      totalQuestionsPerVariant: 28
+      totalQuestionsPerVariant: totalQ
     },
     benchmarks: benchmarks || {}
   };

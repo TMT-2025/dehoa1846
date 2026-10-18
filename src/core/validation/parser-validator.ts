@@ -19,6 +19,7 @@ export interface ValidationReport {
     mcqCount: number;
     tfCount: number;
     shortAnswerCount: number;
+    essayCount?: number;
     totalQuestions: number;
   };
 }
@@ -27,11 +28,11 @@ export function validateExamIR(exam: ExamIR): ValidationReport {
   const issues: ValidationIssue[] = [];
 
   // 1. Validate sections
-  if (exam.sections.length !== 3) {
+  if (exam.sections.length === 0) {
     issues.push({
       code: "VAL-SEC-COUNT",
       severity: "CRITICAL",
-      message: `Expected 3 sections, found ${exam.sections.length}.`
+      message: `Exam has no sections.`
     });
   }
 
@@ -65,12 +66,19 @@ export function validateExamIR(exam: ExamIR): ValidationReport {
         message: `Section 1 type should be MULTIPLE_CHOICE, got ${sec1.type}.`
       });
     }
-    if (sec1.questions.length !== 18) {
+    if (sec1.questions.length === 0) {
       issues.push({
-        code: "VAL-SEC1-QCOUNT",
+        code: "VAL-SEC1-EMPTY",
         severity: "CRITICAL",
         sectionIndex: 1,
-        message: `Section 1 expected 18 questions, found ${sec1.questions.length}.`
+        message: `Section 1 has no questions.`
+      });
+    } else if (sec1.questions.length !== 18 && sec1.questions.length !== 12) {
+      issues.push({
+        code: "VAL-SEC1-QCOUNT-INFO",
+        severity: "INFO",
+        sectionIndex: 1,
+        message: `Section 1 có ${sec1.questions.length} câu (chuẩn THPT: 18 câu, chuẩn định kì 10-11: 12 câu).`
       });
     }
   }
@@ -86,12 +94,19 @@ export function validateExamIR(exam: ExamIR): ValidationReport {
         message: `Section 2 type should be TRUE_FALSE, got ${sec2.type}.`
       });
     }
-    if (sec2.questions.length !== 4) {
+    if (sec2.questions.length === 0) {
       issues.push({
-        code: "VAL-SEC2-QCOUNT",
+        code: "VAL-SEC2-EMPTY",
         severity: "CRITICAL",
         sectionIndex: 2,
-        message: `Section 2 expected 4 questions, found ${sec2.questions.length}.`
+        message: `Section 2 has no questions.`
+      });
+    } else if (sec2.questions.length !== 4 && sec2.questions.length !== 2) {
+      issues.push({
+        code: "VAL-SEC2-QCOUNT-INFO",
+        severity: "INFO",
+        sectionIndex: 2,
+        message: `Section 2 có ${sec2.questions.length} câu (chuẩn THPT: 4 câu, chuẩn định kì 10-11: 2 câu).`
       });
     }
   }
@@ -107,22 +122,57 @@ export function validateExamIR(exam: ExamIR): ValidationReport {
         message: `Section 3 type should be SHORT_ANSWER, got ${sec3.type}.`
       });
     }
-    if (sec3.questions.length !== 6) {
+    if (sec3.questions.length === 0) {
       issues.push({
-        code: "VAL-SEC3-QCOUNT",
+        code: "VAL-SEC3-EMPTY",
         severity: "CRITICAL",
         sectionIndex: 3,
-        message: `Section 3 expected 6 questions, found ${sec3.questions.length}.`
+        message: `Section 3 has no questions.`
+      });
+    } else if (sec3.questions.length !== 6 && sec3.questions.length !== 4) {
+      issues.push({
+        code: "VAL-SEC3-QCOUNT-INFO",
+        severity: "INFO",
+        sectionIndex: 3,
+        message: `Section 3 có ${sec3.questions.length} câu (chuẩn THPT: 6 câu, chuẩn định kì 10-11: 4 câu).`
+      });
+    }
+  }
+
+  const sec4 = exam.sections.find(s => s.sectionIndex === 4 || s.type === "ESSAY");
+  let essayCount = 0;
+  if (sec4) {
+    essayCount = sec4.questions.length;
+    if (sec4.type !== "ESSAY") {
+      issues.push({
+        code: "VAL-SEC4-TYPE",
+        severity: "CRITICAL",
+        sectionIndex: 4,
+        message: `Section 4 type should be ESSAY, got ${sec4.type}.`
+      });
+    }
+    if (sec4.questions.length === 0) {
+      issues.push({
+        code: "VAL-SEC4-EMPTY",
+        severity: "CRITICAL",
+        sectionIndex: 4,
+        message: `Section 4 has no questions.`
       });
     }
   }
 
   const totalQuestions = exam.sections.reduce((sum, s) => sum + s.questions.length, 0);
-  if (totalQuestions !== 28) {
+  if (totalQuestions === 0) {
     issues.push({
       code: "VAL-TOTAL-QCOUNT",
       severity: "CRITICAL",
-      message: `Expected 28 total questions, found ${totalQuestions}.`
+      message: `Expected at least 1 question, found 0.`
+    });
+  } else if (totalQuestions !== 28 && totalQuestions !== 18 && (totalQuestions - essayCount !== 18)) {
+    issues.push({
+      code: "VAL-TOTAL-QCOUNT-INFO",
+      severity: "INFO",
+      message: `Đề thi có ${totalQuestions} câu hỏi (khác định dạng chuẩn 28 câu THPT hoặc 18 câu định kì 10-11).`
     });
   }
 
@@ -257,6 +307,7 @@ export function validateExamIR(exam: ExamIR): ValidationReport {
       mcqCount,
       tfCount,
       shortAnswerCount: saCount,
+      essayCount,
       totalQuestions
     }
   };

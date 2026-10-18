@@ -692,7 +692,25 @@ export const ExamMixer: React.FC<ExamMixerProps> = ({
 
             {analysis && (
               <div className="space-y-3">
-                <div className="grid grid-cols-4 gap-2.5">
+                {/* Exam Structure Type Badge */}
+                <div className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+                  <span className="font-bold text-slate-700">Định dạng đề:</span>
+                  {analysis.examStructureType === 'lop12_totnghiep' ? (
+                    <span className="px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 font-extrabold text-[11px]">
+                      Loại 1: Chuẩn Tốt nghiệp THPT & Đề thường xuyên (28 câu: 18 - 4 - 6)
+                    </span>
+                  ) : analysis.examStructureType === 'dinhki_lop10_11' ? (
+                    <span className="px-2 py-0.5 rounded-md bg-purple-100 text-purple-800 font-extrabold text-[11px]">
+                      Loại 2: Định kì Lớp 10, 11 (18 câu: 12 - 2 - 4{analysis.sectionCounts.part4 ? ' + Tự luận' : ''})
+                    </span>
+                  ) : (
+                    <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 font-bold text-[11px]">
+                      Đề tùy biến ({analysis.sectionCounts.total} câu)
+                    </span>
+                  )}
+                </div>
+
+                <div className={`grid ${analysis.sectionCounts.part4 ? 'grid-cols-5' : 'grid-cols-4'} gap-2.5`}>
                   <div className="p-3 bg-blue-50/60 border border-blue-200 rounded-xl text-center">
                     <p className="text-[10px] text-blue-700 uppercase font-bold">Phần I (4 Lựa chọn)</p>
                     <p className="text-lg font-black text-blue-900 mt-0.5">{analysis.sectionCounts.part1} <span className="text-xs font-normal">câu</span></p>
@@ -705,6 +723,12 @@ export const ExamMixer: React.FC<ExamMixerProps> = ({
                     <p className="text-[10px] text-teal-700 uppercase font-bold">Phần III (Trả lời ngắn)</p>
                     <p className="text-lg font-black text-teal-900 mt-0.5">{analysis.sectionCounts.part3} <span className="text-xs font-normal">câu</span></p>
                   </div>
+                  {Boolean(analysis.sectionCounts.part4) && (
+                    <div className="p-3 bg-amber-50/60 border border-amber-200 rounded-xl text-center">
+                      <p className="text-[10px] text-amber-700 uppercase font-bold">Phần IV (Tự luận)</p>
+                      <p className="text-lg font-black text-amber-900 mt-0.5">{analysis.sectionCounts.part4} <span className="text-xs font-normal">câu</span></p>
+                    </div>
+                  )}
                   <div className="p-3 bg-emerald-50/60 border border-emerald-200 rounded-xl text-center">
                     <p className="text-[10px] text-emerald-700 uppercase font-bold">Tổng số câu</p>
                     <p className="text-lg font-black text-emerald-900 mt-0.5">{analysis.sectionCounts.total} <span className="text-xs font-normal">câu</span></p>

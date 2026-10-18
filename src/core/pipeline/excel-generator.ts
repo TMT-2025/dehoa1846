@@ -196,8 +196,10 @@ export async function generateAnswerKeyExcel(batchKey: BatchAnswerKeyExport): Pr
           ? "PHẦN I: TRẮC NGHIỆM (4 LỰA CHỌN)"
           : secIdx === 2
           ? "PHẦN II: ĐÚNG / SAI (a - b - c - d)"
-          : "PHẦN III: TRẢ LỜI NGẮN";
-      const styleId = secIdx === 1 ? 5 : secIdx === 2 ? 6 : 7;
+          : secIdx === 3
+          ? "PHẦN III: TRẢ LỜI NGẮN"
+          : "PHẦN IV: TỰ LUẬN";
+      const styleId = secIdx === 1 ? 5 : secIdx === 2 ? 6 : secIdx === 3 ? 7 : 2;
       sectionsMap.set(secIdx, {
         sectionIndex: secIdx,
         name,

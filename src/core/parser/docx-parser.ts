@@ -100,8 +100,8 @@ export async function parseDocx(bufferOrUint8Array: Buffer | Uint8Array, options
       continue;
     }
 
-    // 2. Check for Section Header like "PHẦN I", "PHẦN II", "PHẦN III"
-    const sectionMatch = rawText.match(/^PHẦN\s+(I{1,3}|[1-3])[\.:\s]*(.*)/i);
+    // 2. Check for Section Header like "PHẦN I", "PHẦN II", "PHẦN III", "PHẦN IV"
+    const sectionMatch = rawText.match(/^PHẦN\s+(IV|I{1,3}|[1-4])[\.:\s]*(.*)/i);
     if (sectionMatch) {
       const romanOrNum = sectionMatch[1].toUpperCase();
       let sType: QuestionType = "MULTIPLE_CHOICE";
@@ -116,6 +116,9 @@ export async function parseDocx(bufferOrUint8Array: Buffer | Uint8Array, options
       } else if (romanOrNum === "III" || romanOrNum === "3") {
         sType = "SHORT_ANSWER";
         sIndex = 3;
+      } else if (romanOrNum === "IV" || romanOrNum === "4") {
+        sType = "ESSAY";
+        sIndex = 4;
       }
 
       currentSectionIndex = sIndex;
@@ -128,7 +131,7 @@ export async function parseDocx(bufferOrUint8Array: Buffer | Uint8Array, options
         title: rawText,
         type: sType,
         shufflePolicy: {
-          shuffleQuestions: true,
+          shuffleQuestions: sType !== "ESSAY",
           shuffleOptions: sType === "MULTIPLE_CHOICE",
           shuffleTrueFalseSubItems: false
         },
@@ -360,6 +363,44 @@ export async function parseDocx(bufferOrUint8Array: Buffer | Uint8Array, options
           allowOptionShuffle: false,
           formattingMetadata: {
             hasChemicalFormulas: hasChem,
+            hasMathExpressions: false,
+            imageCount: 0
+          }
+        };
+
+        currentSection.questions.push(question);
+        continue;
+      } else if (currentSection.type === "ESSAY") {
+        const stemParagraphs: RichParagraph[] = [];
+        stemParagraphs.push(parseParagraphElement(pEl));
+        i++;
+
+        while (i < pElements.length) {
+          const nextText = getElementTextContent(pElements[i]).trim();
+          if (nextText.match(/^Câu\s+\d+[\.:]/i) || nextText.match(/^PHẦN/i) || nextText.match(/^<g/i)) {
+            break;
+          }
+          if (nextText.length > 0) {
+            stemParagraphs.push(parseParagraphElement(pElements[i]));
+          }
+          i++;
+        }
+
+        const question: ExamQuestion = {
+          id: `q-es-${qNum}`,
+          sourcePosition: {
+            sectionIndex: currentSection.sectionIndex,
+            questionIndex: currentQuestionIndex,
+            originalNumberStr: `Câu ${qNum}.`,
+            startParagraphIndex: startPIndex,
+            endParagraphIndex: i - 1
+          },
+          type: "ESSAY",
+          stem: { paragraphs: stemParagraphs },
+          allowShuffle: false,
+          allowOptionShuffle: false,
+          formattingMetadata: {
+            hasChemicalFormulas: checkForChemicalFormulas(stemParagraphs, []),
             hasMathExpressions: false,
             imageCount: 0
           }

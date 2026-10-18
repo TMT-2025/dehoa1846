@@ -22,8 +22,15 @@ export function renderQuestionStem(
   // Re-index the prefix: replace "Câu X. " with "Câu {displayIndex}. "
   if (runs.length > 0) {
     const firstRunText = runs[0].text;
+    const matchWithPts = firstRunText.match(/^Câu\s+\d+(\s*\([^\)]*điểm\))[\.:\s]*/i);
     const match = firstRunText.match(/^Câu\s+\d+[\.:\s]*/i);
-    if (match) {
+    if (matchWithPts) {
+      runs[0] = {
+        ...runs[0],
+        text: `Câu ${displayIndex} ${matchWithPts[1].trim()}. ` + firstRunText.substring(matchWithPts[0].length),
+        bold: true
+      };
+    } else if (match) {
       runs[0] = {
         ...runs[0],
         text: `Câu ${displayIndex}. ` + firstRunText.substring(match[0].length),

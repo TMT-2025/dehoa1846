@@ -87,6 +87,18 @@ export function generateVariantAnswerKey(variantInput: VariantExamResult | { var
           type: q.type,
           answer: expectedVal
         });
+      } else if (q.type === "ESSAY") {
+        const essayAns = q.essay?.solution || "(Xem hướng dẫn chấm tự luận)";
+        answers[questionKey] = essayAns;
+
+        detailedAnswers.push({
+          questionKey,
+          sectionIndex: secIdx,
+          questionNumber: qNum,
+          questionId: q.id,
+          type: q.type,
+          answer: essayAns
+        });
       }
     }
   }

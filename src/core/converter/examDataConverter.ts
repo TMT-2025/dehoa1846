@@ -229,6 +229,58 @@ export function convertExamDataToExamIR(data: ExamData): ExamIR {
     });
   }
 
+  // 4. Part IV: Essay Questions (Tự luận)
+  if (data.part4 && data.part4.length > 0) {
+    const questions: ExamQuestion[] = data.part4.map((es, idx) => {
+      const qNum = idx + 1;
+      const cleanStem = es.question.replace(/^Câu\s+\d+(\s*\([^\)]*\))?[\.:\)]\s*/i, '');
+      const pts = es.points || 1.0;
+      const ptsStr = `${pts}`.replace('.', ',');
+
+      return {
+        id: `q-es-${qNum}`,
+        sourcePosition: {
+          sectionIndex: 4,
+          questionIndex: idx,
+          originalNumberStr: `Câu ${qNum}.`,
+          startParagraphIndex: idx * 2,
+          endParagraphIndex: idx * 2 + 1
+        },
+        type: "ESSAY",
+        stem: {
+          paragraphs: [createParagraph(cleanStem, `Câu ${qNum} (${ptsStr} điểm). `)]
+        },
+        essay: {
+          points: pts,
+          solution: es.solution
+        },
+        allowShuffle: false,
+        allowOptionShuffle: false,
+        formattingMetadata: {
+          hasChemicalFormulas: true,
+          hasMathExpressions: false,
+          imageCount: 0
+        }
+      };
+    });
+
+    const totalPts = data.part4.reduce((sum, q) => sum + (q.points || 1.0), 0);
+    const ptsTotalStr = `${totalPts}`.replace('.', ',');
+
+    sections.push({
+      id: "sec-part-4",
+      sectionIndex: 4,
+      title: `PHẦN IV. TỰ LUẬN (${data.part4.length} câu - ${ptsTotalStr} điểm).`,
+      type: "ESSAY",
+      shufflePolicy: {
+        shuffleQuestions: false,
+        shuffleOptions: false,
+        shuffleTrueFalseSubItems: false
+      },
+      questions
+    });
+  }
+
   return {
     schemaVersion: "1.0.0",
     metadata: {

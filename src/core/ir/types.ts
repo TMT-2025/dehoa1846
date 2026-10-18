@@ -48,7 +48,12 @@ export interface RichContent {
   paragraphs: RichParagraph[];
 }
 
-export type QuestionType = "MULTIPLE_CHOICE" | "TRUE_FALSE" | "SHORT_ANSWER";
+export type QuestionType = "MULTIPLE_CHOICE" | "TRUE_FALSE" | "SHORT_ANSWER" | "ESSAY";
+
+export interface EssayData {
+  points?: number;
+  solution?: string;
+}
 
 export interface QuestionOption {
   id: string;
@@ -101,6 +106,7 @@ export interface ExamQuestion {
   options?: QuestionOption[];
   subItems?: TrueFalseSubItem[];
   shortAnswer?: ShortAnswerData;
+  essay?: EssayData;
   allowShuffle: boolean;
   allowOptionShuffle: boolean;
   formattingMetadata: QuestionFormattingMetadata;

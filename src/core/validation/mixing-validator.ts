@@ -34,19 +34,34 @@ export function validateMixedVariant(
 ): MixingValidationReport {
   const issues: MixingValidationIssue[] = [];
 
-  // 1. Total questions count
+  // 1. Total questions count: variant must have the exact same total questions as source exam
   const sourceQuestions = sourceExam.sections.flatMap(s => s.questions);
   const variantQuestions = variantExam.sections.flatMap(s => s.questions);
 
-  if (variantQuestions.length !== 28) {
+  if (variantQuestions.length !== sourceQuestions.length) {
     issues.push({
       code: "VAL-MIX-TOTAL-COUNT",
       severity: "CRITICAL",
-      message: `Variant total questions must be 28, found ${variantQuestions.length}`
+      message: `Variant total questions must match source exam (${sourceQuestions.length}), found ${variantQuestions.length}`
     });
   }
 
-  // 2. Section counts (fallback to section type if index differs)
+  // 2. Section counts (each section in variant must match corresponding section in source exam)
+  for (const sSec of sourceExam.sections) {
+    const vSec = variantExam.sections.find(
+      s => s.sectionIndex === sSec.sectionIndex || (sSec.id && s.id === sSec.id) || s.type === sSec.type
+    );
+    const expectedCount = sSec.questions.length;
+    const actualCount = vSec ? vSec.questions.length : 0;
+    if (actualCount !== expectedCount) {
+      issues.push({
+        code: `VAL-MIX-SEC${sSec.sectionIndex}-COUNT`,
+        severity: "CRITICAL",
+        message: `Variant Section ${sSec.sectionIndex} (${sSec.type}) expected ${expectedCount} questions, found ${actualCount}`
+      });
+    }
+  }
+
   const vSec1 = variantExam.sections.find(s => s.sectionIndex === 1 || s.type === "MULTIPLE_CHOICE");
   const vSec2 = variantExam.sections.find(s => s.sectionIndex === 2 || s.type === "TRUE_FALSE");
   const vSec3 = variantExam.sections.find(s => s.sectionIndex === 3 || s.type === "SHORT_ANSWER");
@@ -54,28 +69,6 @@ export function validateMixedVariant(
   const p1Count = vSec1 ? vSec1.questions.length : 0;
   const p2Count = vSec2 ? vSec2.questions.length : 0;
   const p3Count = vSec3 ? vSec3.questions.length : 0;
-
-  if (p1Count !== 18) {
-    issues.push({
-      code: "VAL-MIX-SEC1-COUNT",
-      severity: "CRITICAL",
-      message: `Variant Section 1 expected 18 questions, found ${p1Count}`
-    });
-  }
-  if (p2Count !== 4) {
-    issues.push({
-      code: "VAL-MIX-SEC2-COUNT",
-      severity: "CRITICAL",
-      message: `Variant Section 2 expected 4 questions, found ${p2Count}`
-    });
-  }
-  if (p3Count !== 6) {
-    issues.push({
-      code: "VAL-MIX-SEC3-COUNT",
-      severity: "CRITICAL",
-      message: `Variant Section 3 expected 6 questions, found ${p3Count}`
-    });
-  }
 
   // 3 & 4. No missing question, no duplicate question ID
   const sourceQMap = new Map<string, ExamQuestion>();

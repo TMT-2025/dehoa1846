@@ -30,8 +30,10 @@ export interface ExamAnalysisResult {
     part1: number;
     part2: number;
     part3: number;
+    part4?: number;
     total: number;
   };
+  examStructureType: 'lop12_totnghiep' | 'dinhki_lop10_11' | 'custom';
   validation: {
     isValid: boolean;
     errors: string[];
@@ -91,11 +93,20 @@ export async function analyzeExamSource(
   let part1 = 0;
   let part2 = 0;
   let part3 = 0;
+  let part4 = 0;
 
   for (const s of examIR.sections) {
     if (s.type === 'MULTIPLE_CHOICE') part1 += s.questions.length;
     else if (s.type === 'TRUE_FALSE') part2 += s.questions.length;
     else if (s.type === 'SHORT_ANSWER') part3 += s.questions.length;
+    else if (s.type === 'ESSAY') part4 += s.questions.length;
+  }
+
+  let examStructureType: 'lop12_totnghiep' | 'dinhki_lop10_11' | 'custom' = 'custom';
+  if (part1 === 18 && part2 === 4 && part3 === 6) {
+    examStructureType = 'lop12_totnghiep';
+  } else if (part1 === 12 && part2 === 2 && part3 === 4) {
+    examStructureType = 'dinhki_lop10_11';
   }
 
   return {
@@ -106,8 +117,10 @@ export async function analyzeExamSource(
       part1,
       part2,
       part3,
-      total: part1 + part2 + part3
+      part4,
+      total: part1 + part2 + part3 + part4
     },
+    examStructureType,
     validation: {
       isValid: valReport.isValid,
       errors: valReport.issues.filter(i => i.severity === 'CRITICAL' || i.severity === 'ERROR').map(i => i.message),

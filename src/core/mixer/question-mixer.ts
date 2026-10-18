@@ -48,14 +48,16 @@ export function mixSectionQuestions(
       acceptableAnswers: q.shortAnswer.acceptableAnswers ? [...q.shortAnswer.acceptableAnswers] : undefined,
       sourceAnswerRaw: q.shortAnswer.sourceAnswerRaw ? cloneRichContent(q.shortAnswer.sourceAnswerRaw) : undefined
     } : undefined,
+    essay: q.essay ? { ...q.essay } : undefined,
     allowShuffle: q.allowShuffle,
     allowOptionShuffle: q.allowOptionShuffle,
     formattingMetadata: { ...q.formattingMetadata }
   }));
 
-  // 2. Permute question order if enabled
+  // 2. Permute question order if enabled and allowed for this section
+  const canShuffleSection = section.shufflePolicy ? section.shufflePolicy.shuffleQuestions : true;
   let permutedQuestions: ExamQuestion[];
-  if (!options.shuffleQuestions) {
+  if (!options.shuffleQuestions || !canShuffleSection || section.type === "ESSAY") {
     permutedQuestions = clonedQuestions;
   } else {
     permutedQuestions = shuffleArray(clonedQuestions, prng);
