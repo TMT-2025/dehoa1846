@@ -453,6 +453,12 @@ export const downloadMatrixAndSpecDoc = async (matrixData: MatrixData, customSpe
     ]
   }));
 
+  // Màu shading đặc trưng cho 4 phần (khớp với hình 2 và tiêu đề cột)
+  const SHADING_P1 = "FEF3C7"; // Nhiều lựa chọn (P.I) - Vàng nhạt (Amber)
+  const SHADING_P2 = "D1FAE5"; // Đúng - Sai (P.II) - Xanh lá nhạt (Emerald)
+  const SHADING_P3 = "E0E7FF"; // Trả lời ngắn (P.III) - Xanh lam nhạt (Indigo)
+  const SHADING_P4 = "F3E8FF"; // Tự luận (P.IV) - Tím nhạt (Purple)
+
   // Build Matrix Table in Docx (3-Tier Header matching Web)
   const matrixHeaderRow1 = new TableRow({
     children: [
@@ -469,10 +475,10 @@ export const downloadMatrixAndSpecDoc = async (matrixData: MatrixData, customSpe
 
   const matrixHeaderRow2 = new TableRow({
     children: [
-      cell("Nhiều lựa chọn (P.I)", { columnSpan: 3, shading: "FEF3C7", bold: true }),
-      cell("Đúng - Sai (P.II)", { columnSpan: 3, shading: "D1FAE5", bold: true }),
-      cell("Trả lời ngắn (P.III)", { columnSpan: 3, shading: "E0E7FF", bold: true }),
-      ...(hasEssay ? [cell("Tự luận (P.IV)", { columnSpan: 3, shading: "F3E8FF", bold: true })] : []),
+      cell("Nhiều lựa chọn (P.I)", { columnSpan: 3, shading: SHADING_P1, bold: true }),
+      cell("Đúng - Sai (P.II)", { columnSpan: 3, shading: SHADING_P2, bold: true }),
+      cell("Trả lời ngắn (P.III)", { columnSpan: 3, shading: SHADING_P3, bold: true }),
+      ...(hasEssay ? [cell("Tự luận (P.IV)", { columnSpan: 3, shading: SHADING_P4, bold: true })] : []),
       cell("Biết", { rowSpan: 2, shading: "E2E8F0", bold: true }),
       cell("Hiểu", { rowSpan: 2, shading: "E2E8F0", bold: true }),
       cell("Vận dụng", { rowSpan: 2, shading: "E2E8F0", bold: true })
@@ -481,11 +487,11 @@ export const downloadMatrixAndSpecDoc = async (matrixData: MatrixData, customSpe
 
   const matrixHeaderRow3 = new TableRow({
     children: [
-      cell("B", { shading: "FFFBEB", bold: true }), cell("H", { shading: "FFFBEB", bold: true }), cell("V", { shading: "FFFBEB", bold: true }),
-      cell("B", { shading: "ECFDF5", bold: true }), cell("H", { shading: "ECFDF5", bold: true }), cell("V", { shading: "ECFDF5", bold: true }),
-      cell("B", { shading: "EEF2FF", bold: true }), cell("H", { shading: "EEF2FF", bold: true }), cell("V", { shading: "EEF2FF", bold: true }),
+      cell("B", { bold: true }), cell("H", { bold: true }), cell("V", { bold: true }),
+      cell("B", { bold: true }), cell("H", { bold: true }), cell("V", { bold: true }),
+      cell("B", { bold: true }), cell("H", { bold: true }), cell("V", { bold: true }),
       ...(hasEssay ? [
-        cell("B", { shading: "FAF5FF", bold: true }), cell("H", { shading: "FAF5FF", bold: true }), cell("V", { shading: "FAF5FF", bold: true })
+        cell("B", { bold: true }), cell("H", { bold: true }), cell("V", { bold: true })
       ] : [])
     ]
   });
@@ -527,15 +533,21 @@ export const downloadMatrixAndSpecDoc = async (matrixData: MatrixData, customSpe
         cell(r.content, { alignment: AlignmentType.LEFT }),
         cell(r.lessonName, { alignment: AlignmentType.LEFT }),
         cell(r.detailName, { alignment: AlignmentType.LEFT }),
-        cell(r.part1.know || ''), cell(r.part1.understand || ''), cell(r.part1.apply || ''),
-        cell(r.part2.know || ''), cell(r.part2.understand || ''), cell(r.part2.apply || ''),
-        cell(r.part3.know || ''), cell(r.part3.understand || ''), cell(r.part3.apply || '')
+        cell(r.part1.know || '', { shading: SHADING_P1 }),
+        cell(r.part1.understand || '', { shading: SHADING_P1 }),
+        cell(r.part1.apply || '', { shading: SHADING_P1 }),
+        cell(r.part2.know || '', { shading: SHADING_P2 }),
+        cell(r.part2.understand || '', { shading: SHADING_P2 }),
+        cell(r.part2.apply || '', { shading: SHADING_P2 }),
+        cell(r.part3.know || '', { shading: SHADING_P3 }),
+        cell(r.part3.understand || '', { shading: SHADING_P3 }),
+        cell(r.part3.apply || '', { shading: SHADING_P3 })
       ];
       if (hasEssay) {
         cells.push(
-          cell(r.part4?.know || ''),
-          cell(r.part4?.understand || ''),
-          cell(r.part4?.apply || '')
+          cell(r.part4?.know || '', { shading: SHADING_P4 }),
+          cell(r.part4?.understand || '', { shading: SHADING_P4 }),
+          cell(r.part4?.apply || '', { shading: SHADING_P4 })
         );
       }
       cells.push(
@@ -557,21 +569,21 @@ export const downloadMatrixAndSpecDoc = async (matrixData: MatrixData, customSpe
 
     const summaryCells = [
       cell(`Tổng cộng ${chapterName}`, { columnSpan: 4, bold: true, alignment: AlignmentType.RIGHT, shading: 'EEF2FF', color: '1E1B4B' }),
-      cell(chapP1K || '', { bold: true, shading: 'EEF2FF' }),
-      cell(chapP1U || '', { bold: true, shading: 'EEF2FF' }),
-      cell(chapP1A || '', { bold: true, shading: 'EEF2FF' }),
-      cell(chapP2K || '', { bold: true, shading: 'EEF2FF' }),
-      cell(chapP2U || '', { bold: true, shading: 'EEF2FF' }),
-      cell(chapP2A || '', { bold: true, shading: 'EEF2FF' }),
-      cell(chapP3K || '', { bold: true, shading: 'EEF2FF' }),
-      cell(chapP3U || '', { bold: true, shading: 'EEF2FF' }),
-      cell(chapP3A || '', { bold: true, shading: 'EEF2FF' })
+      cell(chapP1K || '', { bold: true, shading: SHADING_P1 }),
+      cell(chapP1U || '', { bold: true, shading: SHADING_P1 }),
+      cell(chapP1A || '', { bold: true, shading: SHADING_P1 }),
+      cell(chapP2K || '', { bold: true, shading: SHADING_P2 }),
+      cell(chapP2U || '', { bold: true, shading: SHADING_P2 }),
+      cell(chapP2A || '', { bold: true, shading: SHADING_P2 }),
+      cell(chapP3K || '', { bold: true, shading: SHADING_P3 }),
+      cell(chapP3U || '', { bold: true, shading: SHADING_P3 }),
+      cell(chapP3A || '', { bold: true, shading: SHADING_P3 })
     ];
     if (hasEssay) {
       summaryCells.push(
-        cell(chapP4K || '', { bold: true, shading: 'EEF2FF' }),
-        cell(chapP4U || '', { bold: true, shading: 'EEF2FF' }),
-        cell(chapP4A || '', { bold: true, shading: 'EEF2FF' })
+        cell(chapP4K || '', { bold: true, shading: SHADING_P4 }),
+        cell(chapP4U || '', { bold: true, shading: SHADING_P4 }),
+        cell(chapP4A || '', { bold: true, shading: SHADING_P4 })
       );
     }
     summaryCells.push(
@@ -588,21 +600,21 @@ export const downloadMatrixAndSpecDoc = async (matrixData: MatrixData, customSpe
   // Footer 1: Tổng số câu hỏi / lệnh hỏi
   const f1Cells = [
     cell('Tổng số câu hỏi / lệnh hỏi', { columnSpan: 4, bold: true, shading: 'CBD5E1', color: '0F172A' }),
-    cell(matrixData.totals.part1.know, { bold: true, shading: 'CBD5E1' }),
-    cell(matrixData.totals.part1.understand, { bold: true, shading: 'CBD5E1' }),
-    cell(matrixData.totals.part1.apply, { bold: true, shading: 'CBD5E1' }),
-    cell(matrixData.totals.part2.know, { bold: true, shading: 'CBD5E1' }),
-    cell(matrixData.totals.part2.understand, { bold: true, shading: 'CBD5E1' }),
-    cell(matrixData.totals.part2.apply, { bold: true, shading: 'CBD5E1' }),
-    cell(matrixData.totals.part3.know, { bold: true, shading: 'CBD5E1' }),
-    cell(matrixData.totals.part3.understand, { bold: true, shading: 'CBD5E1' }),
-    cell(matrixData.totals.part3.apply, { bold: true, shading: 'CBD5E1' })
+    cell(matrixData.totals.part1.know, { bold: true, shading: SHADING_P1 }),
+    cell(matrixData.totals.part1.understand, { bold: true, shading: SHADING_P1 }),
+    cell(matrixData.totals.part1.apply, { bold: true, shading: SHADING_P1 }),
+    cell(matrixData.totals.part2.know, { bold: true, shading: SHADING_P2 }),
+    cell(matrixData.totals.part2.understand, { bold: true, shading: SHADING_P2 }),
+    cell(matrixData.totals.part2.apply, { bold: true, shading: SHADING_P2 }),
+    cell(matrixData.totals.part3.know, { bold: true, shading: SHADING_P3 }),
+    cell(matrixData.totals.part3.understand, { bold: true, shading: SHADING_P3 }),
+    cell(matrixData.totals.part3.apply, { bold: true, shading: SHADING_P3 })
   ];
   if (hasEssay) {
     f1Cells.push(
-      cell(matrixData.totals.part4?.know || 0, { bold: true, shading: 'CBD5E1' }),
-      cell(matrixData.totals.part4?.understand || 0, { bold: true, shading: 'CBD5E1' }),
-      cell(matrixData.totals.part4?.apply || 0, { bold: true, shading: 'CBD5E1' })
+      cell(matrixData.totals.part4?.know || 0, { bold: true, shading: SHADING_P4 }),
+      cell(matrixData.totals.part4?.understand || 0, { bold: true, shading: SHADING_P4 }),
+      cell(matrixData.totals.part4?.apply || 0, { bold: true, shading: SHADING_P4 })
     );
   }
   f1Cells.push(
@@ -616,12 +628,12 @@ export const downloadMatrixAndSpecDoc = async (matrixData: MatrixData, customSpe
   // Footer 2: Tổng số điểm
   const f2Cells = [
     cell('Tổng số điểm', { columnSpan: 4, bold: true, shading: 'E2E8F0', color: '0F172A' }),
-    cell(formatPt(totalPoints.part1), { columnSpan: 3, bold: true, shading: 'E2E8F0' }),
-    cell(formatPt(totalPoints.part2), { columnSpan: 3, bold: true, shading: 'E2E8F0' }),
-    cell(formatPt(totalPoints.part3), { columnSpan: 3, bold: true, shading: 'E2E8F0' })
+    cell(formatPt(totalPoints.part1), { columnSpan: 3, bold: true, shading: SHADING_P1 }),
+    cell(formatPt(totalPoints.part2), { columnSpan: 3, bold: true, shading: SHADING_P2 }),
+    cell(formatPt(totalPoints.part3), { columnSpan: 3, bold: true, shading: SHADING_P3 })
   ];
   if (hasEssay) {
-    f2Cells.push(cell(formatPt(totalPoints.part4 || 0), { columnSpan: 3, bold: true, shading: 'E2E8F0' }));
+    f2Cells.push(cell(formatPt(totalPoints.part4 || 0), { columnSpan: 3, bold: true, shading: SHADING_P4 }));
   }
   f2Cells.push(
     cell(formatPt(totalPoints.know), { bold: true, shading: 'E2E8F0' }),
@@ -634,12 +646,12 @@ export const downloadMatrixAndSpecDoc = async (matrixData: MatrixData, customSpe
   // Footer 3: Tỉ lệ % điểm
   const f3Cells = [
     cell('Tỉ lệ % điểm', { columnSpan: 4, bold: true, shading: 'F1F5F9', color: '0F172A' }),
-    cell(`${percentages.part1}%`, { columnSpan: 3, bold: true, shading: 'F1F5F9' }),
-    cell(`${percentages.part2}%`, { columnSpan: 3, bold: true, shading: 'F1F5F9' }),
-    cell(`${percentages.part3}%`, { columnSpan: 3, bold: true, shading: 'F1F5F9' })
+    cell(`${percentages.part1}%`, { columnSpan: 3, bold: true, shading: SHADING_P1 }),
+    cell(`${percentages.part2}%`, { columnSpan: 3, bold: true, shading: SHADING_P2 }),
+    cell(`${percentages.part3}%`, { columnSpan: 3, bold: true, shading: SHADING_P3 })
   ];
   if (hasEssay) {
-    f3Cells.push(cell(`${percentages.part4 || 0}%`, { columnSpan: 3, bold: true, shading: 'F1F5F9' }));
+    f3Cells.push(cell(`${percentages.part4 || 0}%`, { columnSpan: 3, bold: true, shading: SHADING_P4 }));
   }
   f3Cells.push(
     cell(`${percentages.know}%`, { bold: true, shading: 'F1F5F9' }),
@@ -714,21 +726,21 @@ export const downloadMatrixAndSpecDoc = async (matrixData: MatrixData, customSpe
       cell("Chủ đề / Chương", { rowSpan: 2, shading: "CBD5E1", bold: true }),
       cell("Nội dung kiến thức", { rowSpan: 2, shading: "CBD5E1", bold: true }),
       cell("Yêu cầu cần đạt", { rowSpan: 2, shading: "CBD5E1", bold: true }),
-      cell("Nhiều lựa chọn (P.I)", { columnSpan: 3, shading: "FEF3C7", bold: true }),
-      cell("Đúng - Sai (P.II)", { columnSpan: 3, shading: "D1FAE5", bold: true }),
-      cell("Trả lời ngắn (P.III)", { columnSpan: 3, shading: "E0E7FF", bold: true }),
-      ...(hasEssay ? [cell("Tự luận (P.IV)", { columnSpan: 3, shading: "F3E8FF", bold: true })] : []),
+      cell("Nhiều lựa chọn (P.I)", { columnSpan: 3, shading: SHADING_P1, bold: true }),
+      cell("Đúng - Sai (P.II)", { columnSpan: 3, shading: SHADING_P2, bold: true }),
+      cell("Trả lời ngắn (P.III)", { columnSpan: 3, shading: SHADING_P3, bold: true }),
+      ...(hasEssay ? [cell("Tự luận (P.IV)", { columnSpan: 3, shading: SHADING_P4, bold: true })] : []),
       cell("Tổng lệnh", { rowSpan: 2, shading: "CBD5E1", bold: true })
     ]
   });
 
   const specHeaderRow2 = new TableRow({
     children: [
-      cell("B", { shading: "FFFBEB", bold: true }), cell("H", { shading: "FFFBEB", bold: true }), cell("V", { shading: "FFFBEB", bold: true }),
-      cell("B", { shading: "ECFDF5", bold: true }), cell("H", { shading: "ECFDF5", bold: true }), cell("V", { shading: "ECFDF5", bold: true }),
-      cell("B", { shading: "EEF2FF", bold: true }), cell("H", { shading: "EEF2FF", bold: true }), cell("V", { shading: "EEF2FF", bold: true }),
+      cell("B", { bold: true }), cell("H", { bold: true }), cell("V", { bold: true }),
+      cell("B", { bold: true }), cell("H", { bold: true }), cell("V", { bold: true }),
+      cell("B", { bold: true }), cell("H", { bold: true }), cell("V", { bold: true }),
       ...(hasEssay ? [
-        cell("B", { shading: "FAF5FF", bold: true }), cell("H", { shading: "FAF5FF", bold: true }), cell("V", { shading: "FAF5FF", bold: true })
+        cell("B", { bold: true }), cell("H", { bold: true }), cell("V", { bold: true })
       ] : [])
     ]
   });
@@ -774,15 +786,21 @@ export const downloadMatrixAndSpecDoc = async (matrixData: MatrixData, customSpe
         borders: tableBorder,
         children: outcomeParagraphs.length ? outcomeParagraphs : [new Paragraph({ children: [new TextRun({ text: "Kiến thức bài học.", size: 16 })] })]
       }),
-      cell(r.part1.know || ''), cell(r.part1.understand || ''), cell(r.part1.apply || ''),
-      cell(r.part2.know || ''), cell(r.part2.understand || ''), cell(r.part2.apply || ''),
-      cell(r.part3.know || ''), cell(r.part3.understand || ''), cell(r.part3.apply || '')
+      cell(r.part1.know || '', { shading: SHADING_P1 }),
+      cell(r.part1.understand || '', { shading: SHADING_P1 }),
+      cell(r.part1.apply || '', { shading: SHADING_P1 }),
+      cell(r.part2.know || '', { shading: SHADING_P2 }),
+      cell(r.part2.understand || '', { shading: SHADING_P2 }),
+      cell(r.part2.apply || '', { shading: SHADING_P2 }),
+      cell(r.part3.know || '', { shading: SHADING_P3 }),
+      cell(r.part3.understand || '', { shading: SHADING_P3 }),
+      cell(r.part3.apply || '', { shading: SHADING_P3 })
     ];
     if (hasEssay) {
       rowCells.push(
-        cell(r.part4?.know || ''),
-        cell(r.part4?.understand || ''),
-        cell(r.part4?.apply || '')
+        cell(r.part4?.know || '', { shading: SHADING_P4 }),
+        cell(r.part4?.understand || '', { shading: SHADING_P4 }),
+        cell(r.part4?.apply || '', { shading: SHADING_P4 })
       );
     }
     rowCells.push(cell(r.totalCommands || '', { bold: true }));
@@ -792,44 +810,44 @@ export const downloadMatrixAndSpecDoc = async (matrixData: MatrixData, customSpe
 
   const specF1 = [
     cell('Tổng số câu hỏi / lệnh hỏi', { columnSpan: 4, bold: true, shading: 'CBD5E1', color: '0F172A' }),
-    cell(specData.totals.part1.know, { bold: true, shading: 'CBD5E1' }),
-    cell(specData.totals.part1.understand, { bold: true, shading: 'CBD5E1' }),
-    cell(specData.totals.part1.apply, { bold: true, shading: 'CBD5E1' }),
-    cell(specData.totals.part2.know, { bold: true, shading: 'CBD5E1' }),
-    cell(specData.totals.part2.understand, { bold: true, shading: 'CBD5E1' }),
-    cell(specData.totals.part2.apply, { bold: true, shading: 'CBD5E1' }),
-    cell(specData.totals.part3.know, { bold: true, shading: 'CBD5E1' }),
-    cell(specData.totals.part3.understand, { bold: true, shading: 'CBD5E1' }),
-    cell(specData.totals.part3.apply, { bold: true, shading: 'CBD5E1' })
+    cell(specData.totals.part1.know, { bold: true, shading: SHADING_P1 }),
+    cell(specData.totals.part1.understand, { bold: true, shading: SHADING_P1 }),
+    cell(specData.totals.part1.apply, { bold: true, shading: SHADING_P1 }),
+    cell(specData.totals.part2.know, { bold: true, shading: SHADING_P2 }),
+    cell(specData.totals.part2.understand, { bold: true, shading: SHADING_P2 }),
+    cell(specData.totals.part2.apply, { bold: true, shading: SHADING_P2 }),
+    cell(specData.totals.part3.know, { bold: true, shading: SHADING_P3 }),
+    cell(specData.totals.part3.understand, { bold: true, shading: SHADING_P3 }),
+    cell(specData.totals.part3.apply, { bold: true, shading: SHADING_P3 })
   ];
   if (hasEssay) {
     specF1.push(
-      cell(specData.totals.part4?.know || 0, { bold: true, shading: 'CBD5E1' }),
-      cell(specData.totals.part4?.understand || 0, { bold: true, shading: 'CBD5E1' }),
-      cell(specData.totals.part4?.apply || 0, { bold: true, shading: 'CBD5E1' })
+      cell(specData.totals.part4?.know || 0, { bold: true, shading: SHADING_P4 }),
+      cell(specData.totals.part4?.understand || 0, { bold: true, shading: SHADING_P4 }),
+      cell(specData.totals.part4?.apply || 0, { bold: true, shading: SHADING_P4 })
     );
   }
   specF1.push(cell(specData.totals.totalCommands, { bold: true, shading: 'CBD5E1' }));
 
   const specF2 = [
     cell('Tổng số điểm', { columnSpan: 4, bold: true, shading: 'E2E8F0', color: '0F172A' }),
-    cell(formatPt(totalPoints.part1), { columnSpan: 3, bold: true, shading: 'E2E8F0' }),
-    cell(formatPt(totalPoints.part2), { columnSpan: 3, bold: true, shading: 'E2E8F0' }),
-    cell(formatPt(totalPoints.part3), { columnSpan: 3, bold: true, shading: 'E2E8F0' })
+    cell(formatPt(totalPoints.part1), { columnSpan: 3, bold: true, shading: SHADING_P1 }),
+    cell(formatPt(totalPoints.part2), { columnSpan: 3, bold: true, shading: SHADING_P2 }),
+    cell(formatPt(totalPoints.part3), { columnSpan: 3, bold: true, shading: SHADING_P3 })
   ];
   if (hasEssay) {
-    specF2.push(cell(formatPt(totalPoints.part4 || 0), { columnSpan: 3, bold: true, shading: 'E2E8F0' }));
+    specF2.push(cell(formatPt(totalPoints.part4 || 0), { columnSpan: 3, bold: true, shading: SHADING_P4 }));
   }
   specF2.push(cell(formatPt(totalPoints.grandTotal ?? 10.0, ' điểm'), { bold: true, shading: 'E0E7FF', color: '3730A3' }));
 
   const specF3 = [
     cell('Tỉ lệ %', { columnSpan: 4, bold: true, shading: 'F1F5F9', color: '0F172A' }),
-    cell(`${percentages.part1}%`, { columnSpan: 3, bold: true, shading: 'F1F5F9' }),
-    cell(`${percentages.part2}%`, { columnSpan: 3, bold: true, shading: 'F1F5F9' }),
-    cell(`${percentages.part3}%`, { columnSpan: 3, bold: true, shading: 'F1F5F9' })
+    cell(`${percentages.part1}%`, { columnSpan: 3, bold: true, shading: SHADING_P1 }),
+    cell(`${percentages.part2}%`, { columnSpan: 3, bold: true, shading: SHADING_P2 }),
+    cell(`${percentages.part3}%`, { columnSpan: 3, bold: true, shading: SHADING_P3 })
   ];
   if (hasEssay) {
-    specF3.push(cell(`${percentages.part4 || 0}%`, { columnSpan: 3, bold: true, shading: 'F1F5F9' }));
+    specF3.push(cell(`${percentages.part4 || 0}%`, { columnSpan: 3, bold: true, shading: SHADING_P4 }));
   }
   specF3.push(cell(`${totalPercent}%`, { bold: true, shading: 'E0E7FF', color: '3730A3' }));
 
