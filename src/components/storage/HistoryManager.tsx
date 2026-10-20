@@ -116,41 +116,66 @@ export const HistoryManager: React.FC<HistoryManagerProps> = ({
     <div className="space-y-6">
       
       {/* Sub Tabs */}
-      <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-sm no-print">
-        <div className="flex items-center gap-2">
-          <FolderClock className="w-5 h-5 text-indigo-600" />
-          <h2 className="text-base font-bold text-slate-800">Kho Lưu Trữ Mẫu Ma Trận & Đề Thi</h2>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm no-print">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100">
+            <FolderClock className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-base font-bold text-slate-800">Kho Lưu Trữ Dữ Liệu</h2>
+            <p className="text-xs text-slate-500">Quản lý mẫu ma trận khung và các bộ đề thi đã khởi tạo</p>
+          </div>
         </div>
 
-        <div className="flex items-center bg-slate-100 p-1 rounded-xl text-xs font-bold">
+        <div className="flex items-center gap-2 bg-slate-100/80 p-1.5 rounded-2xl border border-slate-200/70">
+          {/* Nút 1: Mẫu Ma Trận - Tông màu Indigo / Tím nổi bật */}
           <button
             onClick={() => {
               setActiveSubTab('matrices');
               setPreviewExam(null);
             }}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg transition-all ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 cursor-pointer active:scale-95 ${
               activeSubTab === 'matrices'
-                ? 'bg-white text-indigo-900 shadow-sm'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/25 ring-2 ring-indigo-400/30'
+                : 'bg-indigo-50/70 text-indigo-700 hover:bg-indigo-100 border border-indigo-200/70 hover:border-indigo-300'
             }`}
           >
-            <LayoutGrid className="w-4 h-4" />
-            <span>Mẫu Ma Trận ({matrices.length})</span>
+            <LayoutGrid className={`w-4 h-4 ${activeSubTab === 'matrices' ? 'text-white' : 'text-indigo-600'}`} />
+            <span>Mẫu Ma Trận</span>
+            <span
+              className={`px-2 py-0.5 rounded-full text-xs font-black transition-colors ${
+                activeSubTab === 'matrices'
+                  ? 'bg-white/20 text-white border border-white/25 backdrop-blur-xs'
+                  : 'bg-indigo-200/70 text-indigo-900 border border-indigo-300/50'
+              }`}
+            >
+              {matrices.length}
+            </span>
           </button>
 
+          {/* Nút 2: Đề Thi Đã Tạo - Tông màu Emerald / Xanh ngọc nổi bật */}
           <button
             onClick={() => {
               setActiveSubTab('exams');
               setPreviewMatrix(null);
             }}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg transition-all ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 cursor-pointer active:scale-95 ${
               activeSubTab === 'exams'
-                ? 'bg-white text-indigo-900 shadow-sm'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-500/25 ring-2 ring-emerald-400/30'
+                : 'bg-emerald-50/70 text-emerald-700 hover:bg-emerald-100 border border-emerald-200/70 hover:border-emerald-300'
             }`}
           >
-            <FileText className="w-4 h-4" />
-            <span>Đề Thi Đã Tạo ({exams.length})</span>
+            <FileText className={`w-4 h-4 ${activeSubTab === 'exams' ? 'text-white' : 'text-emerald-600'}`} />
+            <span>Đề Thi Đã Tạo</span>
+            <span
+              className={`px-2 py-0.5 rounded-full text-xs font-black transition-colors ${
+                activeSubTab === 'exams'
+                  ? 'bg-white/20 text-white border border-white/25 backdrop-blur-xs'
+                  : 'bg-emerald-200/70 text-emerald-900 border border-emerald-300/50'
+              }`}
+            >
+              {exams.length}
+            </span>
           </button>
         </div>
       </div>
