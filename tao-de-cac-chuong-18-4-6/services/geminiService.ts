@@ -52,7 +52,8 @@ const ai = new GoogleGenAI({
     CẤU TRÚC ĐỀ VÀ NỘI DUNG CHI TIẾT:
     - PHẦN I: 18 câu MCQ. 'options' chỉ chứa nội dung, không kèm A.B.C.D hay dấu chấm ở đầu.
     - PHẦN II: 4 bối cảnh Đúng/Sai (mỗi bối cảnh 4 ý). 
-        + YÊU CẦU: Mỗi câu (context) PHẢI là một bối cảnh thực tiễn hoặc thực nghiệm hóa học sinh động bằng TIẾNG VIỆT, ĐỘ DÀI TRONG KHOẢNG TỪ 60 ĐẾN 80 TỪ.
+        + YÊU CẦU BỐI CẢNH: Mỗi câu (context) PHẢI là một bối cảnh thực tiễn hoặc thực nghiệm hóa học sinh động bằng TIẾNG VIỆT, ĐỘ DÀI TRONG KHOẢNG TỪ 60 ĐẾN 80 TỪ (hoặc 100-250 từ đối với đề chuẩn tốt nghiệp).
+        + QUY TẮC CỐT LÕI: Bối cảnh KHÔNG PHẢI dùng để trang trí mà là DỮ LIỆU QUAN TRỌNG để đánh giá đúng, sai. Các phát biểu Đúng/Sai BẮT BUỘC phải bám sát nội dung và dữ liệu của bối cảnh, TUYỆT ĐỐI KHÔNG đưa các phương án xa rời bối cảnh hay lý thuyết chung chung không gắn kết với bối cảnh đã nêu.
         + 'statements' chỉ chứa nội dung bằng TIẾNG VIỆT, không kèm a) b) c) d) hay dấu chấm ở đầu.
     - PHẦN III: 6 câu trả lời ngắn. 
         + YÊU CẦU: PHẢI là các bài tập tính toán có ý nghĩa (gắn với thực tế, sản xuất hoặc thí nghiệm), ĐỘ DÀI ÍT NHẤT 40 TỪ mỗi câu, viết bằng TIẾNG VIỆT.

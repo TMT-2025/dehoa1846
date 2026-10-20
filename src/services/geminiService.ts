@@ -112,6 +112,9 @@ export const generateExam = async (
     2. PHẦN II (2 câu Trắc nghiệm Đúng/Sai - 2.0 điểm):
        - Gồm đúng 2 câu (Câu 1 đến Câu 2) với 2 bối cảnh thực tiễn.
        - Mỗi câu gồm 4 ý a, b, c, d (tổng 8 ý/lệnh hỏi), mỗi ý 0.25 điểm. Cấu trúc 4 ý phát triển: 1 Biết, 2 Hiểu, 1 Vận dụng.
+       - YÊU CẦU BẮT BUỘC VỀ BỐI CẢNH VÀ CÁC PHÁT BIỂU ĐÚNG/SAI:
+         + Bối cảnh KHÔNG PHẢI dùng để trang trí mà là DỮ LIỆU QUAN TRỌNG để đánh giá đúng, sai.
+         + Các phát biểu Đúng/Sai BẮT BUỘC phải bám sát nội dung và dữ liệu của bối cảnh, TUYỆT ĐỐI KHÔNG đưa các phương án xa rời bối cảnh hay hỏi lý thuyết chung chung không gắn với tình huống đã nêu.
     3. PHẦN III (4 câu Trắc nghiệm Trả lời ngắn - 2.0 điểm):
        - Gồm đúng 4 câu (Câu 1 đến Câu 4), mỗi câu 0.5 điểm.
        - Bài toán tính toán có ý nghĩa thực tế, yêu cầu làm tròn rõ ràng, đáp án (answer) là 1 con số duy nhất.
@@ -137,11 +140,15 @@ export const generateExam = async (
     
     2. PHẦN II (Trắc nghiệm Đúng/Sai - 4 bối cảnh cho Lớp 12; 2 bối cảnh cho định kì Lớp 10/11):
        - Độ dài bối cảnh (context): 100 đến 250 từ. Bối cảnh phải giàu hàm lượng chuyên môn, gắn với thí nghiệm thực hành, đời sống hoặc sản xuất công nghiệp.
-       - Phương thức tạo 4 lệnh hỏi a, b, c, d phát triển theo 4 cấp độ tư duy nhận thức:
-         + a) Nhận biết: Kiểm tra định nghĩa, nhóm chức, phân loại, tên gọi hoặc vai trò cơ bản của hóa chất ban đầu.
-         + b) Thông hiểu: Bản chất phản ứng, giải thích hiện tượng ở từng bước thí nghiệm.
-         + c) Vận dụng: Tính toán định lượng gắn liền với số liệu trong bối cảnh.
-         + d) Vận dụng cao / Đánh giá: Đánh giá tính đúng/sai của giả thuyết học sinh đưa ra, dự đoán hiện tượng khi thay đổi hóa chất/điều kiện, suy luận cấu trúc lập thể hoặc tối ưu hóa phản ứng.
+       - QUY TẮC CỐT LÕI VỀ BỐI CẢNH VÀ CÁC PHÁT BIỂU ĐÚNG/SAI (BẮT BUỘC TUÂN THỦ):
+         + BỐI CẢNH KHÔNG PHẢI DÙNG ĐỂ TRANG TRÍ MÀ LÀ DỮ LIỆU QUAN TRỌNG, CỐT LÕI ĐỂ ĐÁNH GIÁ ĐÚNG, SAI.
+         + CÁC PHÁT BIỂU ĐÚNG/SAI BẮT BUỘC PHẢI BÁM SÁT NỘI DUNG VÀ DỮ LIỆU CỦA BỐI CẢNH, TUYỆT ĐỐI KHÔNG ĐƯA CÁC PHƯƠNG ÁN XA RỜI BỐI CẢNH hoặc hỏi lý thuyết rời rạc bên ngoài không liên quan đến bối cảnh đã xây dựng.
+         + Mọi nhận định a, b, c, d phải dựa trên việc phân tích các đối tượng, hóa chất, số liệu, tiến trình thí nghiệm, hiện tượng hoặc đồ thị có trong bối cảnh.
+       - Phương thức tạo 4 lệnh hỏi a, b, c, d phát triển theo 4 cấp độ tư duy nhận thức (tất cả đều khai thác trực tiếp từ bối cảnh):
+         + a) Nhận biết: Kiểm tra định nghĩa, nhóm chức, phân loại, tên gọi hoặc vai trò cơ bản của hóa chất được đề cập trong bối cảnh.
+         + b) Thông hiểu: Bản chất phản ứng, giải thích hiện tượng ở từng bước thí nghiệm/quá trình nêu trong bối cảnh.
+         + c) Vận dụng: Tính toán định lượng trực tiếp gắn liền với số liệu, nồng độ, thể tích, khối lượng trong bối cảnh.
+         + d) Vận dụng cao / Đánh giá: Đánh giá tính đúng/sai của giả thuyết, dự đoán hiện tượng khi thay đổi điều kiện/hóa chất của bối cảnh, suy luận cấu trúc lập thể hoặc tối ưu hóa phản ứng trong bối cảnh.
        - 'statements' gồm đúng 4 nhận định bằng TIẾNG VIỆT, không kèm a) b) c) d) ở đầu.
     
     3. PHẦN III (Trắc nghiệm Trả lời ngắn - 6 câu cho Lớp 12; 4 câu cho định kì Lớp 10/11):
@@ -161,7 +168,7 @@ export const generateExam = async (
   `;
 
   contents.push({
-    text: `Soạn đề kiểm tra Hóa học khối ${grade} - Các chương: ${topicStr}. Yêu cầu: ${details || 'Chuẩn GDPT 2018'}. Đảm bảo tỉ lệ 4:3:3, phân bổ đều kiến thức giữa các chương. Nếu là kiểm tra định kì Lớp 10 hoặc 11 (hoặc có yêu cầu tự luận), đề thi BẮT BUỘC có 4 phần (21 câu, 27 lệnh hỏi, 10 điểm: 12 câu Phần I, 2 câu Phần II, 4 câu Phần III, 3 câu Phần IV tự luận kèm biểu điểm solution). Nếu là Lớp 12, đề thi tuân thủ 40 lệnh trắc nghiệm (18 câu Phần I, 4 câu Phần II, 6 câu Phần III).`
+    text: `Soạn đề kiểm tra Hóa học khối ${grade} - Các chương: ${topicStr}. Yêu cầu: ${details || 'Chuẩn GDPT 2018'}. Đảm bảo tỉ lệ 4:3:3, phân bổ đều kiến thức giữa các chương. ĐẶC BIỆT LƯU Ý Ở PHẦN II (ĐÚNG/SAI): Bối cảnh không phải dùng để trang trí mà là dữ liệu quan trọng để đánh giá đúng, sai; Các phát biểu Đúng/Sai bắt buộc phải bám sát nội dung và dữ liệu bối cảnh, tuyệt đối không đưa các phương án xa rời bối cảnh. Nếu là kiểm tra định kì Lớp 10 hoặc 11 (hoặc có yêu cầu tự luận), đề thi BẮT BUỘC có 4 phần (21 câu, 27 lệnh hỏi, 10 điểm: 12 câu Phần I, 2 câu Phần II, 4 câu Phần III, 3 câu Phần IV tự luận kèm biểu điểm solution). Nếu là Lớp 12, đề thi tuân thủ 40 lệnh trắc nghiệm (18 câu Phần I, 4 câu Phần II, 6 câu Phần III).`
   });
 
   const response = await ai.models.generateContent({

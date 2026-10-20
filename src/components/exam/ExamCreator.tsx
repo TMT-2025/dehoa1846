@@ -370,6 +370,10 @@ export const ExamCreator: React.FC<ExamCreatorProps> = ({
                   (Tất cả câu hỏi đều được dịch sang Tiếng Việt chuẩn. Nếu không có nguồn phù hợp sẽ tạo như cũ)
                 </span>
               </div>
+              <div className="mt-1.5 p-2 bg-amber-50/80 rounded-lg border border-amber-200/70 text-[11px] text-amber-900 leading-normal flex items-start gap-1.5">
+                <span className="text-amber-600 font-bold shrink-0">📌 Tiêu chuẩn Phần II:</span>
+                <span>Các phát biểu Đúng/Sai bám sát chặt chẽ dữ liệu bối cảnh. Bối cảnh là căn cứ dữ liệu quan trọng để học sinh đánh giá đúng/sai, không đưa phương án xa rời bối cảnh.</span>
+              </div>
             </div>
           </div>
 
