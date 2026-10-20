@@ -20,6 +20,7 @@ export interface MixerConfig {
   shuffleQuestions: boolean;
   shuffleOptions: boolean;
   shuffleTrueFalseSubItems: boolean;
+  preserveAnswers?: boolean;
 }
 
 export interface ExamAnalysisResult {
@@ -173,7 +174,8 @@ export async function executeMixerPipeline(
     onProgress?.(`RENDER FILE WORD ${examCode}`, baseProgress + 10);
     const tRender = performance.now();
     const docxBytes = await renderExamToDocx(variantResult, examCode, {
-      templateBuffer
+      templateBuffer,
+      preserveAnswers: config.preserveAnswers
     });
     const renderMs = performance.now() - tRender;
     renderDurationsMs.push(renderMs);
@@ -297,6 +299,7 @@ export interface MixExamDataOptions {
   shuffleOptions?: boolean;
   shuffleTF?: boolean;
   seed?: number;
+  examCode?: string;
 }
 
 /**
@@ -312,7 +315,7 @@ export function mixExamDataPreservingAnswers(
 ): ExamData {
   const shuffleQuestions = options?.shuffleQuestions ?? true;
   const shuffleOptions = options?.shuffleOptions ?? true;
-  const shuffleTF = options?.shuffleTF ?? false;
+  const shuffleTF = options?.shuffleTF ?? true;
   const seed = options?.seed ?? Math.floor(Math.random() * 1000000);
   const prng = createPrng(seed);
 
@@ -387,12 +390,13 @@ export function mixExamDataPreservingAnswers(
   })) : undefined;
 
   // Clean original title
-  const baseTitle = source.title.replace(/\s*\(Đề trộn.*?\)/i, '');
+  const baseTitle = source.title.replace(/\s*\(Đề trộn.*?\)/gi, '').trim();
+  const codeSuffix = options?.examCode ? ` - Mã đề ${options.examCode}` : '';
 
   return {
     ...source,
-    id: `mixed_${Date.now()}`,
-    title: `${baseTitle} (Đề trộn - Giữ nguyên đáp án)`,
+    id: `mixed_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+    title: `${baseTitle} (ĐỀ TRỘN - GIỮ NGUYÊN ĐÁP ÁN${codeSuffix})`,
     part1: mixedPart1,
     part2: mixedPart2,
     part3: mixedPart3,

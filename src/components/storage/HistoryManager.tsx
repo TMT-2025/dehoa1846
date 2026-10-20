@@ -8,7 +8,7 @@ import {
 import { 
   FolderClock, LayoutGrid, FileText, Trash2, 
   Download, ArrowRight, Eye, Calendar, Sparkles, Edit3, Shuffle,
-  CheckCheck
+  CheckCheck, X
 } from 'lucide-react';
 import { ExamRenderer } from '../exam/ExamRenderer';
 import { MatrixDisplay } from '../matrix/MatrixDisplay';
@@ -32,15 +32,62 @@ export const HistoryManager: React.FC<HistoryManagerProps> = ({
   const [previewMatrix, setPreviewMatrix] = useState<MatrixData | null>(null);
   const [isMixedView, setIsMixedView] = useState<boolean>(false);
 
+  // Mixing options modal state
+  const [mixModalExam, setMixModalExam] = useState<ExamData | null>(null);
+  const [variantCountChoice, setVariantCountChoice] = useState<1 | 2>(1);
+  const [optShuffleQuestions, setOptShuffleQuestions] = useState<boolean>(true);
+  const [optShuffleOptions, setOptShuffleOptions] = useState<boolean>(true);
+  const [optShuffleTF, setOptShuffleTF] = useState<boolean>(true);
+  const [mixedVariants, setMixedVariants] = useState<ExamData[]>([]);
+  const [selectedVariantIndex, setSelectedVariantIndex] = useState<number>(0);
+
   const loadData = () => {
     setMatrices(getSavedMatrices());
     setExams(getSavedExams());
   };
 
-  const handleMixExamWithAnswers = (item: ExamData) => {
-    const mixed = mixExamDataPreservingAnswers(item);
-    setPreviewExam(mixed);
+  const handleOpenMixModal = (item: ExamData) => {
+    setMixModalExam(item);
+  };
+
+  const handleExecuteMixWithAnswers = () => {
+    if (!mixModalExam) return;
+    const baseCode = mixModalExam.grade === 12 ? 1201 : mixModalExam.grade === 11 ? 1101 : 1001;
+
+    if (variantCountChoice === 1) {
+      const v1 = mixExamDataPreservingAnswers(mixModalExam, {
+        shuffleQuestions: optShuffleQuestions,
+        shuffleOptions: optShuffleOptions,
+        shuffleTF: optShuffleTF,
+        seed: Math.floor(Math.random() * 1000000),
+        examCode: String(baseCode)
+      });
+      setMixedVariants([v1]);
+      setSelectedVariantIndex(0);
+      setPreviewExam(v1);
+    } else {
+      // 2 variants
+      const v1 = mixExamDataPreservingAnswers(mixModalExam, {
+        shuffleQuestions: optShuffleQuestions,
+        shuffleOptions: optShuffleOptions,
+        shuffleTF: optShuffleTF,
+        seed: 112233,
+        examCode: String(baseCode)
+      });
+      const v2 = mixExamDataPreservingAnswers(mixModalExam, {
+        shuffleQuestions: optShuffleQuestions,
+        shuffleOptions: optShuffleOptions,
+        shuffleTF: optShuffleTF,
+        seed: 998877,
+        examCode: String(baseCode + 1)
+      });
+      setMixedVariants([v1, v2]);
+      setSelectedVariantIndex(0);
+      setPreviewExam(v1);
+    }
+
     setIsMixedView(true);
+    setMixModalExam(null);
   };
 
   useEffect(() => {
@@ -271,9 +318,9 @@ export const HistoryManager: React.FC<HistoryManagerProps> = ({
                     </button>
 
                     <button
-                      onClick={() => handleMixExamWithAnswers(item)}
+                      onClick={() => handleOpenMixModal(item)}
                       className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 text-xs font-bold transition-colors cursor-pointer"
-                      title="Trộn đề ngẫu nhiên kèm hiển thị đầy đủ đáp án Phần I, II, III để giáo viên kiểm tra"
+                      title="Mở bảng tùy chọn: Trộn 1 hoặc 2 đề, đảo phương án/câu hỏi và giữ nguyên đáp án in nghiêng gạch chân để kiểm tra"
                     >
                       <CheckCheck className="w-3.5 h-3.5 text-emerald-600" />
                       <span>Trộn đề giữ nguyên đáp án</span>
@@ -300,21 +347,185 @@ export const HistoryManager: React.FC<HistoryManagerProps> = ({
       {/* EXAM PREVIEW */}
       {previewExam && (
         <div className="space-y-4">
-          <button
-            onClick={() => {
-              setPreviewExam(null);
-              setIsMixedView(false);
-            }}
-            className="px-4 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 no-print cursor-pointer"
-          >
-            ← Quay lại danh sách đề
-          </button>
+          <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm no-print">
+            <button
+              onClick={() => {
+                setPreviewExam(null);
+                setIsMixedView(false);
+                setMixedVariants([]);
+              }}
+              className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors cursor-pointer"
+            >
+              ← Quay lại danh sách đề
+            </button>
+
+            {/* If 2 variants were generated, allow quick switching */}
+            {mixedVariants.length > 1 && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-700">Mã đề:</span>
+                {mixedVariants.map((v, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setSelectedVariantIndex(idx);
+                      setPreviewExam(v);
+                    }}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      selectedVariantIndex === idx
+                        ? 'bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-600/30'
+                        : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'
+                    }`}
+                  >
+                    Mã đề {v.title.match(/Mã đề\s*(\w+)/i)?.[1] || `0${idx + 1}`}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           <ExamRenderer 
             data={previewExam} 
             onTransferToMixer={onTransferExamToMixer}
             initialShowAnswers={isMixedView}
             isMixedPreview={isMixedView}
           />
+        </div>
+      )}
+
+      {/* MIXING OPTIONS MODAL */}
+      {mixModalExam && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl border border-slate-100 space-y-5 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                  <CheckCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-sm text-slate-900">
+                    Trộn Đề Giữ Nguyên Đáp Án
+                  </h3>
+                  <p className="text-[11px] text-slate-500 line-clamp-1">
+                    {mixModalExam.title}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setMixModalExam(null)}
+                className="text-slate-400 hover:text-slate-700 text-sm font-bold p-1 rounded-lg hover:bg-slate-100 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* 1. Chọn số lượng mã đề */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-800">
+                1. Chọn số lượng đề cần trộn:
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setVariantCountChoice(1)}
+                  className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                    variantCountChoice === 1
+                      ? 'border-emerald-500 bg-emerald-50/60 text-emerald-950 font-bold ring-2 ring-emerald-500/20 shadow-xs'
+                      : 'border-slate-200 bg-slate-50/50 text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  <p className="text-xs font-extrabold">Trộn 1 đề</p>
+                  <p className="text-[10px] text-slate-500 font-normal mt-0.5">Sinh 1 mã đề kiểm tra nhanh</p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setVariantCountChoice(2)}
+                  className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                    variantCountChoice === 2
+                      ? 'border-emerald-500 bg-emerald-50/60 text-emerald-950 font-bold ring-2 ring-emerald-500/20 shadow-xs'
+                      : 'border-slate-200 bg-slate-50/50 text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  <p className="text-xs font-extrabold">Trộn 2 đề</p>
+                  <p className="text-[10px] text-slate-500 font-normal mt-0.5">Sinh 2 mã đề đối soát chéo</p>
+                </button>
+              </div>
+            </div>
+
+            {/* 2. Tùy chọn đảo trộn */}
+            <div className="space-y-2.5 pt-2 border-t border-slate-100">
+              <label className="text-xs font-bold text-slate-800">
+                2. Tùy chọn đảo trộn đáp án & câu hỏi:
+              </label>
+
+              <div className="space-y-2.5 bg-slate-50 p-3.5 rounded-2xl border border-slate-200 text-xs">
+                <label className="flex items-center gap-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={optShuffleQuestions}
+                    onChange={(e) => setOptShuffleQuestions(e.target.checked)}
+                    className="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500"
+                  />
+                  <span className="font-medium text-slate-800">
+                    Xáo thứ tự các câu hỏi trong từng phần (Phần I, II, III)
+                  </span>
+                </label>
+
+                <label className="flex items-center gap-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={optShuffleOptions}
+                    onChange={(e) => setOptShuffleOptions(e.target.checked)}
+                    className="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500"
+                  />
+                  <span className="font-medium text-slate-800">
+                    Xáo thứ tự các phương án A, B, C, D (Phần I)
+                  </span>
+                </label>
+
+                <label className="flex items-center gap-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={optShuffleTF}
+                    onChange={(e) => setOptShuffleTF(e.target.checked)}
+                    className="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500"
+                  />
+                  <span className="font-medium text-slate-800">
+                    Xáo thứ tự các ý Đúng / Sai a, b, c, d (Phần II)
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            {/* Quy chuẩn hiển thị */}
+            <div className="p-3 bg-blue-50/60 rounded-xl border border-blue-200 text-[11px] text-blue-950 leading-relaxed">
+              <span className="font-bold">Quy cách thể hiện đáp án:</span>
+              <ul className="list-disc list-inside mt-0.5 space-y-0.5 text-blue-900">
+                <li>Phần I & II: Phương án đúng được <em><u>in nghiêng và gạch chân</u></em>.</li>
+                <li>Phần III: Hiển thị <em><u>A. [Đáp số]</u></em> (màu xanh, không có lời giải).</li>
+                <li>Phần IV (Tự luận nếu có): Giữ nguyên thứ tự và thang điểm.</li>
+              </ul>
+            </div>
+
+            {/* Footer Buttons */}
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setMixModalExam(null)}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                type="button"
+                onClick={handleExecuteMixWithAnswers}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
+              >
+                <CheckCheck className="w-4 h-4" />
+                <span>Bắt đầu trộn & Xem đề</span>
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

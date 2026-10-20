@@ -41,6 +41,7 @@ export const ExamMixer: React.FC<ExamMixerProps> = ({
   const [shuffleQuestions, setShuffleQuestions] = useState<boolean>(true);
   const [shuffleOptions, setShuffleOptions] = useState<boolean>(true);
   const [shuffleTF, setShuffleTF] = useState<boolean>(false);
+  const [preserveAnswersInDoc, setPreserveAnswersInDoc] = useState<boolean>(false);
   const [seed, setSeed] = useState<number>(20260925);
   const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
 
@@ -182,7 +183,8 @@ export const ExamMixer: React.FC<ExamMixerProps> = ({
       seed: Number(seed) || 20260925,
       shuffleQuestions,
       shuffleOptions,
-      shuffleTrueFalseSubItems: shuffleTF
+      shuffleTrueFalseSubItems: shuffleTF,
+      preserveAnswers: preserveAnswersInDoc
     };
 
     try {
@@ -605,6 +607,18 @@ export const ExamMixer: React.FC<ExamMixerProps> = ({
                     className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500" 
                   />
                   <span className="font-semibold text-slate-800">Xáo thứ tự phương án A, B, C, D (Phần I)</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer pt-1 border-t border-dashed border-slate-200">
+                  <input 
+                    type="checkbox" 
+                    checked={preserveAnswersInDoc} 
+                    onChange={(e) => setPreserveAnswersInDoc(e.target.checked)} 
+                    className="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500" 
+                  />
+                  <span className="font-bold text-emerald-900">
+                    Xuất file Word giữ nguyên đáp án (Phần I & II in nghiêng + gạch chân, Phần III hiện đáp số không lời giải)
+                  </span>
                 </label>
               </div>
 

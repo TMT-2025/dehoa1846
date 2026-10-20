@@ -88,7 +88,7 @@ export const ExamRenderer: React.FC<ExamRendererProps> = ({
   const handleDownloadDoc = async (isAnswerKey: boolean) => {
     try {
       setIsExportingDoc(true);
-      await downloadExamDoc(currentExamData, isAnswerKey);
+      await downloadExamDoc(currentExamData, isAnswerKey, isMixed || showAnswers);
     } catch (e: any) {
       alert(e.message || 'Lỗi khi tải file Word');
     } finally {
@@ -271,18 +271,16 @@ export const ExamRenderer: React.FC<ExamRendererProps> = ({
                         key={oIdx}
                         className={`p-2 rounded-lg text-xs transition-colors flex items-start gap-1.5 ${
                           isCorrect 
-                            ? 'bg-emerald-100 text-emerald-950 font-bold border border-emerald-300' 
+                            ? 'bg-blue-50/70 text-blue-950 font-bold border border-blue-200' 
                             : 'hover:bg-slate-50'
                         }`}
                       >
-                        <span className="font-bold text-slate-700">{labelsPart1[oIdx]}.</span>
-                        <span className="flex-1">{formatFormula(cleanOpt)}</span>
-                        {isCorrect && (
-                          <span className="flex items-center gap-1 text-[10px] bg-emerald-600 text-white px-1.5 py-0.5 rounded font-extrabold shrink-0">
-                            <CheckCircle2 className="w-3 h-3" />
-                            ĐÚNG
-                          </span>
-                        )}
+                        <span className={`font-bold ${isCorrect ? 'italic underline text-blue-900' : 'text-slate-700'}`}>
+                          {labelsPart1[oIdx]}.
+                        </span>
+                        <span className={`flex-1 ${isCorrect ? 'italic underline text-blue-950 font-bold' : ''}`}>
+                          {formatFormula(cleanOpt)}
+                        </span>
                       </div>
                     );
                   })}
@@ -315,16 +313,18 @@ export const ExamRenderer: React.FC<ExamRendererProps> = ({
                       <div 
                         key={sIdx} 
                         className={`p-2 rounded-lg text-xs flex items-center justify-between gap-2 transition-colors ${
-                          showAnswers 
-                            ? isTrue 
-                              ? 'bg-emerald-50/80 text-emerald-950 border border-emerald-200' 
-                              : 'bg-rose-50/60 text-rose-950 border border-rose-200'
+                          showAnswers && isTrue 
+                            ? 'bg-blue-50/70 text-blue-950 border border-blue-200 font-bold' 
                             : 'text-slate-800 hover:bg-slate-50'
                         }`}
                       >
                         <div className="flex items-start gap-2 flex-1">
-                          <span className="font-bold text-slate-800 whitespace-nowrap">{labelsPart2[sIdx]})</span>
-                          <span className="flex-1">{formatFormula(cleanText)}</span>
+                          <span className={`font-bold ${showAnswers && isTrue ? 'italic underline text-blue-900' : 'text-slate-800'} whitespace-nowrap`}>
+                            {labelsPart2[sIdx]})
+                          </span>
+                          <span className={`flex-1 ${showAnswers && isTrue ? 'italic underline text-blue-950 font-bold' : ''}`}>
+                            {formatFormula(cleanText)}
+                          </span>
                         </div>
                         {showAnswers && (
                           <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase shrink-0 border ${
@@ -363,17 +363,11 @@ export const ExamRenderer: React.FC<ExamRendererProps> = ({
                 </p>
 
                 {showAnswers ? (
-                  <div className="mt-2 p-3 bg-blue-50/60 rounded-xl border border-blue-200 space-y-2 text-xs">
-                    <div className="font-bold text-blue-700 italic border-l-4 border-blue-500 pl-3 py-1 flex items-center gap-2">
-                      <span className="text-[11px] uppercase tracking-wider font-extrabold text-blue-900 bg-blue-100 px-2 py-0.5 rounded">Đáp số:</span>
-                      <span className="underline text-sm font-extrabold">{q.answer}</span>
-                    </div>
-                    {q.explanation && (
-                      <div className="text-[12px] text-slate-600 italic border-l-4 border-slate-300 pl-3 py-1">
-                        <span className="font-bold not-italic text-slate-800">Hướng dẫn giải: </span>
-                        {formatFormula(q.explanation)}
-                      </div>
-                    )}
+                  /* Answer displayed as in Image 2: A. [answer] (underlined, italic, blue, no explanation) */
+                  <div className="mt-2 pl-4 py-1">
+                    <span className="font-bold italic underline text-blue-700 text-sm tracking-wide">
+                      A. {q.answer}
+                    </span>
                   </div>
                 ) : (
                   <div className="mt-2 flex items-center gap-2 py-1 text-xs">

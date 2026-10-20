@@ -39,9 +39,18 @@ const parseChemicalText = (text: string, baseOptions: any = {}): TextRun[] => {
   return parts.length > 0 ? parts : [new TextRun({ ...baseOptions, text: text })];
 };
 
-export const downloadExamDoc = async (data: ExamData, isAnswerKey: boolean) => {
+export const downloadExamDoc = async (
+  data: ExamData, 
+  isAnswerKey: boolean,
+  preserveAnswersMode?: boolean
+) => {
   const children: any[] = [];
-  const spacing = isAnswerKey ? { before: 100, after: 0 } : { before: 300, after: 80 };
+  const showPreservedAnswers = Boolean(
+    preserveAnswersMode || 
+    data.title?.toUpperCase().includes('GIỮ NGUYÊN ĐÁP ÁN')
+  );
+  const showAns = isAnswerKey || showPreservedAnswers;
+  const spacing = (isAnswerKey || showPreservedAnswers) ? { before: 100, after: 0 } : { before: 300, after: 80 };
 
   const noBorder = {
     top: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
@@ -120,11 +129,11 @@ export const downloadExamDoc = async (data: ExamData, isAnswerKey: boolean) => {
       spacing: { before: 60 } 
     }));
     q.options.forEach((opt, oIdx) => {
-      const isCorrect = isAnswerKey && oIdx === q.correctIndex;
+      const isCorrect = showAns && oIdx === q.correctIndex;
       const cleanOpt = opt.replace(/^[A-D][\.\)]\s*/i, '').replace(/^\.\s*/, '');
       children.push(new Paragraph({
         children: [
-          new TextRun({ text: `${labels1[oIdx]}. `, bold: isCorrect, italics: isCorrect, underline: isCorrect ? {} : undefined }),
+          new TextRun({ text: `${labels1[oIdx]}. `, bold: true, italics: isCorrect, underline: isCorrect ? {} : undefined }),
           ...parseChemicalText(cleanOpt, { italics: isCorrect, underline: isCorrect ? {} : undefined, bold: false })
         ],
         indent: { left: 450 },
@@ -146,7 +155,7 @@ export const downloadExamDoc = async (data: ExamData, isAnswerKey: boolean) => {
       spacing: { before: 100 } 
     }));
     sc.statements.forEach((st, sIdx) => {
-      const isTrueMark = isAnswerKey && st.isTrue;
+      const isTrueMark = showAns && st.isTrue;
       const cleanText = st.text.replace(/^[a-d][\.\)]\s*/i, '').replace(/^\.\s*/, '');
       children.push(new Paragraph({
         children: [
@@ -189,6 +198,15 @@ export const downloadExamDoc = async (data: ExamData, isAnswerKey: boolean) => {
           spacing: { before: 50, after: 100 }
         }));
       }
+    } else if (showAns) {
+      // Preserve answers mode (like Image 2): A. [answer] in blue, bold, italic, underline - NO explanation!
+      children.push(new Paragraph({ 
+        children: [
+          new TextRun({ text: "A. ", bold: true, italics: true, underline: {} }), 
+          new TextRun({ text: `${q.answer}`, bold: true, italics: true, underline: {}, color: "0000FF" })
+        ], 
+        indent: { left: 450 } 
+      }));
     } else {
       children.push(new Paragraph({ 
         children: [

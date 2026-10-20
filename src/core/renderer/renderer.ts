@@ -14,12 +14,14 @@ import { escapeXml } from "./content-renderer.js";
 export interface RenderOptions {
   templateBuffer?: Buffer | Uint8Array;
   profile?: TemplateProfile;
+  preserveAnswers?: boolean;
 }
 
 export function buildDocumentXml(
   exam: ExamIR,
   examCode: string,
-  profile: TemplateProfile
+  profile: TemplateProfile,
+  preserveAnswers?: boolean
 ): string {
   const bodyParts: string[] = [];
 
@@ -29,6 +31,8 @@ export function buildDocumentXml(
 
   // 2. Student Info Header Table
   bodyParts.push(renderStudentHeaderTable(examCode, profile));
+
+  const shouldPreserveAnswers = preserveAnswers || title.toUpperCase().includes("GIỮ NGUYÊN ĐÁP ÁN");
 
   // 3. Sections and Questions
   for (const section of exam.sections) {
@@ -48,7 +52,7 @@ export function buildDocumentXml(
     for (let qIdx = 0; qIdx < section.questions.length; qIdx++) {
       const q = section.questions[qIdx];
       const displayIndex = qIdx + 1;
-      const qXml = renderQuestion(q, displayIndex, profile);
+      const qXml = renderQuestion(q, displayIndex, profile, shouldPreserveAnswers);
       bodyParts.push(qXml);
     }
   }
@@ -110,7 +114,7 @@ export async function renderExamToDocx(
   const profile = options.profile || DEFAULT_TEMPLATE_PROFILE;
   const templateBuffer = options.templateBuffer || loadTemplateBuffer();
 
-  const documentXml = buildDocumentXml(exam, examCode, profile);
+  const documentXml = buildDocumentXml(exam, examCode, profile, options.preserveAnswers);
   const footerXml = renderFooterXml(examCode, profile);
 
   return cloneAndAssembleDocx(templateBuffer, documentXml, footerXml);

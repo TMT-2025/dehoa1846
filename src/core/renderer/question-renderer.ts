@@ -3,7 +3,7 @@ import { TemplateProfile } from "./template-loader.js";
 import { determineOptionLayout } from "./layout-engine.js";
 import { renderOptions } from "./option-renderer.js";
 import { renderTrueFalseSubItems } from "./true-false-renderer.js";
-import { renderRunToXml, renderParagraphToXml } from "./content-renderer.js";
+import { renderRunToXml, renderParagraphToXml, escapeXml } from "./content-renderer.js";
 
 export function renderQuestionStem(
   question: ExamQuestion,
@@ -64,19 +64,26 @@ export function renderQuestionStem(
 export function renderQuestion(
   question: ExamQuestion,
   displayIndex: number,
-  profile: TemplateProfile
+  profile: TemplateProfile,
+  preserveAnswers?: boolean
 ): string {
   const stemXml = renderQuestionStem(question, displayIndex, profile);
 
   if (question.type === "MULTIPLE_CHOICE" && question.options) {
     const layout = determineOptionLayout(question.options);
-    const optionsXml = renderOptions(question.options, layout, profile);
+    const optionsXml = renderOptions(question.options, layout, profile, preserveAnswers);
     return `${stemXml}\n${optionsXml}`;
   } else if (question.type === "TRUE_FALSE" && question.subItems) {
-    const subItemsXml = renderTrueFalseSubItems(question.subItems, profile);
+    const subItemsXml = renderTrueFalseSubItems(question.subItems, profile, preserveAnswers);
     return `${stemXml}\n${subItemsXml}`;
   } else if (question.type === "SHORT_ANSWER") {
-    // In student exam, only stem is rendered
+    if (preserveAnswers) {
+      const ansVal = question.shortAnswer?.expectedValue || (question as any).expectedAnswer || "";
+      if (ansVal) {
+        const ansXml = `<w:p><w:pPr><w:ind w:left="450"/></w:pPr><w:r><w:rPr><w:rStyle w:val="YoungMixChar"/><w:b/><w:i/><w:u w:val="single"/><w:color w:val="0000FF"/></w:rPr><w:t xml:space="preserve">A. ${escapeXml(ansVal)}</w:t></w:r></w:p>`;
+        return `${stemXml}\n${ansXml}`;
+      }
+    }
     return stemXml;
   }
 
