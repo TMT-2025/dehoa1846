@@ -92,14 +92,20 @@ export function executeGate2Validation(
  */
 export async function executeGate3Validation(
   renderedDocxBuffer: Buffer | Uint8Array,
-  variantResult: Readonly<VariantExamResult>
+  variantResult: Readonly<VariantExamResult>,
+  options?: { preserveAnswers?: boolean }
 ): Promise<RenderValidationReport> {
-  const report = await validateRenderedDocx(renderedDocxBuffer, variantResult);
+  const report = await validateRenderedDocx(renderedDocxBuffer, variantResult, options);
 
   if (!report.isValid) {
+    const errorDetails = report.issues
+      .filter(i => i.severity === "CRITICAL" || i.severity === "ERROR")
+      .slice(0, 3)
+      .map(i => i.message)
+      .join("; ");
     throw new PipelineQualityGateError(
       "GATE_3_POST_RENDER",
-      `Rendered DOCX for variant ${variantResult.metadata.examCode} failed validation with ${report.totalErrors} error(s).`,
+      `Rendered DOCX for variant ${variantResult.metadata.examCode} failed validation with ${report.totalErrors} error(s)${errorDetails ? `: ${errorDetails}` : '.'}`,
       report.issues
     );
   }

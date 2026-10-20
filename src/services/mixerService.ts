@@ -182,7 +182,9 @@ export async function executeMixerPipeline(
 
     // Gate 3 check
     const tVal = performance.now();
-    await executeGate3Validation(docxBytes, variantResult);
+    await executeGate3Validation(docxBytes, variantResult, {
+      preserveAnswers: config.preserveAnswers
+    });
     const validateMs = performance.now() - tVal;
     validateDurationsMs.push(validateMs);
 

@@ -85,12 +85,21 @@ export function countExpectedSubscripts(exam?: ExamIR): number {
   return count;
 }
 
+export interface RenderValidationOptions {
+  preserveAnswers?: boolean;
+}
+
 export async function validateRenderedDocx(
   docxBuffer: Buffer | Uint8Array,
-  expectedVariant: VariantExamResult
+  expectedVariant: VariantExamResult,
+  options?: RenderValidationOptions
 ): Promise<RenderValidationReport> {
   const issues: RenderValidationIssue[] = [];
   const expectedExamCode = expectedVariant.metadata.examCode;
+  const shouldPreserveAnswers = Boolean(
+    options?.preserveAnswers ||
+    expectedVariant.variantExam.header.examTitle?.toUpperCase().includes("GIỮ NGUYÊN ĐÁP ÁN")
+  );
 
   let zip: JSZip;
   try {
@@ -254,51 +263,53 @@ export async function validateRenderedDocx(
   // Scan all runs inside paragraphs (excluding the header table) for underline
   let hasAnswerLeakage = false;
   let inShortAnswerSection = false;
-  for (const p of paragraphs) {
-    const runs = getChildrenByLocalName(p, "r");
-    for (const r of runs) {
-      const rPr = getFirstChildByLocalName(r, "rPr");
-      if (rPr) {
-        const u = getFirstChildByLocalName(rPr, "u");
-        if (u) {
-          // If underline is single and found in an option/sub-item, flag leakage!
-          const text = getElementTextContent(r);
-          // Allow underline only if it's explicitly in header table dots or non-answer text
-          if (text.trim().length > 0 && !text.includes("...") && !text.includes("___")) {
-            hasAnswerLeakage = true;
-            issues.push({
-              code: "VAL-LEAKAGE-UNDERLINE",
-              severity: "CRITICAL",
-              message: `Answer leakage detected: Underline found in text '${text}'`
-            });
+  if (!shouldPreserveAnswers) {
+    for (const p of paragraphs) {
+      const runs = getChildrenByLocalName(p, "r");
+      for (const r of runs) {
+        const rPr = getFirstChildByLocalName(r, "rPr");
+        if (rPr) {
+          const u = getFirstChildByLocalName(rPr, "u");
+          if (u) {
+            // If underline is single and found in an option/sub-item, flag leakage!
+            const text = getElementTextContent(r);
+            // Allow underline only if it's explicitly in header table dots or non-answer text
+            if (text.trim().length > 0 && !text.includes("...") && !text.includes("___")) {
+              hasAnswerLeakage = true;
+              issues.push({
+                code: "VAL-LEAKAGE-UNDERLINE",
+                severity: "CRITICAL",
+                message: `Answer leakage detected: Underline found in text '${text}'`
+              });
+            }
           }
         }
       }
-    }
 
-    const pText = getElementTextContent(p).trim();
-    if (pText.includes("PHẦN III") || pText.includes("PHẦN 3")) {
-      inShortAnswerSection = true;
-    }
+      const pText = getElementTextContent(p).trim();
+      if (pText.includes("PHẦN III") || pText.includes("PHẦN 3")) {
+        inShortAnswerSection = true;
+      }
 
-    // Direct answer label leak: "Trả lời: ..." or "Đáp án: ..."
-    if (pText.match(/^(?:Trả lời|Đáp án)[\.:\)]/i)) {
-      hasAnswerLeakage = true;
-      issues.push({
-        code: "VAL-LEAKAGE-SHORT-ANSWER",
-        severity: "CRITICAL",
-        message: `Answer leakage detected: Direct answer line found '${pText}'`
-      });
-    }
+      // Direct answer label leak: "Trả lời: ..." or "Đáp án: ..."
+      if (pText.match(/^(?:Trả lời|Đáp án)[\.:\)]/i)) {
+        hasAnswerLeakage = true;
+        issues.push({
+          code: "VAL-LEAKAGE-SHORT-ANSWER",
+          severity: "CRITICAL",
+          message: `Answer leakage detected: Direct answer line found '${pText}'`
+        });
+      }
 
-    // In short answer section, any answer key line like "A. 200" or "A. <value>" is answer leakage
-    if (inShortAnswerSection && pText.match(/^A[\.:\)]\s*(200|0\.92|3|5\.28|88\.4|1170|\d+(?:[.,]\d+)?)$/)) {
-      hasAnswerLeakage = true;
-      issues.push({
-        code: "VAL-LEAKAGE-SHORT-ANSWER",
-        severity: "CRITICAL",
-        message: `Answer leakage detected: Short answer key line found in student exam '${pText}'`
-      });
+      // In short answer section, any answer key line like "A. 200" or "A. <value>" is answer leakage
+      if (inShortAnswerSection && pText.match(/^A[\.:\)]\s*(200|0\.92|3|5\.28|88\.4|1170|\d+(?:[.,]\d+)?)$/)) {
+        hasAnswerLeakage = true;
+        issues.push({
+          code: "VAL-LEAKAGE-SHORT-ANSWER",
+          severity: "CRITICAL",
+          message: `Answer leakage detected: Short answer key line found in student exam '${pText}'`
+        });
+      }
     }
   }
 

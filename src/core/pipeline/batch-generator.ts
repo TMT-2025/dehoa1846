@@ -32,6 +32,7 @@ export interface BatchOptions {
   mixingConfig?: Partial<QuestionMixingOptions>;
   templateBuffer: Buffer | Uint8Array;
   profile?: TemplateProfile;
+  preserveAnswers?: boolean;
 }
 
 /**
@@ -91,14 +92,17 @@ export async function executeBatchGeneration(
     const tRenderStart = performance.now();
     const docxBytes = await renderExamToDocx(variantResult, examCode, {
       templateBuffer: options.templateBuffer,
-      profile: options.profile
+      profile: options.profile,
+      preserveAnswers: options.preserveAnswers
     });
     const renderMs = performance.now() - tRenderStart;
     renderDurationsMs.push(renderMs);
 
     // 4. Gate 3 Validation (Post-rendering)
     const tValGate3Start = performance.now();
-    await executeGate3Validation(docxBytes, variantResult);
+    await executeGate3Validation(docxBytes, variantResult, {
+      preserveAnswers: options.preserveAnswers
+    });
     const validateMs = (performance.now() - tValStart) - renderMs; // combined validation time
     validateDurationsMs.push(validateMs);
 
