@@ -374,6 +374,10 @@ export const ExamCreator: React.FC<ExamCreatorProps> = ({
                 <span className="text-amber-600 font-bold shrink-0">📌 Tiêu chuẩn Phần II:</span>
                 <span>Các phát biểu Đúng/Sai bám sát chặt chẽ dữ liệu bối cảnh. Bối cảnh là căn cứ dữ liệu quan trọng để học sinh đánh giá đúng/sai, không đưa phương án xa rời bối cảnh.</span>
               </div>
+              <div className="mt-1 p-2 bg-emerald-50/80 rounded-lg border border-emerald-200/70 text-[11px] text-emerald-900 leading-normal flex items-start gap-1.5">
+                <span className="text-emerald-700 font-bold shrink-0">✨ Tự luận Lớp 10 & 11 (Phần IV):</span>
+                <span>Tự động đổi mới 100% tình huống, hệ chất và số liệu giữa các lần tạo đề, chống lặp lại câu hỏi cũ dù cùng chủ đề kiến thức.</span>
+              </div>
             </div>
           </div>
 

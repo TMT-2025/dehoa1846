@@ -16,6 +16,34 @@ export const setStoredApiKey = (key: string): void => {
   }
 };
 
+export const getRandomEssayThemes = (grade: string): string => {
+  const g10Themes = [
+    "Xử lý nước ngầm nhiễm sắt bằng sục khí oxy và giàn mưa; phân tích phản ứng oxi hóa - khử và hiện tượng kết tủa Fe(OH)3",
+    "Túi sưởi ấm tức thời (phản ứng bột Fe tỏa nhiệt) hoặc túi chườm lạnh (hòa tan muối ammonium); tính toán biến thiên enthalpy và nhiệt lượng",
+    "Khử trùng nước sinh hoạt bằng chlorine hoặc chloramine; giải thích tính sát trùng, tẩy màu và tính nồng độ chất phản ứng",
+    "Ảnh hưởng của nhiệt độ và diện tích tiếp xúc trong bảo quản thực phẩm hoặc phản ứng sinh khí của viên sủi C; tính tốc độ trung bình phản ứng",
+    "Ứng dụng đồng vị trong y học (I-131, Tc-99m) kết hợp giải thích quy luật biến đổi độ âm điện, năng lượng ion hóa của các nguyên tố trong bảng tuần hoàn",
+    "Cơ chế tạo liên kết hydrogen trong nước và ethanol; giải thích nhiệt độ sôi bất thường và tính tan, so sánh với các hydride cùng nhóm",
+    "Ăn mòn kim loại và phương pháp mạ kẽm (galvanized steel) bảo vệ cọc thép ven biển; cân bằng phản ứng oxi hóa - khử theo phương pháp thăng bằng electron",
+    "Đốt cháy nhiên liệu sạch (khí hydrogen, khí methane sinh học biogas); tính biến thiên enthalpy chuẩn dựa vào năng lượng liên kết Eb và so sánh hiệu quả nhiệt lượng"
+  ];
+
+  const g11Themes = [
+    "Xác định độ chua (hàm lượng acetic acid) của mẫu giấm ăn thương phẩm bằng chuẩn độ dung dịch NaOH với chỉ thị phenolphthalein; tính nồng độ và đánh giá tiêu chuẩn",
+    "Thuốc kháng acid dạ dày (antacid chứa Al(OH)3 hoặc NaHCO3); viết phương trình ion rút gọn, tính thể tích dịch vị acid được trung hòa và tính pH",
+    "Hiện tượng phú dưỡng (eutrophication) ở hồ nước do dư thừa ion nitrate (NO3-) và phosphate (PO4 3-); phân tích nguyên nhân, chu trình nitrogen và giải pháp xử lý",
+    "Tối ưu hóa phản ứng tổng hợp ammonia (Haber-Bosch) hoặc sulfur trioxide (tiếp xúc); vận dụng nguyên lí Le Chatelier giải thích nhiệt độ, áp suất và tính hằng số cân bằng Kc",
+    "Mưa acid và sự ăn mòn các công trình bằng đá vôi (CaCO3); tính toán nồng độ H+ và pH của nước mưa, đề xuất biện pháp xử lý khí thải SO2 bằng sữa vôi",
+    "Chiết xuất tinh dầu thiên nhiên (tinh dầu sả, vỏ bưởi) bằng phương pháp chưng cất lôi cuốn hơi nước; nguyên tắc tách biệt và tinh chế hợp chất hữu cơ",
+    "Sản xuất phân bón đạm urê và phân bón hỗn hợp NPK; tính toán độ dinh dưỡng (%N, %P2O5, %K2O) và lượng phân bón cần cấp cho cây trồng",
+    "Phân tích chất lượng nhiên liệu khí hóa lỏng LPG (hỗn hợp propane và butane); tính nhiệt lượng tỏa ra khi đun nấu và lượng khí CO2 phát thải"
+  ];
+
+  const themes = (grade === '10' || grade.includes('10')) ? g10Themes : g11Themes;
+  const shuffled = [...themes].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, 2).join('; ');
+};
+
 export const generateExam = async (
   grade: string, 
   topics: string[], 
@@ -118,12 +146,17 @@ export const generateExam = async (
     3. PHẦN III (4 câu Trắc nghiệm Trả lời ngắn - 2.0 điểm):
        - Gồm đúng 4 câu (Câu 1 đến Câu 4), mỗi câu 0.5 điểm.
        - Bài toán tính toán có ý nghĩa thực tế, yêu cầu làm tròn rõ ràng, đáp án (answer) là 1 con số duy nhất.
-    4. PHẦN IV (3 câu Tự luận - 3.0 điểm):
-       - Gồm đúng 3 câu (Câu 1 đến Câu 3) ở mảng 'part4', mỗi câu 1.0 điểm (points: 1.0):
-         + Câu 1 (1.0 điểm): Mức độ Thông hiểu / Vận dụng thấp (viết phương trình hóa học, giải thích hiện tượng, cấu tạo nguyên tử, liên kết hóa học hoặc cân bằng hóa học).
-         + Câu 2 (1.0 điểm): Mức độ Vận dụng (bài toán thực tế hoặc tính nồng độ, pH, hiệu suất, biến thiên enthalpy...).
-         + Câu 3 (1.0 điểm): Mức độ Vận dụng cao (bài toán thực nghiệm sâu sắc, xử lý số liệu hoặc liên hệ thực tiễn đời sống / sản xuất).
-         + Mỗi câu tự luận bắt buộc phải có hướng dẫn giải chi tiết (solution) kèm thang điểm/biểu điểm cụ thể cho từng bước để giáo viên chấm điểm.
+    4. PHẦN IV (3 câu Tự luận - 3.0 điểm cho Lớp 10 & 11) - NGUYÊN TẮC BẮT BUỘC VỀ ĐA DẠNG HÓA VÀ CHỐNG TRÙNG LẶP NỘI DUNG:
+       - QUY TẮC CỐT LÕI: Tuy cùng chủ đề kiến thức nhưng MỖI LẦN TẠO ĐỀ BẮT BUỘC PHẢI TẠO NỘI DUNG VÀ CÂU HỎI HOÀN TOÀN KHÁC NHAU. TUYỆT ĐỐI KHÔNG lặp lại các câu hỏi cũ, câu hỏi mẫu hoặc tình huống giống nhau giữa các lần tạo đề.
+       - Chiến lược đổi mới toàn diện:
+         + Đổi mới hệ chất và phản ứng: Khai thác linh hoạt nhiều chất, hợp chất, khoáng vật, hóa chất đời sống, dược phẩm, vật liệu thực tế khác nhau trong bài học; không chỉ dùng một vài phản ứng mẫu kinh điển lặp đi lặp lại.
+         + Đổi mới ngữ cảnh thực tế: Luân phiên các lĩnh vực: đời sống sinh hoạt, y tế - sức khỏe, nông nghiệp xanh, bảo vệ môi trường, công nghệ hóa chất, phân tích thực nghiệm phòng thí nghiệm.
+         + Đổi mới số liệu: Thay đổi ngẫu nhiên các giá trị đo (khối lượng, thể tích, nồng độ, nhiệt độ, hiệu suất, % tạp chất) để bài toán có số liệu thực và không trùng lặp.
+         + Đổi mới dạng câu hỏi theo 3 mức độ:
+           * Câu 1 (1.0 điểm - Thông hiểu/Vận dụng thấp): Luân phiên giữa: giải thích bản chất hiện tượng thực tế / phân tích thao tác và mục đích hóa chất trong quy trình thí nghiệm / lập luận cơ chế liên kết, cấu tạo, cân bằng / viết PTHH dạng ion rút gọn hoặc bản chất oxi hóa - khử.
+           * Câu 2 (1.0 điểm - Vận dụng): Bài toán định lượng đời sống/thực nghiệm với số liệu cụ thể (chuẩn độ dung dịch mẫu thực tế, tính pH dung dịch sau phản ứng, tính nhiệt lượng nhiên liệu tỏa ra hoặc biến thiên enthalpy chuẩn, tính hiệu suất phản ứng hoặc hằng số cân bằng Kc...).
+           * Câu 3 (1.0 điểm - Vận dụng cao): Tình huống giải quyết vấn đề thực tiễn sâu sắc: xử lý dữ liệu đo đạc thực nghiệm; bài toán xử lý chất thải/ô nhiễm đạt tiêu chuẩn môi trường; đánh giá và phản biện sai sót trong một thí nghiệm kèm đề xuất cải tiến; hoặc xác định hàm lượng hoạt chất / độ tinh khiết mẫu thương phẩm.
+         + Mỗi câu tự luận BẮT BUỘC có hướng dẫn giải chi tiết (solution) chia rõ barem điểm từng bước (ví dụ: 0.25đ / 0.5đ / 0.25đ) để giáo viên dễ chấm.
 
     (LƯU Ý: Với KHỐI 12 hoặc khi đề yêu cầu 40 lệnh 100% trắc nghiệm theo chuẩn tốt nghiệp THPT của Bộ GD&ĐT: Phần I gồm 18 câu, Phần II gồm 4 câu, Phần III gồm 6 câu, Phần IV để mảng rỗng []).
 
@@ -167,8 +200,14 @@ export const generateExam = async (
     - Đảm bảo tính khoa học, chuẩn xác tuyệt đối theo CT GDPT 2018.
   `;
 
+  const randomSeed = Math.random().toString(36).substring(2, 8).toUpperCase();
+  const dynamicThemes = getRandomEssayThemes(grade);
+
   contents.push({
-    text: `Soạn đề kiểm tra Hóa học khối ${grade} - Các chương: ${topicStr}. Yêu cầu: ${details || 'Chuẩn GDPT 2018'}. Đảm bảo tỉ lệ 4:3:3, phân bổ đều kiến thức giữa các chương. ĐẶC BIỆT LƯU Ý Ở PHẦN II (ĐÚNG/SAI): Bối cảnh không phải dùng để trang trí mà là dữ liệu quan trọng để đánh giá đúng, sai; Các phát biểu Đúng/Sai bắt buộc phải bám sát nội dung và dữ liệu bối cảnh, tuyệt đối không đưa các phương án xa rời bối cảnh. Nếu là kiểm tra định kì Lớp 10 hoặc 11 (hoặc có yêu cầu tự luận), đề thi BẮT BUỘC có 4 phần (21 câu, 27 lệnh hỏi, 10 điểm: 12 câu Phần I, 2 câu Phần II, 4 câu Phần III, 3 câu Phần IV tự luận kèm biểu điểm solution). Nếu là Lớp 12, đề thi tuân thủ 40 lệnh trắc nghiệm (18 câu Phần I, 4 câu Phần II, 6 câu Phần III).`
+    text: `Soạn đề kiểm tra Hóa học khối ${grade} - Các chương: ${topicStr}. Yêu cầu: ${details || 'Chuẩn GDPT 2018'}. Mã phiên tạo đề độc bản: #${randomSeed}. Đảm bảo tỉ lệ 4:3:3, phân bổ đều kiến thức giữa các chương.
+ĐẶC BIỆT LƯU Ý Ở PHẦN II (ĐÚNG/SAI): Bối cảnh không phải dùng để trang trí mà là dữ liệu quan trọng để đánh giá đúng, sai; Các phát biểu Đúng/Sai bắt buộc phải bám sát nội dung và dữ liệu bối cảnh, tuyệt đối không đưa các phương án xa rời bối cảnh.
+ĐẶC BIỆT LƯU Ý Ở PHẦN IV (TỰ LUẬN KHỐI 10 & 11): TUYỆT ĐỐI KHÔNG lặp lại các câu hỏi tự luận cũ hay khuôn mẫu quen thuộc dù cùng chủ đề. Bắt buộc tạo bộ 3 câu tự luận hoàn toàn mới, đổi mới ngữ cảnh thực tiễn, đổi mới chất và số liệu tính toán. Gợi ý hướng bối cảnh tham khảo cho phiên này: [${dynamicThemes}].
+Nếu là kiểm tra định kì Lớp 10 hoặc 11 (hoặc có yêu cầu tự luận), đề thi BẮT BUỘC có 4 phần (21 câu, 27 lệnh hỏi, 10 điểm: 12 câu Phần I, 2 câu Phần II, 4 câu Phần III, 3 câu Phần IV tự luận kèm biểu điểm solution). Nếu là Lớp 12, đề thi tuân thủ 40 lệnh trắc nghiệm (18 câu Phần I, 4 câu Phần II, 6 câu Phần III).`
   });
 
   const response = await ai.models.generateContent({
@@ -176,6 +215,7 @@ export const generateExam = async (
     contents: { parts: contents },
     config: {
       systemInstruction,
+      temperature: 0.85,
       responseMimeType: "application/json",
       ...(selectedModel && selectedModel.includes('gemini-3') ? { thinkingConfig: { thinkingLevel: ThinkingLevel.LOW } } : {}),
       responseSchema: {

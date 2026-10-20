@@ -75,6 +75,7 @@ export const convertMatrixToExamInput = (matrixData: MatrixData): BridgeResult =
 
   const intlSourceInfo = `\n- Nâng cấp chất lượng đề từ nguồn quốc tế (AP Chemistry, Cambridge, RSC Education, NIST, PubChem): Phần I có từ 0 đến 03 câu; Phần II có từ 0 đến 01 câu; Phần III có từ 0 đến 02 câu khi có nội dung thực nghiệm/đồ thị/tính toán phù hợp. Dịch toàn bộ sang Tiếng Việt chuẩn. Nếu không có nguồn quốc tế phù hợp thì tạo như cũ.`;
   const p2ContextRule = `\n- Quy định cốt lõi Phần II (Đúng/Sai): Bối cảnh không phải dùng để trang trí mà là dữ liệu quan trọng để đánh giá đúng, sai. Các phát biểu Đúng/Sai bắt buộc phải bám sát nội dung và dữ liệu bối cảnh, tuyệt đối không đưa các phương án xa rời bối cảnh.`;
+  const p4DiversityDirective = `\n- Quy định bắt buộc Phần IV (Tự luận): Tuy cùng chủ đề kiến thức nhưng mỗi lần tạo đề PHẢI đổi mới hoàn toàn nội dung và câu hỏi, không lặp lại câu hỏi cũ hoặc khuôn mẫu; đổi mới bối cảnh thực tiễn, hệ chất, phản ứng và số liệu bài toán.`;
 
   let extraDetailsPrompt = '';
   let summaryText = '';
@@ -90,7 +91,7 @@ export const convertMatrixToExamInput = (matrixData: MatrixData): BridgeResult =
       ? `\n- Phần IV gồm 3 câu Tự luận (3.0 điểm: Câu 1 Thông hiểu/Vận dụng thấp 1.0đ, Câu 2 Vận dụng 1.0đ, Câu 3 Vận dụng cao 1.0đ) tập trung vào các nội dung: ${part4Topics.slice(0, 3).join('; ')}. Bắt buộc kèm hướng dẫn chấm và biểu điểm chi tiết (solution).`
       : `\n- Phần IV gồm 3 câu Tự luận (3.0 điểm: 1.0đ/câu) phân bố đều kiến thức các chương đã chọn, bắt buộc kèm hướng dẫn chấm và biểu điểm chi tiết (solution).`;
 
-    extraDetailsPrompt = `Đề thi kiểm tra định kì Hóa học ${gradeStr} THEO FILE 'DINH DANG DE LOP 10-LOP11.docx' - Tổng 21 câu hỏi, 27 lệnh hỏi (10 điểm: Trắc nghiệm 7.0 điểm [12 câu P1 + 2 câu P2 + 4 câu P3] và Tự luận 3.0 điểm [3 câu P4]).${p2ContextInfo}${p2ContextRule}${p3TopicInfo}${p4TopicInfo}${intlSourceInfo}${matrixData.extraRequirements ? `\nYêu cầu giáo viên: ${matrixData.extraRequirements}` : ''}`;
+    extraDetailsPrompt = `Đề thi kiểm tra định kì Hóa học ${gradeStr} THEO FILE 'DINH DANG DE LOP 10-LOP11.docx' - Tổng 21 câu hỏi, 27 lệnh hỏi (10 điểm: Trắc nghiệm 7.0 điểm [12 câu P1 + 2 câu P2 + 4 câu P3] và Tự luận 3.0 điểm [3 câu P4]).${p2ContextInfo}${p2ContextRule}${p3TopicInfo}${p4TopicInfo}${p4DiversityDirective}${intlSourceInfo}${matrixData.extraRequirements ? `\nYêu cầu giáo viên: ${matrixData.extraRequirements}` : ''}`;
     summaryText = `Ma trận ${matrixData.examType} - Khối ${matrixData.grade} (${topicNames.length} chương, 21 câu - 27 lệnh hỏi có Tự luận)`;
   } else {
     const p2ContextInfo = part2Contexts.length > 0 
