@@ -1,24 +1,52 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ExamData } from '../../types/exam';
 import { 
   FileText, Download, Eye, EyeOff, Printer, 
-  Save, CheckCircle2, BookmarkCheck, Share2, Shuffle 
+  Save, CheckCircle2, BookmarkCheck, Share2, Shuffle,
+  CheckCheck, RefreshCw
 } from 'lucide-react';
 import { downloadExamDoc } from '../../services/docxService';
+import { mixExamDataPreservingAnswers } from '../../services/mixerService';
 
 interface ExamRendererProps {
   data: ExamData;
   onSaveExam?: () => void;
   onTransferToMixer?: (data: ExamData) => void;
+  initialShowAnswers?: boolean;
+  isMixedPreview?: boolean;
+  onRemix?: () => void;
 }
 
 export const ExamRenderer: React.FC<ExamRendererProps> = ({ 
   data, 
   onSaveExam,
-  onTransferToMixer 
+  onTransferToMixer,
+  initialShowAnswers,
+  isMixedPreview,
+  onRemix
 }) => {
-  const [showAnswers, setShowAnswers] = useState(false);
+  const [currentExamData, setCurrentExamData] = useState<ExamData>(data);
+  const [showAnswers, setShowAnswers] = useState(initialShowAnswers ?? false);
+  const [isMixed, setIsMixed] = useState<boolean>(isMixedPreview ?? false);
   const [isExportingDoc, setIsExportingDoc] = useState(false);
+
+  useEffect(() => {
+    setCurrentExamData(data);
+    if (initialShowAnswers !== undefined) {
+      setShowAnswers(initialShowAnswers);
+    }
+    if (isMixedPreview !== undefined) {
+      setIsMixed(isMixedPreview);
+    }
+  }, [data, initialShowAnswers, isMixedPreview]);
+
+  const handleQuickMixWithAnswers = () => {
+    const mixed = mixExamDataPreservingAnswers(currentExamData);
+    setCurrentExamData(mixed);
+    setShowAnswers(true);
+    setIsMixed(true);
+    if (onRemix) onRemix();
+  };
 
   const formatFormula = (text: string) => {
     if (!text) return null;
@@ -60,7 +88,7 @@ export const ExamRenderer: React.FC<ExamRendererProps> = ({
   const handleDownloadDoc = async (isAnswerKey: boolean) => {
     try {
       setIsExportingDoc(true);
-      await downloadExamDoc(data, isAnswerKey);
+      await downloadExamDoc(currentExamData, isAnswerKey);
     } catch (e: any) {
       alert(e.message || 'Lỗi khi tải file Word');
     } finally {
@@ -79,11 +107,21 @@ export const ExamRenderer: React.FC<ExamRendererProps> = ({
         <div className="flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
           <span className="text-xs font-bold text-slate-800">
-            Đề thi đã hoàn tất: <span className="text-indigo-600">{data.title}</span>
+            {isMixed ? 'Đề trộn kiểm tra đáp án:' : 'Đề thi đã hoàn tất:'} <span className="text-indigo-600">{currentExamData.title}</span>
           </span>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          {/* Quick Mix with Answers Button */}
+          <button
+            onClick={handleQuickMixWithAnswers}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm cursor-pointer"
+            title="Đảo thứ tự câu hỏi và phương án, tự động hiện đáp án chuẩn xác để giáo viên đối soát"
+          >
+            {isMixed ? <RefreshCw className="w-3.5 h-3.5" /> : <CheckCheck className="w-3.5 h-3.5" />}
+            <span>{isMixed ? 'Trộn lại mã khác (giữ đáp án)' : 'Trộn đề giữ nguyên đáp án'}</span>
+          </button>
+
           {/* Toggle Answer Key */}
           <button
             onClick={() => setShowAnswers(!showAnswers)}
@@ -140,7 +178,7 @@ export const ExamRenderer: React.FC<ExamRendererProps> = ({
           {/* Transfer to Mixer */}
           {onTransferToMixer && (
             <button
-              onClick={() => onTransferToMixer(data)}
+              onClick={() => onTransferToMixer(currentExamData)}
               className="flex items-center gap-1.5 px-3.5 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-indigo-500/20 transition-all cursor-pointer"
               title="Chuyển đề này sang module 4. Trộn đề"
             >
@@ -150,6 +188,21 @@ export const ExamRenderer: React.FC<ExamRendererProps> = ({
           )}
         </div>
       </div>
+
+      {/* Mixed Exam Notice Banner for Teachers */}
+      {isMixed && (
+        <div className="bg-emerald-50 border border-emerald-300 rounded-2xl p-4 flex items-start gap-3 text-emerald-900 shadow-sm no-print">
+          <CheckCheck className="w-5 h-5 text-emerald-600 mt-0.5 shrink-0" />
+          <div className="text-xs leading-relaxed space-y-1">
+            <p className="font-bold text-emerald-950 text-sm">
+              Chế độ trộn đề giữ nguyên đáp án (Dành cho Giáo viên kiểm tra & đối soát trước khi phát hành):
+            </p>
+            <p className="text-emerald-800">
+              Đề thi đã được hoán vị ngẫu nhiên cả câu hỏi và các phương án. Tất cả đáp án chuẩn ở <strong>Phần I</strong>, <strong>Phần II</strong>, <strong>Phần III</strong> (và <strong>Phần IV tự luận</strong> nếu có) được thể hiện trực quan để thầy/cô đối soát trước khi in ấn hoặc phát hành đề cho học sinh.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Main Exam Content Paper */}
       <div className={`exam-print-area bg-white p-6 md:p-12 shadow-xl rounded-2xl border border-slate-200 max-w-4xl mx-auto text-slate-800 leading-normal transition-colors ${
@@ -184,7 +237,7 @@ export const ExamRenderer: React.FC<ExamRendererProps> = ({
           </div>
 
           <h1 className="text-lg md:text-xl font-extrabold uppercase tracking-tight text-slate-900 mt-2">
-            {data.title}
+            {currentExamData.title}
           </h1>
           {showAnswers && (
             <span className="inline-block mt-1 px-3 py-0.5 rounded-full bg-blue-100 text-blue-800 text-xs font-bold uppercase tracking-wider">
@@ -197,13 +250,13 @@ export const ExamRenderer: React.FC<ExamRendererProps> = ({
         <section className="mb-10">
           <div className="p-2.5 bg-slate-100 rounded-lg mb-4 flex items-center justify-between">
             <h2 className="font-bold text-xs uppercase tracking-wider text-slate-900">
-              PHẦN I. Câu trắc nghiệm nhiều phương án lựa chọn ({data.part1.length} câu - {(data.part1.length * 0.25).toFixed(1).replace('.', ',')} điểm)
+              PHẦN I. Câu trắc nghiệm nhiều phương án lựa chọn ({currentExamData.part1.length} câu - {(currentExamData.part1.length * 0.25).toFixed(1).replace('.', ',')} điểm)
             </h2>
             <span className="text-[11px] italic text-slate-500">Mỗi câu chọn 01 phương án đúng</span>
           </div>
 
           <div className="space-y-5">
-            {data.part1.map((q, idx) => (
+            {currentExamData.part1.map((q, idx) => (
               <div key={idx} className="text-sm">
                 <p className="font-medium text-slate-900 mb-2 leading-relaxed">
                   <span className="font-bold text-indigo-950">Câu {idx + 1}.</span> {formatFormula(q.question)}
@@ -218,13 +271,18 @@ export const ExamRenderer: React.FC<ExamRendererProps> = ({
                         key={oIdx}
                         className={`p-2 rounded-lg text-xs transition-colors flex items-start gap-1.5 ${
                           isCorrect 
-                            ? 'bg-blue-100 text-blue-900 font-bold border border-blue-300' 
+                            ? 'bg-emerald-100 text-emerald-950 font-bold border border-emerald-300' 
                             : 'hover:bg-slate-50'
                         }`}
                       >
                         <span className="font-bold text-slate-700">{labelsPart1[oIdx]}.</span>
                         <span className="flex-1">{formatFormula(cleanOpt)}</span>
-                        {isCorrect && <CheckCircle2 className="w-3.5 h-3.5 text-blue-700 shrink-0 mt-0.5" />}
+                        {isCorrect && (
+                          <span className="flex items-center gap-1 text-[10px] bg-emerald-600 text-white px-1.5 py-0.5 rounded font-extrabold shrink-0">
+                            <CheckCircle2 className="w-3 h-3" />
+                            ĐÚNG
+                          </span>
+                        )}
                       </div>
                     );
                   })}
@@ -238,13 +296,13 @@ export const ExamRenderer: React.FC<ExamRendererProps> = ({
         <section className="mb-10">
           <div className="p-2.5 bg-emerald-50 border border-emerald-100 rounded-lg mb-4 flex items-center justify-between">
             <h2 className="font-bold text-xs uppercase tracking-wider text-emerald-950">
-              PHẦN II. Câu trắc nghiệm đúng sai ({data.part2.length} câu - {(data.part2.length * 1.0).toFixed(1).replace('.', ',')} điểm)
+              PHẦN II. Câu trắc nghiệm đúng sai ({currentExamData.part2.length} câu - {(currentExamData.part2.length * 1.0).toFixed(1).replace('.', ',')} điểm)
             </h2>
             <span className="text-[11px] italic text-emerald-700">Mỗi câu gồm 4 ý nhận định</span>
           </div>
 
           <div className="space-y-6">
-            {data.part2.map((sc, idx) => (
+            {currentExamData.part2.map((sc, idx) => (
               <div key={idx} className="text-sm p-4 rounded-xl bg-slate-50/70 border border-slate-200">
                 <div className="font-medium text-slate-900 mb-3 leading-relaxed">
                   <span className="font-bold text-emerald-900">Câu {idx + 1}.</span> {formatFormula(sc.context)}
@@ -252,18 +310,31 @@ export const ExamRenderer: React.FC<ExamRendererProps> = ({
                 <div className="space-y-2 pl-2">
                   {sc.statements.map((st, sIdx) => {
                     const cleanText = st.text.replace(/^[a-d][\.\)]\s*/i, '').replace(/^\.\s*/, '');
-                    const isTrueMark = showAnswers && st.isTrue;
+                    const isTrue = !!st.isTrue;
                     return (
                       <div 
                         key={sIdx} 
-                        className={`p-2 rounded-lg text-xs flex items-start gap-2 transition-colors ${
-                          isTrueMark 
-                            ? 'italic underline font-medium text-blue-700 bg-blue-50/60' 
+                        className={`p-2 rounded-lg text-xs flex items-center justify-between gap-2 transition-colors ${
+                          showAnswers 
+                            ? isTrue 
+                              ? 'bg-emerald-50/80 text-emerald-950 border border-emerald-200' 
+                              : 'bg-rose-50/60 text-rose-950 border border-rose-200'
                             : 'text-slate-800 hover:bg-slate-50'
                         }`}
                       >
-                        <span className="font-bold text-slate-800 whitespace-nowrap">{labelsPart2[sIdx]})</span>
-                        <span className="flex-1">{formatFormula(cleanText)}</span>
+                        <div className="flex items-start gap-2 flex-1">
+                          <span className="font-bold text-slate-800 whitespace-nowrap">{labelsPart2[sIdx]})</span>
+                          <span className="flex-1">{formatFormula(cleanText)}</span>
+                        </div>
+                        {showAnswers && (
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase shrink-0 border ${
+                            isTrue 
+                              ? 'bg-emerald-600 text-white border-emerald-600' 
+                              : 'bg-rose-600 text-white border-rose-600'
+                          }`}>
+                            {isTrue ? 'Đúng' : 'Sai'}
+                          </span>
+                        )}
                       </div>
                     );
                   })}
@@ -277,15 +348,15 @@ export const ExamRenderer: React.FC<ExamRendererProps> = ({
         <section className="mb-8">
           <div className="p-2.5 bg-indigo-50 border border-indigo-100 rounded-lg mb-4 flex items-center justify-between">
             <h2 className="font-bold text-xs uppercase tracking-wider text-indigo-950">
-              PHẦN III. Câu trắc nghiệm trả lời ngắn ({data.part3.length} câu - {(data.part3.length === 4 || (data.part4 && data.part4.length > 0)) ? '2,0' : '1,5'} điểm)
+              PHẦN III. Câu trắc nghiệm trả lời ngắn ({currentExamData.part3.length} câu - {(currentExamData.part3.length === 4 || (currentExamData.part4 && currentExamData.part4.length > 0)) ? '2,0' : '1,5'} điểm)
             </h2>
             <span className="text-[11px] italic text-indigo-700">
-              {(data.part3.length === 4 || (data.part4 && data.part4.length > 0)) ? 'Mỗi câu đúng 0,5 điểm' : 'Điền con số đáp án cụ thể'}
+              {(currentExamData.part3.length === 4 || (currentExamData.part4 && currentExamData.part4.length > 0)) ? 'Mỗi câu đúng 0,5 điểm' : 'Điền con số đáp án cụ thể'}
             </span>
           </div>
 
           <div className="space-y-6">
-            {data.part3.map((q, idx) => (
+            {currentExamData.part3.map((q, idx) => (
               <div key={idx} className="text-sm p-4 rounded-xl bg-slate-50/70 border border-slate-200">
                 <p className="font-medium text-slate-900 mb-2 leading-relaxed">
                   <span className="font-bold text-indigo-900">Câu {idx + 1}.</span> {formatFormula(q.question)}
@@ -293,8 +364,9 @@ export const ExamRenderer: React.FC<ExamRendererProps> = ({
 
                 {showAnswers ? (
                   <div className="mt-2 p-3 bg-blue-50/60 rounded-xl border border-blue-200 space-y-2 text-xs">
-                    <div className="font-bold text-blue-700 italic border-l-4 border-blue-500 pl-3 py-1">
-                      <span className="underline text-sm font-extrabold">A. {q.answer}</span>
+                    <div className="font-bold text-blue-700 italic border-l-4 border-blue-500 pl-3 py-1 flex items-center gap-2">
+                      <span className="text-[11px] uppercase tracking-wider font-extrabold text-blue-900 bg-blue-100 px-2 py-0.5 rounded">Đáp số:</span>
+                      <span className="underline text-sm font-extrabold">{q.answer}</span>
                     </div>
                     {q.explanation && (
                       <div className="text-[12px] text-slate-600 italic border-l-4 border-slate-300 pl-3 py-1">
@@ -315,17 +387,17 @@ export const ExamRenderer: React.FC<ExamRendererProps> = ({
         </section>
 
         {/* PART 4 (TỰ LUẬN) */}
-        {data.part4 && data.part4.length > 0 && (
+        {currentExamData.part4 && currentExamData.part4.length > 0 && (
           <section className="mb-8">
             <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-lg mb-4 flex items-center justify-between">
               <h2 className="font-bold text-xs uppercase tracking-wider text-amber-950">
-                PHẦN IV. TỰ LUẬN ({data.part4.length} câu - 3,0 điểm)
+                PHẦN IV. TỰ LUẬN ({currentExamData.part4.length} câu - 3,0 điểm)
               </h2>
               <span className="text-[11px] italic text-amber-800">Thí sinh trình bày lời giải chi tiết</span>
             </div>
 
             <div className="space-y-6">
-              {data.part4.map((q, idx) => (
+              {currentExamData.part4.map((q, idx) => (
                 <div key={idx} className="text-sm p-4 rounded-xl bg-amber-50/30 border border-amber-200">
                   <div className="flex items-start justify-between gap-3 mb-2">
                     <p className="font-medium text-slate-900 leading-relaxed flex-1">

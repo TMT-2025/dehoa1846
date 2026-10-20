@@ -7,10 +7,12 @@ import {
 } from '../../services/storageService';
 import { 
   FolderClock, LayoutGrid, FileText, Trash2, 
-  Download, ArrowRight, Eye, Calendar, Sparkles, Edit3, Shuffle 
+  Download, ArrowRight, Eye, Calendar, Sparkles, Edit3, Shuffle,
+  CheckCheck
 } from 'lucide-react';
 import { ExamRenderer } from '../exam/ExamRenderer';
 import { MatrixDisplay } from '../matrix/MatrixDisplay';
+import { mixExamDataPreservingAnswers } from '../../services/mixerService';
 
 interface HistoryManagerProps {
   onLoadMatrixToEditor: (config: SavedConfig) => void;
@@ -28,10 +30,17 @@ export const HistoryManager: React.FC<HistoryManagerProps> = ({
   const [exams, setExams] = useState<ExamData[]>([]);
   const [previewExam, setPreviewExam] = useState<ExamData | null>(null);
   const [previewMatrix, setPreviewMatrix] = useState<MatrixData | null>(null);
+  const [isMixedView, setIsMixedView] = useState<boolean>(false);
 
   const loadData = () => {
     setMatrices(getSavedMatrices());
     setExams(getSavedExams());
+  };
+
+  const handleMixExamWithAnswers = (item: ExamData) => {
+    const mixed = mixExamDataPreservingAnswers(item);
+    setPreviewExam(mixed);
+    setIsMixedView(true);
   };
 
   useEffect(() => {
@@ -248,19 +257,32 @@ export const HistoryManager: React.FC<HistoryManagerProps> = ({
                     )}
                   </div>
 
-                  <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-2 mt-4">
+                  <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 mt-4">
                     <button
-                      onClick={() => setPreviewExam(item)}
-                      className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-900 text-xs font-bold transition-colors"
+                      onClick={() => {
+                        setIsMixedView(false);
+                        setPreviewExam(item);
+                      }}
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-900 text-xs font-bold transition-colors cursor-pointer"
+                      title="Xem trước đề gốc và in ấn"
                     >
                       <Eye className="w-3.5 h-3.5" />
                       <span>Xem & In đề</span>
                     </button>
 
+                    <button
+                      onClick={() => handleMixExamWithAnswers(item)}
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 text-xs font-bold transition-colors cursor-pointer"
+                      title="Trộn đề ngẫu nhiên kèm hiển thị đầy đủ đáp án Phần I, II, III để giáo viên kiểm tra"
+                    >
+                      <CheckCheck className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Trộn đề giữ nguyên đáp án</span>
+                    </button>
+
                     {onTransferExamToMixer && (
                       <button
                         onClick={() => onTransferExamToMixer(item)}
-                        className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-900 text-xs font-bold transition-colors cursor-pointer"
+                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-900 text-xs font-bold transition-colors cursor-pointer"
                         title="Chuyển sang module 4. Trộn đề"
                       >
                         <Shuffle className="w-3.5 h-3.5 text-purple-600" />
@@ -279,14 +301,19 @@ export const HistoryManager: React.FC<HistoryManagerProps> = ({
       {previewExam && (
         <div className="space-y-4">
           <button
-            onClick={() => setPreviewExam(null)}
-            className="px-4 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 no-print"
+            onClick={() => {
+              setPreviewExam(null);
+              setIsMixedView(false);
+            }}
+            className="px-4 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 no-print cursor-pointer"
           >
             ← Quay lại danh sách đề
           </button>
           <ExamRenderer 
             data={previewExam} 
             onTransferToMixer={onTransferExamToMixer}
+            initialShowAnswers={isMixedView}
+            isMixedPreview={isMixedView}
           />
         </div>
       )}

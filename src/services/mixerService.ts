@@ -269,3 +269,134 @@ export async function executeMixerPipeline(
     durationMs
   };
 }
+
+/**
+ * Fisher-Yates array shuffle with PRNG
+ */
+function shuffleArray<T>(array: T[], prng: () => number): T[] {
+  const result = [...array];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(prng() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+function createPrng(seed: number): () => number {
+  let s = seed >>> 0;
+  return () => {
+    s = (s + 0x6D2B79F5) >>> 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+export interface MixExamDataOptions {
+  shuffleQuestions?: boolean;
+  shuffleOptions?: boolean;
+  shuffleTF?: boolean;
+  seed?: number;
+}
+
+/**
+ * Mixes an ExamData structure while 100% preserving correct answers:
+ * - Part 1: Shuffles question order & option order (A, B, C, D) and recalculates correctIndex
+ * - Part 2: Shuffles question order & statements, keeping isTrue state
+ * - Part 3: Shuffles question order, keeping answer and explanation
+ * - Part 4: Preserves essay questions in pedagogical order
+ */
+export function mixExamDataPreservingAnswers(
+  source: ExamData,
+  options?: MixExamDataOptions
+): ExamData {
+  const shuffleQuestions = options?.shuffleQuestions ?? true;
+  const shuffleOptions = options?.shuffleOptions ?? true;
+  const shuffleTF = options?.shuffleTF ?? false;
+  const seed = options?.seed ?? Math.floor(Math.random() * 1000000);
+  const prng = createPrng(seed);
+
+  // 1. Part 1 (MCQ)
+  let mixedPart1 = (source.part1 || []).map(q => {
+    const cleanStem = q.question.replace(/^Câu\s+\d+[\.:\)]\s*/i, '');
+    const cleanOpts = (q.options || []).map(opt => opt.replace(/^[A-D][\.\)]\s*/i, '').trim());
+
+    let finalOpts = cleanOpts;
+    let newCorrectIndex = q.correctIndex;
+
+    if (shuffleOptions && cleanOpts.length > 1) {
+      const tracked = cleanOpts.map((text, idx) => ({
+        text,
+        isCorrect: idx === q.correctIndex
+      }));
+      const shuffledTracked = shuffleArray(tracked, prng);
+      finalOpts = shuffledTracked.map(item => item.text);
+      newCorrectIndex = shuffledTracked.findIndex(item => item.isCorrect);
+      if (newCorrectIndex === -1) newCorrectIndex = 0;
+    }
+
+    return {
+      question: cleanStem,
+      options: finalOpts,
+      correctIndex: newCorrectIndex
+    };
+  });
+
+  if (shuffleQuestions && mixedPart1.length > 1) {
+    mixedPart1 = shuffleArray(mixedPart1, prng);
+  }
+
+  // 2. Part 2 (True/False)
+  let mixedPart2 = (source.part2 || []).map(sc => {
+    const cleanContext = sc.context.replace(/^Câu\s+\d+[\.:\)]\s*/i, '');
+    let statements = (sc.statements || []).map(st => ({
+      text: st.text.replace(/^[a-d][\.\)]\s*/i, '').trim(),
+      isTrue: Boolean(st.isTrue)
+    }));
+
+    if (shuffleTF && statements.length > 1) {
+      statements = shuffleArray(statements, prng);
+    }
+
+    return {
+      context: cleanContext,
+      statements
+    };
+  });
+
+  if (shuffleQuestions && mixedPart2.length > 1) {
+    mixedPart2 = shuffleArray(mixedPart2, prng);
+  }
+
+  // 3. Part 3 (Short Answer)
+  let mixedPart3 = (source.part3 || []).map(q => ({
+    question: q.question.replace(/^Câu\s+\d+[\.:\)]\s*/i, ''),
+    answer: q.answer,
+    explanation: q.explanation
+  }));
+
+  if (shuffleQuestions && mixedPart3.length > 1) {
+    mixedPart3 = shuffleArray(mixedPart3, prng);
+  }
+
+  // 4. Part 4 (Essay / Tự luận)
+  const mixedPart4 = source.part4 ? source.part4.map(q => ({
+    question: q.question.replace(/^Câu\s+\d+(\s*\([^\)]*\))?[\.:\)]\s*/i, ''),
+    points: q.points,
+    solution: q.solution
+  })) : undefined;
+
+  // Clean original title
+  const baseTitle = source.title.replace(/\s*\(Đề trộn.*?\)/i, '');
+
+  return {
+    ...source,
+    id: `mixed_${Date.now()}`,
+    title: `${baseTitle} (Đề trộn - Giữ nguyên đáp án)`,
+    part1: mixedPart1,
+    part2: mixedPart2,
+    part3: mixedPart3,
+    part4: mixedPart4,
+    createdAt: Date.now()
+  };
+}
