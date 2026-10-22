@@ -53,6 +53,8 @@ export interface MatrixRow {
 }
 
 export interface MatrixData {
+  name?: string;
+  title?: string;
   grade: Grade;
   examType: ExamType;
   chapters: Chapter[];

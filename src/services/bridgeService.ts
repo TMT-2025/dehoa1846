@@ -8,10 +8,58 @@ export interface BridgeResult {
   extraDetailsPrompt: string;
   summaryText: string;
   hasEssay?: boolean;
+  sourceMatrixName?: string;
+  suggestedExamTitle?: string;
 }
 
-export const convertMatrixToExamInput = (matrixData: MatrixData): BridgeResult => {
+/**
+ * Chuyển đổi tên ma trận đang có thành tiêu đề đề kiểm tra sau khi tạo / trộn
+ * Ví dụ: "Ma trận khối 10 giữa học kì 1" -> "Đề kiểm tra khối 10 giữa học kì 1"
+ */
+export function formatExamTitleFromMatrixName(
+  matrixName?: string,
+  grade?: string | number,
+  examType?: string
+): string {
+  if (!matrixName || !matrixName.trim()) {
+    const gradePart = grade ? `khối ${grade}` : 'môn Hóa học';
+    const typePart = examType ? ` ${examType}` : '';
+    return `Đề kiểm tra ${gradePart}${typePart}`.replace(/\s+/g, ' ').trim();
+  }
+
+  let title = matrixName.trim();
+
+  // Bỏ các tag nhãn phụ nếu có
+  title = title.replace(/\s*\(Đề trộn.*?\)/gi, '').trim();
+
+  // Nếu tên bắt đầu bằng "Ma trận đề kiểm tra" hoặc "Ma trận đề thi"
+  if (/^ma\s*trận\s+(đề\s+kiểm\s+tra|đề\s+thi)\s+/i.test(title)) {
+    return title.replace(/^ma\s*trận\s+/i, '');
+  }
+
+  // Nếu tên bắt đầu bằng "Ma trận" (Ví dụ: "Ma trận khối 10 giữa học kì 1" -> "Đề kiểm tra khối 10 giữa học kì 1")
+  if (/^ma\s*trận\s+/i.test(title)) {
+    return title.replace(/^ma\s*trận\s+/i, 'Đề kiểm tra ');
+  }
+
+  // Nếu tên dính liền "Ma trận..."
+  if (/^ma\s*trận/i.test(title)) {
+    return title.replace(/^ma\s*trận/i, 'Đề kiểm tra ');
+  }
+
+  // Nếu tên đã bắt đầu bằng "Đề kiểm tra" hoặc "Đề thi"
+  if (/^(đề\s+kiểm\s+tra|đề\s+thi)/i.test(title)) {
+    return title;
+  }
+
+  // Mặc định thêm tiền tố "Đề kiểm tra"
+  return `Đề kiểm tra ${title}`;
+}
+
+export const convertMatrixToExamInput = (matrixData: MatrixData, matrixName?: string): BridgeResult => {
   const gradeStr = (matrixData.grade === 'Tự do' ? '12' : String(matrixData.grade)) as '10' | '11' | '12';
+  const rawMatrixName = matrixName || matrixData.name || matrixData.title || `Ma trận khối ${matrixData.grade} ${matrixData.examType}`;
+  const suggestedExamTitle = formatExamTitleFromMatrixName(rawMatrixName, matrixData.grade, matrixData.examType);
   const hasEssay = Boolean(
     matrixData.totals.hasEssay ||
     matrixData.totals.part4 ||
@@ -114,6 +162,8 @@ export const convertMatrixToExamInput = (matrixData: MatrixData): BridgeResult =
     examMatrix,
     extraDetailsPrompt,
     summaryText,
-    hasEssay
+    hasEssay,
+    sourceMatrixName: rawMatrixName,
+    suggestedExamTitle
   };
 };

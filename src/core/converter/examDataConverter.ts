@@ -1,4 +1,5 @@
 import { ExamData } from "../../types/exam.js";
+import { formatExamTitleFromMatrixName } from "../../services/bridgeService.js";
 import { 
   ExamIR, ExamSection, ExamQuestion, QuestionOption, 
   TrueFalseSubItem, FormattedRun, RichParagraph 
@@ -300,7 +301,7 @@ export function convertExamDataToExamIR(data: ExamData): ExamIR {
     },
     header: {
       schoolName: "TRƯỜNG THCS-THPT PHAN VĂN TRỊ",
-      examTitle: (data.title || "KIỂM TRA HÓA HỌC").toUpperCase(),
+      examTitle: formatExamTitleFromMatrixName(data.sourceMatrixName || data.title, data.grade, data.examType).toUpperCase(),
       subject: `Hóa Học ${data.grade || "12"}`,
       durationMinutes: 45,
       studentInfoFields: {

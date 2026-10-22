@@ -46,6 +46,8 @@ export interface ExamData {
   part4?: EssayQuestion[];
   matrix: ExamMatrixRow[];
   sourceMatrixId?: string;
+  sourceMatrixName?: string;
+  examCode?: string;
 }
 
 export enum AppStatus {

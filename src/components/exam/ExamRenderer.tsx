@@ -236,9 +236,16 @@ export const ExamRenderer: React.FC<ExamRendererProps> = ({
             </div>
           </div>
 
-          <h1 className="text-lg md:text-xl font-extrabold uppercase tracking-tight text-slate-900 mt-2">
-            {currentExamData.title}
-          </h1>
+          <div className="flex items-center justify-center gap-2 flex-wrap mt-2">
+            <h1 className="text-lg md:text-xl font-extrabold uppercase tracking-tight text-slate-900">
+              {currentExamData.title}
+            </h1>
+            {currentExamData.examCode && (
+              <span className="px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-xs font-black border border-indigo-200">
+                Mã đề: {currentExamData.examCode}
+              </span>
+            )}
+          </div>
           {showAnswers && (
             <span className="inline-block mt-1 px-3 py-0.5 rounded-full bg-blue-100 text-blue-800 text-xs font-bold uppercase tracking-wider">
               HƯỚNG DẪN CHẤM & ĐÁP ÁN CHI TIẾT

@@ -1,6 +1,7 @@
 import { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle } from "docx";
 import saveAs from "file-saver";
 import { ExamData } from "../types/exam";
+import { formatExamTitleFromMatrixName } from "./bridgeService";
 
 const parseChemicalText = (text: string, baseOptions: any = {}): TextRun[] => {
   if (!text) return [];
@@ -109,8 +110,9 @@ export const downloadExamDoc = async (
     ]
   }));
 
+  const examTitleText = formatExamTitleFromMatrixName(data.sourceMatrixName || data.title, data.grade, data.examType);
   children.push(new Paragraph({
-    text: data.title.toUpperCase() + (isAnswerKey ? " - ĐÁP ÁN & HƯỚNG DẪN CHẤM" : ""),
+    text: examTitleText.toUpperCase() + (isAnswerKey ? " - ĐÁP ÁN & HƯỚNG DẪN CHẤM" : ""),
     heading: HeadingLevel.HEADING_1,
     alignment: AlignmentType.CENTER,
     spacing: { before: 240, after: 300 },

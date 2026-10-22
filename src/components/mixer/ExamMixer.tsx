@@ -12,6 +12,7 @@ import {
   analyzeExamSource, executeMixerPipeline, 
   ExamAnalysisResult, MixerExecutionResult, MixerConfig 
 } from '../../services/mixerService.js';
+import { formatExamTitleFromMatrixName } from '../../services/bridgeService.js';
 
 interface ExamMixerProps {
   initialExamData?: ExamData | null;
@@ -38,6 +39,7 @@ export const ExamMixer: React.FC<ExamMixerProps> = ({
   const [variantCount, setVariantCount] = useState<number>(4);
   const [examCodeDigits, setExamCodeDigits] = useState<3 | 4>(4);
   const [examCodeStart, setExamCodeStart] = useState<string>('1001');
+  const [customExamTitle, setCustomExamTitle] = useState<string>('');
   const [shuffleQuestions, setShuffleQuestions] = useState<boolean>(true);
   const [shuffleOptions, setShuffleOptions] = useState<boolean>(true);
   const [shuffleTF, setShuffleTF] = useState<boolean>(false);
@@ -101,6 +103,9 @@ export const ExamMixer: React.FC<ExamMixerProps> = ({
     try {
       const res = await analyzeExamSource(source, title);
       setAnalysis(res);
+      if (res.examIR?.header?.examTitle) {
+        setCustomExamTitle(formatExamTitleFromMatrixName(res.examIR.header.examTitle));
+      }
     } catch (err: any) {
       console.error(err);
       setAnalysisError(err.message || 'Lỗi khi bóc tách cấu trúc đề thi');
@@ -168,9 +173,26 @@ export const ExamMixer: React.FC<ExamMixerProps> = ({
     }
   };
 
+  // Đồng bộ tiêu đề đề sau khi trộn từ ma trận / đề đang chọn
+  useEffect(() => {
+    if (currentExamData) {
+      const derived = formatExamTitleFromMatrixName(
+        currentExamData.sourceMatrixName || currentExamData.title,
+        currentExamData.grade,
+        currentExamData.examType
+      );
+      setCustomExamTitle(derived);
+    }
+  }, [currentExamData]);
+
   // Run mixing job
   const handleStartMixing = async () => {
     if (!analysis?.examIR) return;
+
+    // Cập nhật tiêu đề đề thi trên file Word / bản in theo tiêu đề tùy chỉnh hoặc theo tên ma trận
+    if (customExamTitle.trim() && analysis.examIR.header) {
+      analysis.examIR.header.examTitle = customExamTitle.trim().toUpperCase();
+    }
 
     setIsMixing(true);
     setMixerError(null);
@@ -540,6 +562,27 @@ export const ExamMixer: React.FC<ExamMixerProps> = ({
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none" 
                 />
                 <p className="text-[11px] text-slate-400 mt-1">Phổ biến: 4 đề, 8 đề, 12 đề, 24 đề...</p>
+              </div>
+
+              {/* Tiêu đề đề thi sau khi trộn */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="font-bold text-slate-800 flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5 text-indigo-600" />
+                    <span>Tiêu đề đề thi sau khi trộn</span>
+                  </label>
+                  <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 font-bold">
+                    Theo tên ma trận
+                  </span>
+                </div>
+                <input 
+                  type="text" 
+                  value={customExamTitle} 
+                  onChange={(e) => setCustomExamTitle(e.target.value)}
+                  placeholder="Ví dụ: Đề kiểm tra khối 10 giữa học kì 1"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold text-indigo-900 text-xs sm:text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" 
+                />
+                <p className="text-[11px] text-slate-400 mt-1">Tiêu đề in đậm trên đầu trang mỗi mã đề thi Word (.docx)</p>
               </div>
 
               {/* Exam Code Start with 3 / 4 Digits Toggle */}

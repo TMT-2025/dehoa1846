@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { SavedConfig, MatrixData } from '../../types/matrix';
 import { ExamData } from '../../types/exam';
 import { 
-  getSavedMatrices, deleteSavedMatrix, 
+  getSavedMatrices, deleteSavedMatrix, saveMatrixConfig,
   getSavedExams, deleteSavedExam 
 } from '../../services/storageService';
 import { 
   FolderClock, LayoutGrid, FileText, Trash2, 
   Download, ArrowRight, Eye, Calendar, Sparkles, Edit3, Shuffle,
-  CheckCheck, X
+  CheckCheck, X, Copy
 } from 'lucide-react';
 import { ExamRenderer } from '../exam/ExamRenderer';
 import { MatrixDisplay } from '../matrix/MatrixDisplay';
@@ -100,6 +100,36 @@ export const HistoryManager: React.FC<HistoryManagerProps> = ({
       deleteSavedMatrix(id);
       loadData();
       if (previewMatrix) setPreviewMatrix(null);
+    }
+  };
+
+  const handleDuplicateMatrix = async (config: SavedConfig, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const defaultName = `${config.name} (Bản sao)`;
+    const newName = prompt('Nhập tên cho bản sao ma trận mới:', defaultName);
+    if (!newName || !newName.trim()) return;
+
+    const newConfigId = `config_${Date.now()}`;
+    const clonedConfig: SavedConfig = {
+      ...JSON.parse(JSON.stringify(config)),
+      id: newConfigId,
+      name: newName.trim(),
+      timestamp: Date.now()
+    };
+
+    if (clonedConfig.generatedMatrix) {
+      clonedConfig.generatedMatrix.name = newName.trim();
+      clonedConfig.generatedMatrix.title = newName.trim();
+    }
+
+    await saveMatrixConfig(clonedConfig);
+    loadData();
+
+    const wantToEdit = confirm(
+      `Đã tạo bản sao ma trận "${newName.trim()}" thành công!\n\nBạn có muốn mở ngay bản sao này để tinh chỉnh lại (số lượng câu hỏi các phần, đổi tên...) không?`
+    );
+    if (wantToEdit) {
+      onLoadMatrixToEditor(clonedConfig);
     }
   };
 
@@ -226,13 +256,25 @@ export const HistoryManager: React.FC<HistoryManagerProps> = ({
                   </div>
 
                   <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 mt-4">
-                    <button
-                      onClick={() => onLoadMatrixToEditor(config)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold transition-colors cursor-pointer"
-                    >
-                      <Edit3 className="w-3.5 h-3.5 text-amber-700" />
-                      <span>Mở chỉnh sửa</span>
-                    </button>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <button
+                        onClick={() => onLoadMatrixToEditor(config)}
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold transition-colors cursor-pointer"
+                        title="Mở ma trận này vào công cụ chỉnh sửa để tinh chỉnh"
+                      >
+                        <Edit3 className="w-3.5 h-3.5 text-amber-700" />
+                        <span>Mở chỉnh sửa</span>
+                      </button>
+
+                      <button
+                        onClick={(e) => handleDuplicateMatrix(config, e)}
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 text-xs font-bold transition-colors cursor-pointer"
+                        title="Tạo bản sao thứ 2 giống hệt ma trận này để dễ dàng tinh chỉnh số lượng câu hỏi hoặc đổi tên mới"
+                      >
+                        <Copy className="w-3.5 h-3.5 text-purple-700" />
+                        <span>Tạo bản sao</span>
+                      </button>
+                    </div>
 
                     <div className="flex items-center gap-1.5">
                       {config.generatedMatrix && (
@@ -248,7 +290,7 @@ export const HistoryManager: React.FC<HistoryManagerProps> = ({
 
                       {config.generatedMatrix && (
                         <button
-                          onClick={() => onTransferMatrixToExam(config.generatedMatrix!)}
+                          onClick={() => onTransferMatrixToExam({ ...config.generatedMatrix!, name: config.name })}
                           className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-colors shadow-xs cursor-pointer"
                         >
                           <Sparkles className="w-3.5 h-3.5" />

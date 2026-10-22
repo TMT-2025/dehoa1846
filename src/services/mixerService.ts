@@ -1,5 +1,6 @@
 import { ExamData } from "../types/exam.js";
 import { ExamIR } from "../core/ir/types.js";
+import { formatExamTitleFromMatrixName } from "./bridgeService.js";
 import { parseDocx } from "../core/parser/docx-parser.js";
 import { validateExamIR } from "../core/validation/parser-validator.js";
 import { convertExamDataToExamIR } from "../core/converter/examDataConverter.js";
@@ -391,14 +392,18 @@ export function mixExamDataPreservingAnswers(
     solution: q.solution
   })) : undefined;
 
-  // Clean original title
-  const baseTitle = source.title.replace(/\s*\(Đề trộn.*?\)/gi, '').trim();
+  // Tiêu đề của đề sau khi trộn đặt theo tên từ ma trận đề đang có
+  // (Ví dụ: "Ma trận khối 10 giữa học kì 1" -> "Đề kiểm tra khối 10 giữa học kì 1")
+  const rawTitle = source.sourceMatrixName || source.title || '';
+  const baseTitle = formatExamTitleFromMatrixName(rawTitle, source.grade, source.examType);
   const codeSuffix = options?.examCode ? ` - Mã đề ${options.examCode}` : '';
 
   return {
     ...source,
     id: `mixed_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-    title: `${baseTitle} (ĐỀ TRỘN - GIỮ NGUYÊN ĐÁP ÁN${codeSuffix})`,
+    title: `${baseTitle}${codeSuffix}`,
+    examCode: options?.examCode,
+    sourceMatrixName: source.sourceMatrixName,
     part1: mixedPart1,
     part2: mixedPart2,
     part3: mixedPart3,

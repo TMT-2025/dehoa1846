@@ -129,6 +129,13 @@ export const ExamCreator: React.FC<ExamCreatorProps> = ({
         );
 
         clearInterval(msgInterval);
+        
+        // Cập nhật tiêu đề đề thi theo tên ma trận đang có
+        if (bridgeData?.suggestedExamTitle) {
+          data.title = bridgeData.suggestedExamTitle;
+          data.sourceMatrixName = bridgeData.sourceMatrixName;
+        }
+
         setExam(data);
         setStatus(AppStatus.COMPLETED);
         // Automatically save to local history
@@ -174,6 +181,12 @@ export const ExamCreator: React.FC<ExamCreatorProps> = ({
               <p className="text-sm font-bold text-white mt-0.5">
                 {bridgeData.summaryText}
               </p>
+              {bridgeData.suggestedExamTitle && (
+                <p className="text-xs text-amber-200 font-semibold mt-0.5 flex items-center gap-1">
+                  <span>Tiêu đề đề thi dự kiến:</span>
+                  <span className="text-white underline font-bold">{bridgeData.suggestedExamTitle}</span>
+                </p>
+              )}
               <p className="text-xs text-emerald-200">
                 AI sẽ bám sát 100% tỉ lệ 4:3:3 và 4 bối cảnh thực tiễn bạn đã ấn định ở Bước 1!
               </p>

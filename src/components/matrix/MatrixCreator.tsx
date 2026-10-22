@@ -1340,7 +1340,13 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
           <MatrixDisplay
             data={matrixData}
             onUpdateMatrixData={(updated) => setMatrixData(updated)}
-            onTransferToExam={onTransferToExam}
+            onTransferToExam={(data) => {
+              const fullData = {
+                ...data,
+                name: editingConfigName || data.name || (activeGrade === 'Tự do' ? `Ma trận Tự do ${examType}` : `Ma trận khối ${activeGrade} ${examType}`)
+              };
+              onTransferToExam(fullData);
+            }}
             onSaveConfig={handleSaveConfig}
             onEditMatrix={() => {
               setShowEditor(true);
