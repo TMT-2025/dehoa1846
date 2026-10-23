@@ -24,7 +24,7 @@ const restoreLessonsWithPart2Hosts = (lessons: Lesson[], matrix?: MatrixData | n
 
   let normalizedLessons: Lesson[] = lessons.map(l => ({
     ...l,
-    subItems: l.subItems && l.subItems.length > 0 ? [...l.subItems] : ['Khái niệm cơ bản & tính chất', 'Ứng dụng & điều chế'],
+    subItems: l.subItems ? [...l.subItems] : [],
     part2Hosts: l.part2Hosts ? [...l.part2Hosts] : []
   }));
 
@@ -453,6 +453,35 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
     });
   };
 
+  // Bỏ chọn toàn bộ các mục trong một bài học (đánh dấu bài học không kiểm tra)
+  const handleClearLessonSubItems = (lessonId: string) => {
+    setEditableLessons(prev => prev.map(l => {
+      if (l.id === lessonId) {
+        const currentItems = l.subItems || [];
+        if (currentItems.length > 0) {
+          setDeletedSubItemsHistory(history => {
+            const prevList = history[lessonId] || [];
+            const newEntries = currentItems.map((item, idx) => ({
+              item,
+              index: idx,
+              wasHost: (l.part2Hosts || []).includes(item)
+            }));
+            return {
+              ...history,
+              [lessonId]: [...prevList, ...newEntries]
+            };
+          });
+        }
+        return {
+          ...l,
+          subItems: [],
+          part2Hosts: []
+        };
+      }
+      return l;
+    }));
+  };
+
   // Toggle Part II context on/off
   const togglePart2Host = (lessonId: string, itemName: string) => {
     const totalSelected = editableLessons.reduce((acc, l) => acc + (l.part2Hosts?.length || 0), 0);
@@ -572,8 +601,9 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
   };
 
   const handleGenerate = () => {
-    if (!activeGrade || selectedChapters.length === 0 || editableLessons.length === 0) {
-      alert("Vui lòng chọn ít nhất một chương và có bài học!");
+    const activeLessons = editableLessons.filter(l => l.subItems && l.subItems.length > 0);
+    if (!activeGrade || selectedChapters.length === 0 || activeLessons.length === 0) {
+      alert("Vui lòng chọn ít nhất một chương và có ít nhất một mục nội dung được chọn để kiểm tra!");
       return;
     }
     
@@ -594,12 +624,13 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
       ? [{
           id: 'custom_main',
           name: customChapterName,
-          lessons: sortLessonsByNumber(lessonsToUse)
+          lessons: sortLessonsByNumber(lessonsToUse.filter(l => l.subItems && l.subItems.length > 0))
         }]
       : sortedChapters.map(chapter => ({
           ...chapter,
           lessons: sortLessonsByNumber(lessonsToUse.filter(el => 
-            chapter.lessons.some(cl => cl.id === el.id) || el.id.startsWith('custom_')
+            (chapter.lessons.some(cl => cl.id === el.id) || el.id.startsWith('custom_')) &&
+            el.subItems && el.subItems.length > 0
           ))
         }));
 
@@ -1060,9 +1091,12 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
                       const lessonDeletedHistory = deletedSubItemsHistory[lesson.id] || [];
                       const hasDeletedItems = lessonDeletedHistory.length > 0;
                       const defaultSubItems = getDefaultSubItemsForLesson(lesson.id);
+                      const isLessonActive = (lesson.subItems?.length || 0) > 0;
 
                       return (
-                        <div key={lesson.id} className="border border-slate-200 rounded-xl bg-slate-50/50 overflow-hidden shadow-xs">
+                        <div key={lesson.id} className={`border rounded-xl overflow-hidden shadow-xs transition-colors ${
+                          isLessonActive ? 'border-slate-200 bg-slate-50/50' : 'border-dashed border-slate-300 bg-slate-100/60 opacity-80'
+                        }`}>
                           <div 
                             onClick={() => {
                               if (expandAllLessons) setExpandAllLessons(false);
@@ -1071,14 +1105,22 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
                             className="p-3.5 bg-white hover:bg-slate-50 cursor-pointer flex items-center justify-between transition-colors border-b border-slate-100"
                           >
                             <div className="flex items-center gap-2">
-                              <span className="font-bold text-xs text-slate-800">{lesson.name}</span>
-                              <span className="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full font-semibold">
-                                {lesson.subItems?.length || 0} mục
+                              <span className={`font-bold text-xs ${isLessonActive ? 'text-slate-800' : 'text-slate-500 line-through'}`}>
+                                {lesson.name}
                               </span>
-                              {hasDeletedItems && (
+                              {isLessonActive ? (
+                                <span className="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full font-semibold">
+                                  {lesson.subItems?.length || 0} mục đã chọn
+                                </span>
+                              ) : (
+                                <span className="text-[10px] px-2 py-0.5 bg-rose-100 text-rose-700 rounded-full font-bold">
+                                  Không kiểm tra (Đã bỏ bài này)
+                                </span>
+                              )}
+                              {hasDeletedItems && isLessonActive && (
                                 <span className="text-[10px] px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full font-bold flex items-center gap-1">
                                   <RotateCcw className="w-2.5 h-2.5 text-amber-600" />
-                                  <span>{lessonDeletedHistory.length} mục đã xóa</span>
+                                  <span>{lessonDeletedHistory.length} mục đã bỏ</span>
                                 </span>
                               )}
                               {hostCount > 0 && (
@@ -1089,6 +1131,33 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
                               )}
                             </div>
                             <div className="flex items-center gap-2">
+                              {/* Nút bật/tắt toàn bộ bài học */}
+                              {isLessonActive ? (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleClearLessonSubItems(lesson.id);
+                                  }}
+                                  className="px-2.5 py-1 text-[11px] font-bold text-slate-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg border border-slate-200 hover:border-rose-200 transition-colors"
+                                  title="Bỏ chọn toàn bộ bài học này (không đưa vào ma trận kiểm tra)"
+                                >
+                                  ✕ Bỏ chọn bài
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleRestoreDefaultSubItems(lesson.id);
+                                  }}
+                                  className="px-2.5 py-1 text-[11px] font-bold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 rounded-lg border border-indigo-300 transition-colors shadow-2xs"
+                                  title="Chọn lại bài học này vào ma trận kiểm tra"
+                                >
+                                  + Chọn lại bài này
+                                </button>
+                              )}
+
                               {lesson.id.startsWith('custom_') && (
                                 <button
                                   onClick={(e) => {
@@ -1108,7 +1177,7 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
                           {isExpanded && (
                             <div className="p-4 bg-slate-50 space-y-3">
                               <p className="text-[11px] font-semibold text-slate-600">
-                                Bấm vào nút <span className="text-emerald-700 font-bold">"+ Đặt làm P.II"</span> để chọn mục này làm bối cảnh Đúng/Sai:
+                                Tick chọn các mục nội dung kiểm tra. Bấm vào nút <span className="text-emerald-700 font-bold">"+ Đặt làm P.II"</span> để chọn mục làm bối cảnh Đúng/Sai:
                               </p>
 
                               <div className="space-y-1.5">
@@ -1123,8 +1192,20 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
                                           : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'
                                       }`}
                                     >
-                                      <span>• {item}</span>
-                                      <div className="flex items-center gap-1.5">
+                                      <label 
+                                        className="flex items-center gap-2 cursor-pointer flex-1 min-w-0 pr-2"
+                                        onClick={(e) => e.stopPropagation()}
+                                        title="Bỏ chọn để không kiểm tra mục này"
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          checked={true}
+                                          onChange={() => handleRemoveSubItem(lesson.id, idx)}
+                                          className="w-3.5 h-3.5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer"
+                                        />
+                                        <span className="truncate">• {item}</span>
+                                      </label>
+                                      <div className="flex items-center gap-1.5 shrink-0">
                                         <button
                                           type="button"
                                           onClick={() => togglePart2Host(lesson.id, item)}
@@ -1162,7 +1243,7 @@ export const MatrixCreator: React.FC<MatrixCreatorProps> = ({
                                           type="button"
                                           onClick={() => handleRemoveSubItem(lesson.id, idx)}
                                           className="text-slate-400 hover:text-rose-500 hover:bg-rose-50 p-1.5 rounded transition-colors cursor-pointer"
-                                          title="Xóa mục kiến thức này"
+                                          title="Bỏ chọn (không đưa vào ma trận)"
                                         >
                                           <Trash2 className="w-3.5 h-3.5" />
                                         </button>
