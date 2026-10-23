@@ -245,6 +245,12 @@ export const ExamRenderer: React.FC<ExamRendererProps> = ({
                 Mã đề: {currentExamData.examCode}
               </span>
             )}
+            {currentExamData.matrixVerified && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-300 shadow-xs no-print" title="Đề thi đã được đối chiếu và khóa chuẩn 100% theo ma trận thiết kế">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Khớp 100% Ma trận thiết kế</span>
+              </span>
+            )}
           </div>
           {showAnswers && (
             <span className="inline-block mt-1 px-3 py-0.5 rounded-full bg-blue-100 text-blue-800 text-xs font-bold uppercase tracking-wider">

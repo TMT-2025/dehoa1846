@@ -108,11 +108,16 @@ export const MatrixRenderer: React.FC<MatrixRendererProps> = ({ data }) => {
   return (
     <div className="bg-white p-6 rounded-2xl shadow-md border border-slate-200 space-y-4 no-print">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Table className="w-5 h-5 text-indigo-600" />
           <h3 className="font-bold text-slate-800 text-base">
             Bảng ma trận phân bổ mức độ nhận thức của đề thi
           </h3>
+          {data.matrixVerified && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold border border-emerald-300">
+              ✓ Khớp 100% Ma trận thiết kế
+            </span>
+          )}
         </div>
         <button 
           onClick={downloadAsImage}

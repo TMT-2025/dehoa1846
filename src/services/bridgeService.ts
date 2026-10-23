@@ -10,6 +10,154 @@ export interface BridgeResult {
   hasEssay?: boolean;
   sourceMatrixName?: string;
   suggestedExamTitle?: string;
+  sourceMatrixData?: MatrixData;
+  questionBlueprint?: string;
+}
+
+/**
+ * Tạo Bản phân bổ chi tiết 100% từng câu hỏi từ ma trận đã thiết kế
+ * Giúp mô hình AI tạo đề bám sát tuyệt đối theo từng câu, từng chương, từng bài, từng nội dung và mức độ nhận thức
+ */
+export function generateDetailedQuestionBlueprint(matrixData: MatrixData): string {
+  const isPeriodic1011 = isPeriodicExamGrade10or11(matrixData.grade, matrixData.examType) ||
+    Boolean(
+      matrixData.totals.hasEssay || 
+      matrixData.totals.part4 || 
+      matrixData.totals.grandTotal === 27 ||
+      matrixData.rows.some(r => r.part4 && (r.part4.know + r.part4.understand + r.part4.apply > 0))
+    );
+
+  const targetP1 = isPeriodic1011 ? 12 : 18;
+  const targetP2 = isPeriodic1011 ? 2 : 4;
+  const targetP3 = isPeriodic1011 ? 4 : 6;
+  const targetP4 = isPeriodic1011 ? 3 : 0;
+
+  // 1. Thu thập danh sách câu hỏi Phần I
+  const p1Items: { chapter: string; lesson: string; detail: string; level: string }[] = [];
+  matrixData.rows.forEach(r => {
+    for (let i = 0; i < (r.part1.know || 0); i++) {
+      p1Items.push({ chapter: r.content, lesson: r.lessonName, detail: r.detailName, level: 'Nhận biết' });
+    }
+    for (let i = 0; i < (r.part1.understand || 0); i++) {
+      p1Items.push({ chapter: r.content, lesson: r.lessonName, detail: r.detailName, level: 'Thông hiểu' });
+    }
+    for (let i = 0; i < (r.part1.apply || 0); i++) {
+      p1Items.push({ chapter: r.content, lesson: r.lessonName, detail: r.detailName, level: 'Vận dụng' });
+    }
+  });
+
+  // Điều chỉnh cho đúng chuẩn số câu Phần I
+  const finalP1 = p1Items.slice(0, targetP1);
+  if (finalP1.length < targetP1 && matrixData.rows.length > 0) {
+    let rowIdx = 0;
+    while (finalP1.length < targetP1) {
+      const r = matrixData.rows[rowIdx % matrixData.rows.length];
+      finalP1.push({ chapter: r.content, lesson: r.lessonName, detail: r.detailName, level: 'Thông hiểu' });
+      rowIdx++;
+    }
+  }
+
+  // 2. Thu thập danh sách bối cảnh Phần II
+  const p2Rows = matrixData.rows.filter(r => (r.part2.know + r.part2.understand + r.part2.apply) > 0);
+  const finalP2: { chapter: string; lesson: string; detail: string; levelDesc: string }[] = [];
+  
+  if (p2Rows.length > 0) {
+    p2Rows.slice(0, targetP2).forEach(r => {
+      finalP2.push({
+        chapter: r.content,
+        lesson: r.lessonName,
+        detail: r.detailName,
+        levelDesc: 'Ý a: Nhận biết, Ý b: Thông hiểu, Ý c: Vận dụng, Ý d: Vận dụng cao / Đánh giá'
+      });
+    });
+  }
+  if (finalP2.length < targetP2 && matrixData.rows.length > 0) {
+    let rowIdx = 0;
+    while (finalP2.length < targetP2) {
+      const r = matrixData.rows[rowIdx % matrixData.rows.length];
+      if (!finalP2.some(item => item.lesson === r.lessonName)) {
+        finalP2.push({
+          chapter: r.content,
+          lesson: r.lessonName,
+          detail: r.detailName,
+          levelDesc: 'Ý a: Nhận biết, Ý b: Thông hiểu, Ý c: Vận dụng, Ý d: Vận dụng cao / Đánh giá'
+        });
+      }
+      rowIdx++;
+      if (rowIdx >= matrixData.rows.length * 2) break;
+    }
+  }
+
+  // 3. Thu thập danh sách câu hỏi Phần III
+  const p3Rows = matrixData.rows.filter(r => ((r.part3.apply || 0) + (r.part3.understand || 0) + (r.part3.know || 0)) > 0);
+  const finalP3: { chapter: string; lesson: string; detail: string }[] = [];
+  p3Rows.forEach(r => {
+    const count = (r.part3.apply || 0) + (r.part3.understand || 0) + (r.part3.know || 0);
+    for (let i = 0; i < count; i++) {
+      if (finalP3.length < targetP3) {
+        finalP3.push({ chapter: r.content, lesson: r.lessonName, detail: r.detailName });
+      }
+    }
+  });
+  if (finalP3.length < targetP3 && matrixData.rows.length > 0) {
+    let rowIdx = 0;
+    while (finalP3.length < targetP3) {
+      const r = matrixData.rows[rowIdx % matrixData.rows.length];
+      finalP3.push({ chapter: r.content, lesson: r.lessonName, detail: r.detailName });
+      rowIdx++;
+    }
+  }
+
+  // 4. Thu thập danh sách câu hỏi Phần IV (Tự luận nếu có)
+  const finalP4: { chapter: string; lesson: string; detail: string; level: string; points: string }[] = [];
+  if (isPeriodic1011) {
+    const p4Rows = matrixData.rows.filter(r => r.part4 && (r.part4.know + r.part4.understand + r.part4.apply > 0));
+    const levels = ['Thông hiểu / Vận dụng thấp', 'Vận dụng', 'Vận dụng cao'];
+    for (let i = 0; i < 3; i++) {
+      const r = p4Rows[i] || matrixData.rows[i % matrixData.rows.length];
+      finalP4.push({
+        chapter: r.content,
+        lesson: r.lessonName,
+        detail: r.detailName,
+        level: levels[i],
+        points: '1.0 điểm'
+      });
+    }
+  }
+
+  // Ghép nối thành Bản phân bổ chi tiết
+  const lines: string[] = [];
+  lines.push(`\n================================================================================`);
+  lines.push(`BẢN PHÂN BỔ TỪNG CÂU HỎI THEO MA TRẬN ĐÃ THIẾT KẾ (BẮT BUỘC TUÂN THỦ ĐÚNG 100%):`);
+  lines.push(`* LƯU Ý TỐI THƯỢNG: Bạn BẮT BUỘC phải tạo từng câu hỏi (Câu 1, Câu 2, ...) chính xác theo đúng chương, đúng bài, đúng nội dung trọng tâm và đúng mức độ nhận thức đã được chỉ định dưới đây. TUYỆT ĐỐI KHÔNG tự ý thay đổi số lượng, không hoán đổi câu hỏi sang chương khác!`);
+  lines.push(`--------------------------------------------------------------------------------`);
+  lines.push(`PHẦN I. CÂU TRẮC NGHIỆM NHIỀU LỰA CHỌN (Gồm đúng ${targetP1} câu - Mỗi câu 0.25 điểm):`);
+  finalP1.forEach((item, idx) => {
+    lines.push(`- Câu ${idx + 1}: [${item.chapter}] - Bài: "${item.lesson}" - Nội dung: "${item.detail}" - Mức độ: ${item.level.toUpperCase()}`);
+  });
+
+  lines.push(``);
+  lines.push(`PHẦN II. CÂU TRẮC NGHIỆM ĐÚNG SAI (Gồm đúng ${targetP2} câu / bối cảnh thực tiễn - Mỗi câu 1.0 điểm):`);
+  finalP2.forEach((item, idx) => {
+    lines.push(`- Câu ${idx + 1}: Bối cảnh thực tiễn/thực nghiệm tại [${item.chapter}] - Bài: "${item.lesson}" - Nội dung: "${item.detail}". Bắt buộc 4 nhận định a, b, c, d bám sát 100% dữ liệu bối cảnh (${item.levelDesc})`);
+  });
+
+  lines.push(``);
+  lines.push(`PHẦN III. CÂU TRẮC NGHIỆM TRẢ LỜI NGẮN (Gồm đúng ${targetP3} câu - Mỗi câu ${isPeriodic1011 ? '0.5' : '0.25'} điểm):`);
+  finalP3.forEach((item, idx) => {
+    lines.push(`- Câu ${idx + 1}: [${item.chapter}] - Bài: "${item.lesson}" - Nội dung: "${item.detail}". Bài toán tính toán có số liệu thực tế, yêu cầu chỉ dẫn làm tròn rõ ràng, đáp án là 1 con số duy nhất.`);
+  });
+
+  if (isPeriodic1011 && finalP4.length > 0) {
+    lines.push(``);
+    lines.push(`PHẦN IV. CÂU HỎI TỰ LUẬN (Gồm đúng 3 câu - 3.0 điểm kèm barem điểm chi tiết):`);
+    finalP4.forEach((item, idx) => {
+      lines.push(`- Câu ${idx + 1} (${item.points}): [${item.chapter}] - Bài: "${item.lesson}" - Nội dung: "${item.detail}" - Mức độ: ${item.level}. Đổi mới câu hỏi, không lặp lại câu hỏi quen thuộc.`);
+    });
+  }
+  lines.push(`================================================================================\n`);
+
+  return lines.join('\n');
 }
 
 /**
@@ -156,6 +304,10 @@ export const convertMatrixToExamInput = (matrixData: MatrixData, matrixName?: st
     summaryText = `Ma trận ${matrixData.examType} - Khối ${matrixData.grade} (${topicNames.length} chương, 40 lệnh hỏi)`;
   }
 
+  // Tạo Bản phân bổ chi tiết 100% từng câu hỏi theo ma trận và tích hợp vào prompt
+  const questionBlueprint = generateDetailedQuestionBlueprint(matrixData);
+  extraDetailsPrompt = `${extraDetailsPrompt}\n\n${questionBlueprint}`;
+
   return {
     grade: gradeStr,
     topics: topicNames.length > 0 ? topicNames : ['Chương trình Hóa học GDPT 2018'],
@@ -164,6 +316,8 @@ export const convertMatrixToExamInput = (matrixData: MatrixData, matrixName?: st
     summaryText,
     hasEssay,
     sourceMatrixName: rawMatrixName,
-    suggestedExamTitle
+    suggestedExamTitle,
+    sourceMatrixData: matrixData,
+    questionBlueprint
   };
 };

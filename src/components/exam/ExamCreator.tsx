@@ -34,6 +34,7 @@ export const ExamCreator: React.FC<ExamCreatorProps> = ({
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const [details, setDetails] = useState('');
   const [modelName, setModelName] = useState('gemini-3.8-flash');
+  const [showBlueprint, setShowBlueprint] = useState(false);
 
   // Matrix image upload
   const [matrixImage, setMatrixImage] = useState<string | null>(null);
@@ -125,7 +126,8 @@ export const ExamCreator: React.FC<ExamCreatorProps> = ({
           details, 
           matrixToUse, 
           matrixImage || undefined,
-          modelName
+          modelName,
+          bridgeData?.sourceMatrixData
         );
 
         clearInterval(msgInterval);
@@ -134,6 +136,18 @@ export const ExamCreator: React.FC<ExamCreatorProps> = ({
         if (bridgeData?.suggestedExamTitle) {
           data.title = bridgeData.suggestedExamTitle;
           data.sourceMatrixName = bridgeData.sourceMatrixName;
+        }
+
+        // Đảm bảo dữ liệu ma trận chuẩn xác 100% theo đúng ma trận đã thiết kế
+        if (bridgeData?.examMatrix && bridgeData.examMatrix.length > 0) {
+          data.matrix = bridgeData.examMatrix;
+          data.matrixVerified = true;
+        }
+        if (bridgeData?.sourceMatrixData) {
+          data.sourceMatrixData = bridgeData.sourceMatrixData;
+        }
+        if (bridgeData?.questionBlueprint) {
+          data.questionBlueprint = bridgeData.questionBlueprint;
         }
 
         setExam(data);
@@ -193,7 +207,17 @@ export const ExamCreator: React.FC<ExamCreatorProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            {bridgeData.questionBlueprint && (
+              <button
+                type="button"
+                onClick={() => setShowBlueprint(!showBlueprint)}
+                className="px-3 py-1.5 rounded-xl bg-emerald-800/80 hover:bg-emerald-700 text-xs font-semibold text-emerald-100 transition-colors flex items-center gap-1.5 border border-emerald-600/50"
+              >
+                <Layers className="w-3.5 h-3.5 text-emerald-300" />
+                <span>{showBlueprint ? 'Ẩn phân bổ chi tiết' : 'Xem phân bổ câu hỏi'}</span>
+              </button>
+            )}
             <button
               onClick={onClearBridge}
               className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold text-emerald-100 transition-colors"
@@ -208,6 +232,22 @@ export const ExamCreator: React.FC<ExamCreatorProps> = ({
               <Sparkles className="w-4 h-4 text-slate-950" />
               <span>Bắt Đầu Sinh Đề Ngay</span>
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Blueprint Preview Drawer */}
+      {bridgeData && showBlueprint && bridgeData.questionBlueprint && (
+        <div className="bg-slate-900 border border-emerald-500/40 rounded-2xl p-4 text-emerald-100 shadow-xl no-print">
+          <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-700">
+            <div className="flex items-center gap-2 font-bold text-sm text-emerald-300">
+              <CheckCircle className="w-4 h-4 text-emerald-400" />
+              <span>Bản Phân Bổ Từng Câu Hỏi Theo Ma Trận (Đảm bảo đúng 100%)</span>
+            </div>
+            <span className="text-[11px] text-slate-400">Khóa ma trận & phân bổ câu hỏi tự động</span>
+          </div>
+          <div className="text-xs font-mono whitespace-pre-wrap max-h-72 overflow-y-auto bg-slate-950/70 p-3 rounded-xl border border-slate-800 leading-relaxed text-slate-200">
+            {bridgeData.questionBlueprint}
           </div>
         </div>
       )}

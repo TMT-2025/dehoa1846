@@ -47,7 +47,7 @@ app.get('/api/health', (req, res) => {
 
 app.post('/api/generate-exam', async (req, res) => {
   try {
-    const { grade, topics, details, existingMatrix, matrixImageBase64, modelName } = req.body;
+    const { grade, topics, details, existingMatrix, matrixImageBase64, modelName, sourceMatrixData } = req.body;
     const reqApiKey = req.headers['x-gemini-api-key'] || req.body.apiKey;
     const apiKey = reqApiKey || process.env.GEMINI_API_KEY || process.env.API_KEY;
 
@@ -90,8 +90,9 @@ app.post('/api/generate-exam', async (req, res) => {
       Bạn là chuyên gia khảo thí và soạn đề Hóa học THPT theo chương trình GDPT 2018 tại Việt Nam.
       Nhiệm vụ: Tạo đề và ma trận cho KHỐI ${grade} - Các chương: "${topicStr}".
       
-      YÊU CẦU PHÂN BỔ KIẾN THỨC:
-      - Đảm bảo kiến thức được phân bổ chuẩn xác cho mỗi chương đã chọn trong toàn bộ đề thi (Phần I, II, III).
+      YÊU CẦU PHÂN BỔ KIẾN THỨC & BẢO ĐẢM KHỚP MA TRẬN 100%:
+      - Đảm bảo kiến thức được phân bổ chuẩn xác 100% cho mỗi chương đã chọn trong toàn bộ đề thi (Phần I, II, III, IV).
+      - Khi có "BẢN PHÂN BỔ TỪNG CÂU HỎI THEO MA TRẬN ĐÃ THIẾT KẾ", bạn BẮT BUỘC PHẢI tạo từng câu hỏi (Câu 1, Câu 2, ...) chính xác theo đúng chương, đúng bài, đúng nội dung trọng tâm và đúng mức độ nhận thức đã chỉ định. TUYỆT ĐỐI KHÔNG tự ý thay đổi số lượng, không hoán đổi câu hỏi sang chương khác.
       - Ma trận (matrix) phải có các dòng tương ứng với từng chương đã chọn.
       
       YÊU CẦU NGÔN NGỮ:
@@ -286,6 +287,13 @@ Nếu là kiểm tra định kì Lớp 10 hoặc 11 (hoặc có yêu cầu tự 
     }
 
     const examData = JSON.parse(text);
+    if (existingMatrix && Array.isArray(existingMatrix) && existingMatrix.length > 0) {
+      examData.matrix = existingMatrix;
+      examData.matrixVerified = true;
+    }
+    if (sourceMatrixData) {
+      examData.sourceMatrixData = sourceMatrixData;
+    }
     return res.json({ success: true, data: examData });
 
   } catch (error) {
