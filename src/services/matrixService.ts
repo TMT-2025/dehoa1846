@@ -215,6 +215,18 @@ export const generateMatrix = (
       const target = p2TargetPerChapter[cIdx];
       let currentInChapter = items.filter(it => it.isP2Host).length;
 
+      // Ưu tiên chọn từ các bài học khác nhau trong chương để không dồn vào bài đầu
+      const lessonIds = Array.from(new Set(items.map(it => it.lessonId)));
+      for (const lId of lessonIds) {
+        if (currentInChapter >= target || needed <= 0) break;
+        const candidate = items.find(it => it.lessonId === lId && !it.isP2Host);
+        if (candidate) {
+          candidate.isP2Host = true;
+          currentInChapter++;
+          needed--;
+        }
+      }
+
       for (let it of items) {
         if (!it.isP2Host && currentInChapter < target && needed > 0) {
           it.isP2Host = true;
@@ -304,23 +316,107 @@ export const generateMatrix = (
     const p3Count = p3CountPerChapter[cIdx] || 0;
     const p4Cog = p4CognitivePerChapter[cIdx] || { know: 0, understand: 0, apply: 0 };
 
-    const nonP2Items = items.filter(it => !it.isP2Host);
+    const N = items.length;
 
-    // Phân bổ chỉ tiêu của chương vào các mục không phải P2
-    const targetReceivers = nonP2Items.length > 0 ? nonP2Items : items;
-    const receiverCount = targetReceivers.length;
+    // Thu thập tất cả các question tokens cần phân bổ trong chương này
+    interface QuestionToken {
+      part: 'part1' | 'part3' | 'part4';
+      level: 'know' | 'understand' | 'apply';
+    }
 
-    const p1kDist = distribute(p1Cog.know, receiverCount);
-    const p1uDist = distribute(p1Cog.understand, receiverCount);
-    const p1vDist = distribute(p1Cog.apply, receiverCount);
-    const p3vDist = distribute(p3Count, receiverCount);
-    const p4kDist = distribute(p4Cog.know, receiverCount);
-    const p4uDist = distribute(p4Cog.understand, receiverCount);
-    const p4vDist = distribute(p4Cog.apply, receiverCount);
+    const tokens: QuestionToken[] = [];
 
-    let receiverIdx = 0;
+    // Part 1
+    for (let i = 0; i < p1Cog.know; i++) tokens.push({ part: 'part1', level: 'know' });
+    for (let i = 0; i < p1Cog.understand; i++) tokens.push({ part: 'part1', level: 'understand' });
+    for (let i = 0; i < p1Cog.apply; i++) tokens.push({ part: 'part1', level: 'apply' });
 
-    items.forEach(item => {
+    // Part 3 (Luôn là Vận dụng)
+    for (let i = 0; i < p3Count; i++) tokens.push({ part: 'part3', level: 'apply' });
+
+    // Part 4 (Tự luận - nếu có)
+    if (isPeriodic1011 && p4Cog) {
+      for (let i = 0; i < (p4Cog.know || 0); i++) tokens.push({ part: 'part4', level: 'know' });
+      for (let i = 0; i < (p4Cog.understand || 0); i++) tokens.push({ part: 'part4', level: 'understand' });
+      for (let i = 0; i < (p4Cog.apply || 0); i++) tokens.push({ part: 'part4', level: 'apply' });
+    }
+
+    // Sắp xếp tokens theo mức độ nhận thức: Biết -> Hiểu -> Vận dụng
+    // Giúp các mục đầu (thường là lý thuyết/khái niệm) nhận câu Biết, các mục sau nhận câu Hiểu/Vận dụng
+    const levelOrder: Record<string, number> = { know: 1, understand: 2, apply: 3 };
+    const partOrder: Record<string, number> = { part1: 1, part4: 2, part3: 3 };
+    tokens.sort((a, b) => {
+      if (levelOrder[a.level] !== levelOrder[b.level]) {
+        return levelOrder[a.level] - levelOrder[b.level];
+      }
+      return (partOrder[a.part] || 9) - (partOrder[b.part] || 9);
+    });
+
+    const nonP2Indices = items.map((it, idx) => !it.isP2Host ? idx : -1).filter(idx => idx !== -1);
+
+    // Xác định số lượng token mỗi mục nhận được (targetTokens)
+    // Quy tắc: 
+    // - Tất cả các mục chi tiết nội dung trong chương đều phải có câu hỏi.
+    // - Chỉ khi số mục chi tiết nội dung > số câu hỏi trong chương thì khi đó mới có mục không có câu hỏi.
+    // - Không dồn nhiều câu vào các mục đầu tiên khiến các mục bên dưới bị bỏ trống.
+    const targetTokens = new Array(N).fill(0);
+
+    if (nonP2Indices.length === 0) {
+      // Trường hợp toàn bộ các mục đều là P2 host
+      const dist = distribute(tokens.length, N);
+      for (let i = 0; i < N; i++) {
+        targetTokens[i] = dist[i];
+      }
+    } else if (tokens.length >= nonP2Indices.length) {
+      // Số token >= số mục non-P2: MỌI mục non-P2 đều được nhận ít nhất 1 câu hỏi
+      nonP2Indices.forEach(idx => {
+        targetTokens[idx] = 1;
+      });
+      let remainingT = tokens.length - nonP2Indices.length;
+
+      // Phân bổ đều các câu còn lại cho các mục non-P2 trước
+      if (remainingT > 0) {
+        const extraForNonP2 = Math.min(remainingT, nonP2Indices.length);
+        const distExtra = distribute(extraForNonP2, nonP2Indices.length);
+        nonP2Indices.forEach((idx, i) => {
+          targetTokens[idx] += distExtra[i];
+        });
+        remainingT -= extraForNonP2;
+      }
+
+      // Nếu vẫn còn câu dư nữa, phân bổ đều cho tất cả N mục trong chương
+      if (remainingT > 0) {
+        const distAll = distribute(remainingT, N);
+        for (let i = 0; i < N; i++) {
+          targetTokens[i] += distAll[i];
+        }
+      }
+    } else {
+      // Số token < số mục non-P2 (chỉ xảy ra khi Mục chi tiết nội dung > số câu hỏi)
+      // Trải đều các câu cho các mục non-P2 khác nhau để không có mục nào bị 2 câu trong khi mục khác 0 câu
+      const M = nonP2Indices.length;
+      const T = tokens.length;
+      for (let k = 0; k < T; k++) {
+        const chosenInNonP2 = Math.floor((k * M) / T);
+        const realIdx = nonP2Indices[chosenInNonP2];
+        targetTokens[realIdx] = 1;
+      }
+    }
+
+    // Phân bổ các tokens theo targetTokens vào từng dòng
+    let tokenIdx = 0;
+    const assignedTokensPerItem: QuestionToken[][] = Array.from({ length: N }, () => []);
+
+    for (let i = 0; i < N; i++) {
+      const count = targetTokens[i];
+      for (let c = 0; c < count; c++) {
+        if (tokenIdx < tokens.length) {
+          assignedTokensPerItem[i].push(tokens[tokenIdx++]);
+        }
+      }
+    }
+
+    items.forEach((item, itemIdx) => {
       let rowP1 = { know: 0, understand: 0, apply: 0 };
       let rowP2 = { know: 0, understand: 0, apply: 0 };
       let rowP3 = { know: 0, understand: 0, apply: 0 };
@@ -331,28 +427,16 @@ export const generateMatrix = (
         rowP2 = { ...p2PerQuestion };
       }
 
-      // Nhận chỉ tiêu Part 1, Part 3 và Part 4 nếu thuộc nhóm nhận chỉ tiêu
-      if (nonP2Items.length === 0 || !item.isP2Host) {
-        const idx = receiverIdx;
-        rowP1 = {
-          know: p1kDist[idx] || 0,
-          understand: p1uDist[idx] || 0,
-          apply: p1vDist[idx] || 0
-        };
-        rowP3 = {
-          know: 0,
-          understand: 0,
-          apply: p3vDist[idx] || 0
-        };
-        if (isPeriodic1011) {
-          rowP4 = {
-            know: p4kDist[idx] || 0,
-            understand: p4uDist[idx] || 0,
-            apply: p4vDist[idx] || 0
-          };
+      const itemTokens = assignedTokensPerItem[itemIdx] || [];
+      itemTokens.forEach(token => {
+        if (token.part === 'part1') {
+          rowP1[token.level]++;
+        } else if (token.part === 'part3') {
+          rowP3[token.level]++;
+        } else if (token.part === 'part4' && rowP4) {
+          rowP4[token.level]++;
         }
-        receiverIdx++;
-      }
+      });
 
       const lessonRows = items.filter(s => s.lessonId === item.lessonId);
       const itemIdxInLesson = lessonRows.indexOf(item);
