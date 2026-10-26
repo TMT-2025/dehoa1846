@@ -3,10 +3,13 @@ import { TemplateProfile } from "./template-loader.js";
 import { renderRunToXml, renderTabsToXml } from "./content-renderer.js";
 
 function renderSubItemPrefix(label: string, isCorrect?: boolean): string {
+  // CRITICAL: <w:tab/> must be inside its own run WITH <w:u w:val="none"/>
+  // so Word NEVER underlines the tab space before the statement!
+  const tabRun = `<w:r><w:rPr><w:rStyle w:val="YoungMixChar"/><w:u w:val="none"/></w:rPr><w:tab/></w:r>`;
   if (isCorrect) {
-    return `<w:r><w:rPr><w:rStyle w:val="YoungMixChar"/><w:b/><w:i/><w:u w:val="single"/></w:rPr><w:tab/><w:t xml:space="preserve">${label}) </w:t></w:r>`;
+    return `${tabRun}<w:r><w:rPr><w:rStyle w:val="YoungMixChar"/><w:b/><w:i/><w:u w:val="single"/></w:rPr><w:t xml:space="preserve">${label}) </w:t></w:r>`;
   }
-  return `<w:r><w:rPr><w:rStyle w:val="YoungMixChar"/><w:b/></w:rPr><w:tab/><w:t xml:space="preserve">${label}) </w:t></w:r>`;
+  return `${tabRun}<w:r><w:rPr><w:rStyle w:val="YoungMixChar"/><w:u w:val="none"/><w:b/></w:rPr><w:t xml:space="preserve">${label}) </w:t></w:r>`;
 }
 
 export function renderTrueFalseSubItems(
@@ -27,7 +30,16 @@ export function renderTrueFalseSubItems(
     const isCorrect = preserveAnswers && item.isCorrect;
     const prefix = renderSubItemPrefix(label, isCorrect);
     const runs = item.content.paragraphs.flatMap(p => p.runs);
-    const bodyXml = runs.map(r => {
+    const cloned = runs.map(r => ({ ...r }));
+    if (isCorrect) {
+      for (let i = cloned.length - 1; i >= 0; i--) {
+        if (!cloned[i].isTab && !cloned[i].isLineBreak && cloned[i].text) {
+          cloned[i].text = cloned[i].text.trimEnd();
+          break;
+        }
+      }
+    }
+    const bodyXml = cloned.map(r => {
       if (isCorrect) {
         return renderRunToXml({ ...r, italic: true, underline: true }, { sanitizeUnderline: false });
       }

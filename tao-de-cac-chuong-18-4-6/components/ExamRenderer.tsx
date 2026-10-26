@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { ExamData } from '../types';
+import { FormulaRenderer } from '../../src/utils/formulaFormatter';
 
 interface ExamRendererProps {
   data: ExamData;
@@ -10,50 +11,7 @@ interface ExamRendererProps {
 const ExamRenderer: React.FC<ExamRendererProps> = ({ data, showAnswers = false }) => {
   const formatFormula = (text: string) => {
     if (!text) return null;
-    // Regex matches:
-    // 1. Charges (e.g., 2+, +, -)
-    // 2. Electron configurations (numbers after s, p, d, f)
-    // 3. Chemical formulas (numbers after other letters or ")")
-    // We capture the preceding character to distinguish between them
-    const regex = /([a-zA-Z\d\)])(\d*[\+\-])|([spdf])(\d+)|([a-zA-Z\)])(\d+)/g;
-    
-    const parts: (string | React.ReactNode)[] = [];
-    let lastIndex = 0;
-    let match;
-
-    while ((match = regex.exec(text)) !== null) {
-      // Add text before the match
-      if (match.index > lastIndex) {
-        parts.push(text.substring(lastIndex, match.index));
-      }
-
-      // Add the preceding character
-      const charBefore = match[1] || match[3] || match[5];
-      parts.push(charBefore);
-
-      // Add the formatted number/charge
-      const value = match[2] || match[4] || match[6];
-      const key = `match-${match.index}`;
-
-      if (match[2]) { // Charge -> Superscript
-        parts.push(<sup key={key} className="text-[0.75em] leading-[0] inline-block align-baseline translate-y-[-0.3em] font-medium">{value}</sup>);
-      } else if (match[4]) { // Electron count -> Superscript
-        parts.push(<sup key={key} className="text-[0.75em] leading-[0] inline-block align-baseline translate-y-[-0.3em] font-medium">{value}</sup>);
-      } else if (match[6]) { // Atom count -> Subscript
-        parts.push(<sub key={key} className="text-[0.75em] leading-[0] inline-block align-baseline translate-y-[0.1em] font-medium">{value}</sub>);
-      }
-
-      lastIndex = regex.lastIndex;
-    }
-
-    // Add remaining text
-    if (lastIndex < text.length) {
-      parts.push(text.substring(lastIndex));
-    }
-
-    if (parts.length === 0) return <span>{text}</span>;
-
-    return parts.map((p, i) => <React.Fragment key={i}>{p}</React.Fragment>);
+    return <FormulaRenderer text={text} />;
   };
 
   const labelsPart1 = ["A", "B", "C", "D"];

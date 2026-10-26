@@ -2,42 +2,10 @@
 import { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel } from "docx";
 import saveAs from "file-saver";
 import { ExamData } from "../types";
+import { formatFormulaToDocxRuns } from "../../src/utils/formulaFormatter";
 
 const parseChemicalText = (text: string, baseOptions: any = {}): TextRun[] => {
-  if (!text) return [];
-  const parts: TextRun[] = [];
-  // Regex matches:
-  // 1. Charges (e.g., 2+, +, -)
-  // 2. Electron configurations (numbers after s, p, d, f)
-  // 3. Chemical formulas (numbers after other letters or ")")
-  const regex = /([a-zA-Z\d\)])(\d*[\+\-])|([spdf])(\d+)|([a-zA-Z\)])(\d+)/g;
-  
-  let lastIndex = 0;
-  let match;
-
-  while ((match = regex.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      parts.push(new TextRun({ ...baseOptions, text: text.substring(lastIndex, match.index) }));
-    }
-
-    const charBefore = match[1] || match[3] || match[5];
-    parts.push(new TextRun({ ...baseOptions, text: charBefore }));
-
-    const value = match[2] || match[4] || match[6];
-    if (match[2] || match[4]) { // Charge or Electron count
-      parts.push(new TextRun({ ...baseOptions, text: value, superScript: true }));
-    } else { // Atom count
-      parts.push(new TextRun({ ...baseOptions, text: value, subScript: true }));
-    }
-
-    lastIndex = regex.lastIndex;
-  }
-
-  if (lastIndex < text.length) {
-    parts.push(new TextRun({ ...baseOptions, text: text.substring(lastIndex) }));
-  }
-
-  return parts.length > 0 ? parts : [new TextRun({ ...baseOptions, text: text })];
+  return formatFormulaToDocxRuns(text, baseOptions);
 };
 
 export const downloadExamDoc = async (data: ExamData, isAnswerKey: boolean) => {

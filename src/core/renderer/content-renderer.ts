@@ -9,14 +9,12 @@ export function escapeXml(str: string): string {
     .replace(/'/g, "&apos;");
 }
 
-export function renderRunToXml(run: FormattedRun, options: { sanitizeUnderline?: boolean } = {}): string {
-  if (run.isTab) {
-    return "<w:r><w:tab/></w:r>";
-  }
-  if (run.isLineBreak) {
-    return "<w:r><w:br/></w:r>";
-  }
-
+function buildXmlRun(
+  text: string,
+  run: FormattedRun,
+  fontName: string | undefined,
+  options: { sanitizeUnderline?: boolean }
+): string {
   const rPrParts: string[] = [];
 
   if (run.bold) {
@@ -34,17 +32,48 @@ export function renderRunToXml(run: FormattedRun, options: { sanitizeUnderline?:
   if (run.colorHex) {
     rPrParts.push(`<w:color w:val="${run.colorHex}"/>`);
   }
-  if (run.fontName) {
-    rPrParts.push(`<w:rFonts w:ascii="${escapeXml(run.fontName)}" w:hAnsi="${escapeXml(run.fontName)}"/>`);
+  if (fontName) {
+    rPrParts.push(`<w:rFonts w:ascii="${escapeXml(fontName)}" w:hAnsi="${escapeXml(fontName)}" w:cs="${escapeXml(fontName)}"/>`);
   }
   if (run.fontSizeHalfPoints) {
     rPrParts.push(`<w:sz w:val="${run.fontSizeHalfPoints}"/>`);
   }
 
   const rPrXml = rPrParts.length > 0 ? `<w:rPr>${rPrParts.join("")}</w:rPr>` : "";
-  const escapedText = escapeXml(run.text);
+  const escapedText = escapeXml(text);
 
   return `<w:r>${rPrXml}<w:t xml:space="preserve">${escapedText}</w:t></w:r>`;
+}
+
+export function renderRunToXml(run: FormattedRun, options: { sanitizeUnderline?: boolean } = {}): string {
+  if (run.isTab) {
+    return "<w:r><w:tab/></w:r>";
+  }
+  if (run.isLineBreak) {
+    return "<w:r><w:br/></w:r>";
+  }
+
+  let text = run.text || "";
+  if (text) {
+    text = text
+      .replace(/\s*(?:<==>|<=>|<->|⇄|⇌)\s*/g, ' ⇌ ')
+      .replace(/\s*(?:==>|-->|->|→)\s*/g, ' → ')
+      .replace(/\s*(?:<--|<-|←)\s*/g, ' ← ');
+  }
+
+  // Ensure arrows (single or reversible) use Cambria Math font to prevent printing issues
+  const ARROW_REGEX = /([→⇌⇄←↑↓⇒⇔])/;
+  if (ARROW_REGEX.test(text)) {
+    const parts = text.split(/([→⇌⇄←↑↓⇒⇔])/);
+    return parts.map(part => {
+      if (!part) return "";
+      const isArrow = ARROW_REGEX.test(part);
+      const fontToUse = isArrow ? "Cambria Math" : run.fontName;
+      return buildXmlRun(part, run, fontToUse, options);
+    }).join("");
+  }
+
+  return buildXmlRun(text, run, run.fontName, options);
 }
 
 export function renderTabsToXml(tabStops?: TabStopDefinition[]): string {

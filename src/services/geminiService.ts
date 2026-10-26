@@ -198,8 +198,12 @@ export const generateExam = async (
     
     YÊU CẦU MA TRẬN: ${matrixContext}
     
-    QUY TẮC ĐỊNH DẠNG:
-    - Công thức hóa học viết dạng văn bản (H2SO4, Fe2+, Cu(OH)2, [Ag(NH3)2]+).
+    QUY TẮC ĐỊNH DẠNG CÔNG THỨC TOÁN HỌC & HÓA HỌC CHUẨN:
+    - Công thức hóa học: viết dạng văn bản chuẩn (H2SO4, Fe2+, Fe3+, SO42-, Cu(OH)2, [Ag(NH3)2]+, 1s2 2s2 2p6 3s1).
+    - Hằng số cân bằng, tốc độ phản ứng: viết chuẩn Kc (hoặc K_c, KC), Kp, Ka, Kb, Kw; v = k.[A]^a.[B]^b. Biểu thức phân số cân bằng có thể viết inline dạng Kc = ([C]^c.[D]^d)/([A]^a.[B]^b) hoặc dùng LaTeX: $K_c = \frac{[C]^c \cdot [D]^d}{[A]^a \cdot [B]^b}$.
+    - Phản ứng hóa học: dùng mũi tên chuẩn: '⇌' (hoặc <=>) cho phản ứng thuận nghịch, '→' (hoặc ->) cho phản ứng một chiều. Dấu nhân trong biểu thức dùng '·' hoặc '.'.
+    - Nhiệt hóa học & điện thế: ΔrH°298, ΔfH°298 (hoặc \Delta_r H^0_{298}), E°cell = +1,10 V.
+    - Đơn vị tính: kJ/mol, kJ·mol^-1, g/mL, mol/L, °C.
     - Đảm bảo tính khoa học, chuẩn xác tuyệt đối theo CT GDPT 2018.
   `;
 

@@ -86,18 +86,44 @@ export function parseRunElement(rElement: Element, options: { sanitizeUnderline?
         const name = el.localName || el.nodeName.split(":").pop();
 
         if (name === "t") {
-          const text = el.textContent || "";
-          runs.push({
-            text,
-            bold: isBold || undefined,
-            italic: isItalic || undefined,
-            underline: underlineVal,
-            vertAlign,
-            fontName,
-            fontSizeHalfPoints,
-            colorHex,
-            strike: isStrike || undefined
-          });
+          let text = el.textContent || "";
+          if (text) {
+            text = text
+              .replace(/\s*(?:<==>|<=>|<->|⇄|⇌)\s*/g, ' ⇌ ')
+              .replace(/\s*(?:==>|-->|->|→)\s*/g, ' → ')
+              .replace(/\s*(?:<--|<-|←)\s*/g, ' ← ');
+          }
+          const ARROW_REGEX = /([→⇌⇄←↑↓⇒⇔])/;
+          if (ARROW_REGEX.test(text)) {
+            const parts = text.split(/([→⇌⇄←↑↓⇒⇔])/);
+            for (const part of parts) {
+              if (!part) continue;
+              const isArrow = ARROW_REGEX.test(part);
+              runs.push({
+                text: part,
+                bold: isBold || undefined,
+                italic: isItalic || undefined,
+                underline: underlineVal,
+                vertAlign,
+                fontName: isArrow ? "Cambria Math" : fontName,
+                fontSizeHalfPoints,
+                colorHex,
+                strike: isStrike || undefined
+              });
+            }
+          } else {
+            runs.push({
+              text,
+              bold: isBold || undefined,
+              italic: isItalic || undefined,
+              underline: underlineVal,
+              vertAlign,
+              fontName,
+              fontSizeHalfPoints,
+              colorHex,
+              strike: isStrike || undefined
+            });
+          }
         } else if (name === "tab") {
           runs.push({
             text: "\t",

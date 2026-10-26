@@ -4,17 +4,28 @@ import { TemplateProfile } from "./template-loader.js";
 import { renderRunToXml, renderTabsToXml } from "./content-renderer.js";
 
 function renderOptionPrefix(label: string, isCorrect?: boolean): string {
+  // CRITICAL: <w:tab/> must be inside its own run WITH <w:u w:val="none"/> 
+  // so Word NEVER underlines the tab space between options!
+  const tabRun = `<w:r><w:rPr><w:rStyle w:val="YoungMixChar"/><w:u w:val="none"/></w:rPr><w:tab/></w:r>`;
   if (isCorrect) {
-    return `<w:r><w:rPr><w:rStyle w:val="YoungMixChar"/><w:b/><w:i/><w:u w:val="single"/></w:rPr><w:tab/><w:t xml:space="preserve">${label}. </w:t></w:r>`;
+    return `${tabRun}<w:r><w:rPr><w:rStyle w:val="YoungMixChar"/><w:b/><w:i/><w:u w:val="single"/></w:rPr><w:t xml:space="preserve">${label}. </w:t></w:r>`;
   }
-  return `<w:r><w:rPr><w:rStyle w:val="YoungMixChar"/><w:b/></w:rPr><w:tab/><w:t xml:space="preserve">${label}. </w:t></w:r>`;
+  return `${tabRun}<w:r><w:rPr><w:rStyle w:val="YoungMixChar"/><w:u w:val="none"/><w:b/></w:rPr><w:t xml:space="preserve">${label}. </w:t></w:r>`;
 }
 
 function renderOptionBodyRuns(opt: QuestionOption, isCorrect?: boolean): string {
   const runs = opt.content.paragraphs.flatMap(p => p.runs);
   if (isCorrect) {
+    // Clone runs and ensure trailing whitespace at the end of the option is not underlined
+    const cloned = runs.map(r => ({ ...r }));
+    for (let i = cloned.length - 1; i >= 0; i--) {
+      if (!cloned[i].isTab && !cloned[i].isLineBreak && cloned[i].text) {
+        cloned[i].text = cloned[i].text.trimEnd();
+        break;
+      }
+    }
     // In teacher check mode, correct answer runs get italics and underline
-    return runs.map(r => renderRunToXml({ ...r, italic: true, underline: true }, { sanitizeUnderline: false })).join("");
+    return cloned.map(r => renderRunToXml({ ...r, italic: true, underline: true }, { sanitizeUnderline: false })).join("");
   }
   return runs.map(r => renderRunToXml(r, { sanitizeUnderline: true })).join("");
 }

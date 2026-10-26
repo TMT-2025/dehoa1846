@@ -2,42 +2,10 @@ import { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel, Tabl
 import saveAs from "file-saver";
 import { ExamData } from "../types/exam";
 import { formatExamTitleFromMatrixName } from "./bridgeService";
+import { formatFormulaToDocxRuns } from "../utils/formulaFormatter";
 
 const parseChemicalText = (text: string, baseOptions: any = {}): TextRun[] => {
-  if (!text) return [];
-  const parts: TextRun[] = [];
-  // Regex matches:
-  // 1. Charges (e.g., 2+, +, -)
-  // 2. Electron configurations (numbers after s, p, d, f)
-  // 3. Chemical formulas (numbers after other letters or ")")
-  const regex = /([a-zA-Z\d\)])(\d*[\+\-])|([spdf])(\d+)|([a-zA-Z\)])(\d+)/g;
-  
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-
-  while ((match = regex.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      parts.push(new TextRun({ ...baseOptions, text: text.substring(lastIndex, match.index) }));
-    }
-
-    const charBefore = match[1] || match[3] || match[5];
-    parts.push(new TextRun({ ...baseOptions, text: charBefore }));
-
-    const value = match[2] || match[4] || match[6];
-    if (match[2] || match[4]) { // Charge or Electron count
-      parts.push(new TextRun({ ...baseOptions, text: value, superScript: true }));
-    } else { // Atom count
-      parts.push(new TextRun({ ...baseOptions, text: value, subScript: true }));
-    }
-
-    lastIndex = regex.lastIndex;
-  }
-
-  if (lastIndex < text.length) {
-    parts.push(new TextRun({ ...baseOptions, text: text.substring(lastIndex) }));
-  }
-
-  return parts.length > 0 ? parts : [new TextRun({ ...baseOptions, text: text })];
+  return formatFormulaToDocxRuns(text, baseOptions);
 };
 
 export const downloadExamDoc = async (
@@ -132,7 +100,7 @@ export const downloadExamDoc = async (
     }));
     q.options.forEach((opt, oIdx) => {
       const isCorrect = showAns && oIdx === q.correctIndex;
-      const cleanOpt = opt.replace(/^[A-D][\.\)]\s*/i, '').replace(/^\.\s*/, '');
+      const cleanOpt = opt.replace(/^[A-D][\.\)]\s*/i, '').replace(/^\.\s*/, '').trim();
       children.push(new Paragraph({
         children: [
           new TextRun({ text: `${labels1[oIdx]}. `, bold: true, italics: isCorrect, underline: isCorrect ? {} : undefined }),
@@ -158,7 +126,7 @@ export const downloadExamDoc = async (
     }));
     sc.statements.forEach((st, sIdx) => {
       const isTrueMark = showAns && st.isTrue;
-      const cleanText = st.text.replace(/^[a-d][\.\)]\s*/i, '').replace(/^\.\s*/, '');
+      const cleanText = st.text.replace(/^[a-d][\.\)]\s*/i, '').replace(/^\.\s*/, '').trim();
       children.push(new Paragraph({
         children: [
           new TextRun({ text: `${labels2[sIdx]}) `, bold: true, italics: isTrueMark, underline: isTrueMark ? {} : undefined }),
@@ -186,7 +154,7 @@ export const downloadExamDoc = async (
       children.push(new Paragraph({ 
         children: [
           new TextRun({ text: "A. ", bold: true, italics: true, underline: {} }), 
-          new TextRun({ text: `${q.answer}`, bold: true, italics: true, underline: {}, color: "0000FF" })
+          ...parseChemicalText(String(q.answer || ''), { bold: true, italics: true, underline: {}, color: "0000FF" })
         ], 
         indent: { left: 450 } 
       }));
@@ -204,8 +172,8 @@ export const downloadExamDoc = async (
       // Preserve answers mode (like Image 2): A. [answer] in blue, bold, italic, underline - NO explanation!
       children.push(new Paragraph({ 
         children: [
-          new TextRun({ text: "A. ", bold: true, italics: true, underline: {} }), 
-          new TextRun({ text: `${q.answer}`, bold: true, italics: true, underline: {}, color: "0000FF" })
+          new TextRun({ text: "A. ", bold: true, italics: true, underline: {}, color: "0000FF" }), 
+          ...parseChemicalText(String(q.answer || '').trim(), { bold: true, italics: true, underline: {}, color: "0000FF" })
         ], 
         indent: { left: 450 } 
       }));

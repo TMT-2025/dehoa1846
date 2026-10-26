@@ -4,6 +4,7 @@ import { determineOptionLayout } from "./layout-engine.js";
 import { renderOptions } from "./option-renderer.js";
 import { renderTrueFalseSubItems } from "./true-false-renderer.js";
 import { renderRunToXml, renderParagraphToXml, escapeXml } from "./content-renderer.js";
+import { formatFormulaToIRRuns } from "../../utils/formulaFormatter.js";
 
 export function renderQuestionStem(
   question: ExamQuestion,
@@ -80,7 +81,16 @@ export function renderQuestion(
     if (preserveAnswers) {
       const ansVal = question.shortAnswer?.expectedValue || (question as any).expectedAnswer || "";
       if (ansVal) {
-        const ansXml = `<w:p><w:pPr><w:ind w:left="450"/></w:pPr><w:r><w:rPr><w:rStyle w:val="YoungMixChar"/><w:b/><w:i/><w:u w:val="single"/><w:color w:val="0000FF"/></w:rPr><w:t xml:space="preserve">A. ${escapeXml(ansVal)}</w:t></w:r></w:p>`;
+        const formulaRuns = formatFormulaToIRRuns(String(ansVal).trim());
+        const ansRunsXml = formulaRuns.map(r => renderRunToXml({
+          ...r,
+          bold: true,
+          italic: true,
+          underline: "single",
+          colorHex: "0000FF"
+        }, { sanitizeUnderline: false })).join("");
+
+        const ansXml = `<w:p><w:pPr><w:ind w:left="450"/></w:pPr><w:r><w:rPr><w:rStyle w:val="YoungMixChar"/><w:b/><w:i/><w:u w:val="single"/><w:color w:val="0000FF"/></w:rPr><w:t xml:space="preserve">A. </w:t></w:r>${ansRunsXml}</w:p>`;
         return `${stemXml}\n${ansXml}`;
       }
     }

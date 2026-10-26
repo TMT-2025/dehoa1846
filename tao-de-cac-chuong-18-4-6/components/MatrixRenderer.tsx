@@ -2,6 +2,7 @@
 import React, { useRef } from 'react';
 import { ExamData, MatrixRow } from '../types';
 import { Download } from 'lucide-react';
+import { FormulaRenderer } from '../../src/utils/formulaFormatter';
 
 interface MatrixRendererProps {
   data: ExamData;
@@ -112,31 +113,7 @@ const MatrixRenderer: React.FC<MatrixRendererProps> = ({ data }) => {
 
   const formatFormula = (text: string) => {
     if (!text) return null;
-    const regex = /([a-zA-Z\d\)])(\d*[\+\-])|([spdf])(\d+)|([a-zA-Z\)])(\d+)/g;
-    const parts: (string | React.ReactNode)[] = [];
-    let lastIndex = 0;
-    let match;
-
-    while ((match = regex.exec(text)) !== null) {
-      if (match.index > lastIndex) {
-        parts.push(text.substring(lastIndex, match.index));
-      }
-      const charBefore = match[1] || match[3] || match[5];
-      parts.push(charBefore);
-      const value = match[2] || match[4] || match[6];
-      const key = `match-${match.index}`;
-      if (match[2] || match[4]) {
-        parts.push(<sup key={key} className="text-[0.75em] leading-[0] inline-block align-baseline translate-y-[-0.3em] font-medium">{value}</sup>);
-      } else {
-        parts.push(<sub key={key} className="text-[0.75em] leading-[0] inline-block align-baseline translate-y-[0.1em] font-medium">{value}</sub>);
-      }
-      lastIndex = regex.lastIndex;
-    }
-    if (lastIndex < text.length) {
-      parts.push(text.substring(lastIndex));
-    }
-    if (parts.length === 0) return <span>{text}</span>;
-    return parts.map((p, i) => <React.Fragment key={i}>{p}</React.Fragment>);
+    return <FormulaRenderer text={text} />;
   };
 
   return (

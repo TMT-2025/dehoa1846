@@ -6,6 +6,7 @@ import saveAs from "file-saver";
 import { MatrixData } from '../types/matrix';
 import { SpecificationData } from '../types/specification';
 import { buildSpecificationFromMatrix } from './specificationService';
+import { formatFormulaToDocxRuns } from '../utils/formulaFormatter';
 
 export const exportMatrixToExcel = (matrixData: MatrixData, customSpecData?: SpecificationData) => {
   const specData = customSpecData || buildSpecificationFromMatrix(matrixData);
@@ -754,7 +755,7 @@ export const downloadMatrixAndSpecDoc = async (matrixData: MatrixData, customSpe
       }));
       r.outcomes.recognition.forEach(o => outcomeParagraphs.push(new Paragraph({
         spacing: { before: 0, after: 5 },
-        children: [new TextRun({ text: `+ ${o}`, size: 16, color: "334155" })]
+        children: [new TextRun({ text: "+ ", size: 16, color: "334155" }), ...formatFormulaToDocxRuns(o, { size: 16, color: "334155" })]
       })));
     }
     if (r.outcomes.understanding?.length) {
@@ -764,7 +765,7 @@ export const downloadMatrixAndSpecDoc = async (matrixData: MatrixData, customSpe
       }));
       r.outcomes.understanding.forEach(o => outcomeParagraphs.push(new Paragraph({
         spacing: { before: 0, after: 5 },
-        children: [new TextRun({ text: `+ ${o}`, size: 16, color: "334155" })]
+        children: [new TextRun({ text: "+ ", size: 16, color: "334155" }), ...formatFormulaToDocxRuns(o, { size: 16, color: "334155" })]
       })));
     }
     if (r.outcomes.application?.length) {
@@ -774,7 +775,7 @@ export const downloadMatrixAndSpecDoc = async (matrixData: MatrixData, customSpe
       }));
       r.outcomes.application.forEach(o => outcomeParagraphs.push(new Paragraph({
         spacing: { before: 0, after: 5 },
-        children: [new TextRun({ text: `+ ${o}`, size: 16, color: "334155" })]
+        children: [new TextRun({ text: "+ ", size: 16, color: "334155" }), ...formatFormulaToDocxRuns(o, { size: 16, color: "334155" })]
       })));
     }
 

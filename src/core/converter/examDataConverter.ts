@@ -4,43 +4,13 @@ import {
   ExamIR, ExamSection, ExamQuestion, QuestionOption, 
   TrueFalseSubItem, FormattedRun, RichParagraph 
 } from "../ir/types.js";
+import { formatFormulaToIRRuns } from "../../utils/formulaFormatter.js";
 
 /**
- * Splits text with chemical numbers into FormattedRuns with subscripts and superscripts
+ * Splits text with chemical and mathematical expressions into FormattedRuns with subscripts and superscripts
  */
 export function parseChemicalTextToRuns(text: string, base: Partial<FormattedRun> = {}): FormattedRun[] {
-  if (!text) return [];
-  const runs: FormattedRun[] = [];
-  const regex = /([a-zA-Z\d\)])(\d*[\+\-])|([spdf])(\d+)|([a-zA-Z\)])(\d+)/g;
-
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-
-  while ((match = regex.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      runs.push({ ...base, text: text.substring(lastIndex, match.index) });
-    }
-
-    const charBefore = match[1] || match[3] || match[5];
-    runs.push({ ...base, text: charBefore });
-
-    const value = match[2] || match[4] || match[6];
-    if (match[2] || match[4]) {
-      // Superscript for charges or electron configurations
-      runs.push({ ...base, text: value, vertAlign: "superscript" });
-    } else {
-      // Subscript for atom counts
-      runs.push({ ...base, text: value, vertAlign: "subscript" });
-    }
-
-    lastIndex = regex.lastIndex;
-  }
-
-  if (lastIndex < text.length) {
-    runs.push({ ...base, text: text.substring(lastIndex) });
-  }
-
-  return runs.length > 0 ? runs : [{ ...base, text }];
+  return formatFormulaToIRRuns(text, base);
 }
 
 function createParagraph(text: string, boldPrefix?: string): RichParagraph {
@@ -66,7 +36,7 @@ export function convertExamDataToExamIR(data: ExamData): ExamIR {
       const optionsLabels: ("A" | "B" | "C" | "D")[] = ["A", "B", "C", "D"];
 
       const options: QuestionOption[] = q.options.map((opt, oIdx) => {
-        const cleanOpt = opt.replace(/^[A-D][\.\)]\s*/i, '').replace(/^\.\s*/, '');
+        const cleanOpt = opt.replace(/^[A-D][\.\)]\s*/i, '').replace(/^\.\s*/, '').trim();
         const label = optionsLabels[oIdx] || "A";
         return {
           id: `opt-${qNum}-${label}`,
@@ -127,7 +97,7 @@ export function convertExamDataToExamIR(data: ExamData): ExamIR {
       const cleanStem = sc.context.replace(/^Câu\s+\d+[\.:\)]\s*/i, '');
 
       const subItems: TrueFalseSubItem[] = sc.statements.map((st, sIdx) => {
-        const cleanText = st.text.replace(/^[a-d][\.\)]\s*/i, '').replace(/^\.\s*/, '');
+        const cleanText = st.text.replace(/^[a-d][\.\)]\s*/i, '').replace(/^\.\s*/, '').trim();
         const label = tfLabels[sIdx] || "a";
         return {
           id: `tf-${qNum}-${label}`,

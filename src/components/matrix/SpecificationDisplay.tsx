@@ -6,6 +6,7 @@ import {
 import { SpecificationData, SpecificationRow } from '../../types/specification';
 import { exportSpecificationToExcel, downloadMatrixAndSpecDoc, exportMatrixToImage } from '../../services/exportService';
 import { MatrixData } from '../../types/matrix';
+import { FormulaRenderer } from '../../utils/formulaFormatter';
 
 const formatPoint = (val: number, suffix = 'đ') => {
   if (val === 0) return `0${suffix}`;
@@ -266,7 +267,7 @@ export const SpecificationDisplay: React.FC<SpecificationDisplayProps> = ({
                         </strong>
                         <ul className="list-disc pl-4 space-y-0.5 text-slate-800">
                           {row.outcomes.recognition.map((item, oIdx) => (
-                            <li key={oIdx}>{item}</li>
+                            <li key={oIdx}><FormulaRenderer text={item} /></li>
                           ))}
                         </ul>
                       </div>
@@ -279,7 +280,7 @@ export const SpecificationDisplay: React.FC<SpecificationDisplayProps> = ({
                         </strong>
                         <ul className="list-disc pl-4 space-y-0.5 text-slate-800">
                           {row.outcomes.understanding.map((item, oIdx) => (
-                            <li key={oIdx}>{item}</li>
+                            <li key={oIdx}><FormulaRenderer text={item} /></li>
                           ))}
                         </ul>
                       </div>
@@ -292,7 +293,7 @@ export const SpecificationDisplay: React.FC<SpecificationDisplayProps> = ({
                         </strong>
                         <ul className="list-disc pl-4 space-y-0.5 text-slate-800">
                           {row.outcomes.application.map((item, oIdx) => (
-                            <li key={oIdx}>{item}</li>
+                            <li key={oIdx}><FormulaRenderer text={item} /></li>
                           ))}
                         </ul>
                       </div>
